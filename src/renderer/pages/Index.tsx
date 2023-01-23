@@ -2,7 +2,7 @@
 import { FC } from 'react';
 
 const Index: FC = () => {
-  return <div>{OPENSUBTITLES_API_KEY}</div>;
+  return <div>Index</div>;
 };
 
 export default Index;
