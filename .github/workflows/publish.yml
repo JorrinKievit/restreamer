@@ -35,7 +35,7 @@ jobs:
           echo $OPENSUBTITLES_API_KEY
           yarn install
           yarn run postinstall
-          cross-env TMDB_API_KEY=$TMDB_API_KEY OPENSUBTITLES_API_KEY=$OPENSUBTITLES_API_KEY yarn run build
+          yarn run build
 
       - name: Publish releases
         env:
