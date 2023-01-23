@@ -29,6 +29,10 @@ jobs:
 
       - name: Install and build
         run: |
+          export TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          export OPENSUBTITLES_API_KEY=${{ secrets.OPENSUBTITLES_API_KEY }}
+          echo $TMDB_API_KEY
+          echo $OPENSUBTITLES_API_KEY
           yarn install
           yarn run postinstall
           yarn run build
