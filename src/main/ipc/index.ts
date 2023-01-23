@@ -1,0 +1,2 @@
+import './vidsrc';
+import './validatePass';
