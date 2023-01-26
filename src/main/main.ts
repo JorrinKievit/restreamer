@@ -12,54 +12,9 @@ import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { fork } from 'child_process';
 import { resolveHtmlPath } from './util';
 
 import './ipc/index';
-
-const PROXY_PATH =
-  process.env.NODE_ENV === 'production'
-    ? path.join(process.resourcesPath, 'proxy/@warren-bank/hls-proxy/proxy.js')
-    : path.join(__dirname, '../../proxy/@warren-bank/hls-proxy/proxy.js');
-
-console.log(PROXY_PATH);
-
-const child = fork(
-  PROXY_PATH,
-  [
-    '--port',
-    '7687',
-    '--host',
-    'localhost',
-    '--referer https://vidsrc.stream/',
-    '--origin',
-    'https://vidsrc.stream',
-    '-v',
-    '4',
-  ],
-  {
-    detached: true,
-    env: {
-      ELECTRON_RUN_AS_NODE: '1',
-    },
-  }
-);
-
-child.on('message', (msg) => {
-  console.log(msg);
-});
-
-child.on('error', (err) => {
-  console.log('err', err);
-});
-
-child.on('exit', (code, signal) => {
-  console.log('exit', code, signal);
-});
-
-child.on('close', (code, signal) => {
-  console.log('close', code, signal);
-});
 
 class AppUpdater {
   constructor() {
@@ -162,7 +117,6 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
-  child.kill();
 });
 
 app

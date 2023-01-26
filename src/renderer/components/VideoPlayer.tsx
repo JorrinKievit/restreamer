@@ -2,7 +2,6 @@ import {
   FC,
   forwardRef,
   MutableRefObject,
-  useCallback,
   useEffect,
   useRef,
   useState,
@@ -14,20 +13,19 @@ import Hls from 'hls.js';
 import { APITypes, PlyrInstance, PlyrProps, usePlyr } from 'plyr-react';
 import { LoginResponse } from 'renderer/api/opensubtitles/login.types';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
+import { VidSrcResponse } from 'types/vidsrc';
+import { Box } from '@chakra-ui/react';
 import { InsertSubtitleButton, SubtitleSelector } from './SubtitlesPlayer';
+import SourceSelector from './SourceSelector';
 
 interface VideoPlayerProps {
-  source: {
-    url: string;
-    server: string;
-    extractorData?: string;
-  };
+  sources: VidSrcResponse;
   tmdbId: string;
   season?: number;
   number?: number;
 }
 
-const useHls = (src: string, options: Options | null) => {
+const useHls = (src?: string, options?: Options | null) => {
   const hls = useRef<Hls>(new Hls());
   const hasQuality = useRef<boolean>(false);
   const [plyrOptions, setPlyrOptions] = useState<Options | null>(options);
@@ -37,6 +35,7 @@ const useHls = (src: string, options: Options | null) => {
   }, [options]);
 
   useEffect(() => {
+    if (!src) return;
     hls.current.loadSource(src);
     hls.current.attachMedia(document.querySelector('.plyr-react')!);
     /**
@@ -56,7 +55,6 @@ const useHls = (src: string, options: Options | null) => {
         options: levels.map((level) => level.height),
         forced: true,
         onChange: (newQuality: number) => {
-          console.log('changes', newQuality);
           levels.forEach((level, levelIndex) => {
             if (level.height === newQuality) {
               hls.current.currentLevel = levelIndex;
@@ -77,6 +75,7 @@ const CustomPlyrInstance = forwardRef<
   PlyrProps & { hlsSource: string; isLoggedIn: boolean }
 >((props, ref) => {
   const { source, options = null, hlsSource, isLoggedIn } = props;
+
   const raptorRef = usePlyr(ref, {
     ...useHls(hlsSource, options),
     source,
@@ -84,7 +83,6 @@ const CustomPlyrInstance = forwardRef<
 
   useEffect(() => {
     const { current } = ref as MutableRefObject<APITypes>;
-    console.log(current.plyr);
     if (current.plyr.source === null) return;
 
     const api = current as { plyr: PlyrInstance };
@@ -95,19 +93,21 @@ const CustomPlyrInstance = forwardRef<
 
   return (
     // eslint-disable-next-line jsx-a11y/media-has-caption
-    <video ref={raptorRef} className="plyr-react plyr" crossOrigin="anonymous">
-      {/* empty track cuz otherwise captions button won't show */}
-      {/* <track kind="subtitles" /> */}
-    </video>
+    <video
+      ref={raptorRef}
+      className="plyr-react plyr"
+      crossOrigin="anonymous"
+    />
   );
 });
 
 const VideoPlayer: FC<VideoPlayerProps> = ({
-  source,
+  sources,
   tmdbId,
   season,
   number,
 }) => {
+  const [selectedSource, setSelectedSource] = useState(sources[0]);
   const ref = useRef<APITypes>(null);
   const [opensubtitlesData] = useLocalStorage<LoginResponse>(
     'opensubtitles',
@@ -115,25 +115,54 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   );
 
   useEffect(() => {
+    if (selectedSource.referer || selectedSource.origin) {
+      window.electron.ipcRenderer.startProxy(
+        selectedSource.referer,
+        selectedSource.origin
+      );
+    } else {
+      window.electron.ipcRenderer.stopProxy();
+    }
+    return () => {
+      window.electron.ipcRenderer.stopProxy();
+    };
+  }, [selectedSource]);
+
+  useEffect(() => {
     let interval;
-    if (source?.extractorData) {
-      window.electron.ipcRenderer.validatePass(source?.extractorData);
+    if (selectedSource?.extractorData) {
+      window.electron.ipcRenderer.validatePass(selectedSource?.extractorData);
       interval = setInterval(() => {
-        window.electron.ipcRenderer.validatePass(source?.extractorData);
+        window.electron.ipcRenderer.validatePass(selectedSource?.extractorData);
       }, 1000 * 60);
     }
     return () => {
       clearInterval(interval);
     };
-  }, [source?.extractorData]);
+  }, [selectedSource?.extractorData]);
 
-  return source.url ? (
-    // eslint-disable-next-line jsx-a11y/media-has-caption
-    <div>
+  return (
+    <Box gap={4}>
       <CustomPlyrInstance
         ref={ref}
-        source={null}
-        hlsSource={generateProxy(source.url)}
+        source={
+          selectedSource.type === 'mp4'
+            ? {
+                type: 'video',
+                sources: [
+                  {
+                    src: selectedSource.url,
+                    type: 'video/mp4',
+                  },
+                ],
+              }
+            : null
+        }
+        hlsSource={
+          selectedSource.type === 'm3u8'
+            ? generateProxy(selectedSource.url)
+            : null
+        }
         options={{
           captions: {
             active: true,
@@ -144,12 +173,15 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         }}
         isLoggedIn={!!opensubtitlesData?.token}
       />
+      <SourceSelector
+        sources={sources}
+        activeSource={selectedSource}
+        selectSource={setSelectedSource}
+      />
       {opensubtitlesData?.token && (
         <SubtitleSelector tmbdId={tmdbId} season={season} number={number} />
       )}
-    </div>
-  ) : (
-    <div>No source found</div>
+    </Box>
   );
 };
 

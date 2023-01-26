@@ -40,7 +40,7 @@ export interface Result {
   profile_path?: any;
 }
 
-export interface SearchResults {
+export interface SearchResponse {
   page: number;
   results: Result[];
   total_pages: number;

@@ -1,3 +1,12 @@
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Box,
+  Grid,
+} from '@chakra-ui/react';
 import React, { Dispatch, FC, SetStateAction } from 'react';
 import { useTvShowDetails } from 'renderer/api/tmdb/api';
 
@@ -27,46 +36,58 @@ const TvShowDetails: FC<TvShowDetailsProps> = ({
   if (error) return <div>{error.toString()}</div>;
 
   return (
-    <div className="py-6">
-      {data?.seasons.map((season) => (
-        <div
-          className="collapse collapse-arrow border border-neutral bg-neutral rounded-box mt-4"
-          key={season.id}
-        >
-          <input type="checkbox" />
-          <div className="collapse-title text-xl font-medium">
-            <div>{season.name}</div>
-          </div>
-          <div className="collapse-content">
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-              {Array.from(
-                { length: season.episode_count },
-                (_, i) => i + 1
-              ).map((episodeNumber) => (
-                <button
-                  key={`${season}-${episodeNumber}}`}
-                  type="button"
-                  className={`link ${
-                    activeEpisode.season === season.season_number &&
-                    activeEpisode.episode === episodeNumber
-                      ? 'text-primary'
-                      : ''
-                  }`}
-                  onClick={() =>
-                    showDetails({
-                      season: season.season_number,
-                      episode: episodeNumber,
-                    })
-                  }
-                >
-                  Episode {episodeNumber}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    <Box py={6}>
+      <Accordion allowMultiple defaultIndex={[activeEpisode.season]}>
+        {data?.seasons.map((season) => (
+          <AccordionItem key={season.id}>
+            <h2>
+              <AccordionButton>
+                <Box as="span" flex="1" textAlign="left">
+                  {season.name}
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+            </h2>
+            <AccordionPanel pb={4}>
+              <Grid
+                templateColumns={{
+                  base: 'repeat(2, 1fr)',
+                  md: 'repeat(6, 1fr)',
+                }}
+                gap={6}
+              >
+                {Array.from(
+                  { length: season.episode_count },
+                  (_, i) => i + 1
+                ).map((episodeNumber) => (
+                  <Box
+                    as="button"
+                    key={`${season}-${episodeNumber}}`}
+                    color={
+                      activeEpisode.season === season.season_number &&
+                      activeEpisode.episode === episodeNumber
+                        ? 'teal.500'
+                        : ''
+                    }
+                    onClick={() =>
+                      showDetails({
+                        season: season.season_number,
+                        episode: episodeNumber,
+                      })
+                    }
+                    sx={{
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Episode {episodeNumber}
+                  </Box>
+                ))}
+              </Grid>
+            </AccordionPanel>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </Box>
   );
 };
 
