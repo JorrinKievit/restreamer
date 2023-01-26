@@ -7,8 +7,10 @@ import VideoPlayer from 'renderer/components/VideoPlayer';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import TvShowDetails from 'renderer/components/TvShowDetails';
+import { Spinner, useBoolean } from '@chakra-ui/react';
 
 const MovieDetails: FC = () => {
+  const [isLoading, setIsLoading] = useBoolean(false);
   const [sources, setSources] = useState<VidSrcResponse>([]);
   const [showDetails, setShowDetails] = useState<{
     season: number;
@@ -32,26 +34,28 @@ const MovieDetails: FC = () => {
       );
       setSources(vidSrcSources);
     };
+    setIsLoading.toggle();
+    // eslint-disable-next-line promise/catch-or-return
+    getSources().then(() => setIsLoading.toggle());
+  }, [id, mediaType, showDetails, setIsLoading]);
 
-    getSources();
-  }, [id, mediaType, showDetails]);
+  if (isLoading) return <Spinner />;
+
+  console.log(sources);
 
   return (
     <div>
-      <VideoPlayer
-        source={
-          sources && sources[0]
-            ? sources[0]
-            : {
-                url: '',
-                server: '',
-              }
-        }
-        tmdbId={id}
-        season={mediaType === 'tv' ? showDetails.season : undefined}
-        number={mediaType === 'tv' ? showDetails.episode : undefined}
-        key="video"
-      />
+      {sources && sources[0] ? (
+        <VideoPlayer
+          sources={sources}
+          tmdbId={id}
+          season={mediaType === 'tv' ? showDetails.season : undefined}
+          number={mediaType === 'tv' ? showDetails.episode : undefined}
+          key="video"
+        />
+      ) : (
+        <div>No sources found</div>
+      )}
       {mediaType === 'tv' && (
         <TvShowDetails
           id={id}

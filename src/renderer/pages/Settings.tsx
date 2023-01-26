@@ -1,3 +1,21 @@
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Tr,
+  VStack,
+} from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
 import {
   useOpenSubtitlesLogin,
@@ -63,77 +81,80 @@ const Settings: FC = () => {
   };
 
   return (
-    <div className="card bg-neutral shadow-xl w-1/2">
-      <div className="card-body">
-        {!opensubtitlesData?.token ? (
-          <>
-            <h2 className="card-title justify-center">
-              OpenSubtitles.com Login
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-control w-full max-w-xs mx-auto">
-                <label className="label">
-                  <span className="label-text">Username</span>
-                </label>
-                <input
+    <Card w="50%">
+      <CardHeader>
+        <Heading>OpenSubtitles.com Login</Heading>
+      </CardHeader>
+      {!opensubtitlesData?.token ? (
+        <form onSubmit={handleSubmit}>
+          <CardBody>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Username</FormLabel>
+                <Input
                   type="text"
-                  className="input input-bordered w-full max-w-xs"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <label className="label">
-                  <span className="label-text">Password</span>
-                </label>
-                <input
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
                   type="password"
-                  className="input input-bordered w-full max-w-xs"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <div className="card-actions justify-end">
-                  <button
-                    type="submit"
-                    className={`btn btn-primary mt-4 ${
-                      isLoadingLogin ? 'loading' : ''
-                    }`}
-                  >
-                    Login
-                  </button>
-                </div>
-                {errorLogin && (
-                  <p className="text-error">
-                    {errorLogin.response.data.message}
-                  </p>
-                )}
-              </div>
-            </form>
-          </>
-        ) : (
-          <>
-            <h2>Hello, {opensubtitlesData.user.user_id}</h2>
-            <h2>
-              Allowed downloads: {opensubtitlesData.user.allowed_downloads}
-            </h2>
-            <h2>
-              Remaining downloads: {opensubtitlesData.user.remaining_downloads}
-            </h2>
-            <h2>Level: {opensubtitlesData.user.level}</h2>
-            <div className="card-actions justify-end">
-              <button
-                type="button"
-                className={`btn btn-primary mt-4 ${
-                  isLoadingLogout ? 'loading' : ''
-                }`}
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
-            {errorLogout && <p className="text-error">{errorLogout.message}</p>}
-          </>
-        )}
-      </div>
-    </div>
+              </FormControl>
+              {errorLogout && (
+                <Text color="tomato">{errorLogin.response.data.message}</Text>
+              )}
+            </VStack>
+          </CardBody>
+          <CardFooter justifyContent="flex-end" pt={0}>
+            <Button type="submit" isLoading={isLoadingLogin} colorScheme="blue">
+              Login
+            </Button>
+          </CardFooter>
+        </form>
+      ) : (
+        <>
+          <CardBody>
+            <TableContainer>
+              <Table variant="simple">
+                <Tbody>
+                  <Tr>
+                    <Td>User ID</Td>
+                    <Td>{opensubtitlesData.user.user_id}</Td>
+                  </Tr>
+                  <Tr>
+                    <Td>Allowed downloads</Td>
+                    <Td>{opensubtitlesData.user.allowed_downloads}</Td>
+                  </Tr>
+                  <Tr>
+                    <Td>Remaining downloads</Td>
+                    <Td>{opensubtitlesData.user.remaining_downloads}</Td>
+                  </Tr>
+                  <Tr>
+                    <Td>Level</Td>
+                    <Td>{opensubtitlesData.user.level}</Td>
+                  </Tr>
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </CardBody>
+          <CardFooter justifyContent="flex-end">
+            <Button
+              colorScheme="blue"
+              isLoading={isLoadingLogout}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          </CardFooter>
+          {errorLogout && <Text color="tomato">{errorLogout.message}</Text>}
+        </>
+      )}
+    </Card>
   );
 };
 

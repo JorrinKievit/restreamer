@@ -1,4 +1,18 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
+import {
+  Button,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Select,
+  Spinner,
+  useDisclosure,
+  VStack,
+} from '@chakra-ui/react';
 import React, { FC, useEffect, useState } from 'react';
 import {
   useDownloadSubtitle,
@@ -20,9 +34,9 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   season,
   number,
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [language, setLanguage] = useState('');
   const [fileId, setFileId] = useState('');
-  const [isSelected, setIsSelected] = useState(false);
   const [opensubtitlesData, setOpensubtitlesData] =
     useLocalStorage<OpenSubtitlesUser>('opensubtitles', null);
 
@@ -30,7 +44,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
     data,
     error: searchError,
     isLoading: searchIsLoading,
-  } = useSearchSubtitles(tmbdId, season, number);
+  } = useSearchSubtitles(tmbdId, isOpen, season, number);
   const {
     mutate,
     error: downloadError,
@@ -38,7 +52,17 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   } = useDownloadSubtitle();
 
   useEffect(() => {
-    setIsSelected(true);
+    document.addEventListener('open-modal', () => {
+      if (!isOpen) onOpen();
+    });
+    return () => {
+      document.removeEventListener('open-modal', () => {
+        if (isOpen) onClose();
+      });
+    };
+  }, [isOpen, onClose, onOpen]);
+
+  useEffect(() => {
     setFileId('');
   }, [language]);
 
@@ -73,28 +97,28 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
               remaining_downloads: res.remaining,
             },
           });
+          onClose();
         },
       }
     );
   };
 
   return (
-    <div className="modal" id="subtitle-modal">
-      <div className="modal-box">
-        {searchIsLoading ? (
-          <div>Loading...</div>
-        ) : (
-          <>
-            <div className="flex flex-col gap-4">
-              <h3 className="font-bold text-lg">Subtitle selector</h3>
-              <select
-                className="select select-bordered w-full"
+    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Subtitle selector</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          {searchIsLoading ? (
+            <Spinner />
+          ) : (
+            <VStack spacing={4}>
+              <Select
+                placeholder="Select a language"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
-                <option disabled value="">
-                  Select a language
-                </option>
                 {[
                   ...new Set(
                     data
@@ -119,16 +143,13 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
                       {lang?.language_name}
                     </option>
                   ))}
-              </select>
-
-              <select
-                className="select select-bordered w-full"
+              </Select>
+              <Select
+                placeholder="Select a file"
                 value={fileId}
+                disabled={language === ''}
                 onChange={(e) => setFileId(e.target.value)}
               >
-                <option disabled selected={isSelected} value="">
-                  Select a file
-                </option>
                 {data
                   ?.filter(
                     (subtitle) =>
@@ -149,40 +170,48 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
                       {subtitle.attributes.download_count}
                     </option>
                   ))}
-              </select>
-            </div>
-            <div className="modal-action">
-              <a href="#" className="btn btn-secondary">
-                Cancel
-              </a>
-              <a
-                href="#"
-                className="btn btn-primary"
-                onClick={handleSubtitleChange}
-              >
-                Select
-              </a>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+              </Select>
+            </VStack>
+          )}
+        </ModalBody>
+        <ModalFooter gap={4}>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={handleSubtitleChange}
+            isDisabled={fileId === ''}
+            isLoading={downloadIsLoading}
+          >
+            Select
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };
 
 export const InsertSubtitleButton = () => {
   const captionsButton = document.querySelector('[data-plyr="captions"]');
-  console.log(captionsButton);
   if (!captionsButton) return;
+  if (document.querySelector('[data-plyr="subtitles"]')) return;
   const button = document.createElement('a');
   button.className =
-    'plyr__controls__item plyr__control plyr__control--pressed subtitles_button inline-block h-[32px]';
+    'plyr__controls__item plyr__control plyr__control--pressed subtitles_button';
+  button.style.height = '32px';
+  button.style.display = 'inline-block';
   button.setAttribute('data-plyr', 'subtitles');
-  button.href = '#subtitle-modal';
+  button.onclick = () => {
+    const event = new CustomEvent('open-modal');
+    document.dispatchEvent(event);
+  };
   const image = document.createElement('img');
   image.src = SubtitlesButton;
   image.alt = 'Subtitles';
-  image.className = 'h-full w-full';
+  image.style.width = '100%';
+  image.style.height = '100%';
   button.appendChild(image);
   captionsButton.parentNode.insertBefore(button, captionsButton.nextSibling);
 };

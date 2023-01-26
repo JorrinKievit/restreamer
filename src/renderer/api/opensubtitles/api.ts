@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { useMutation, useQuery } from '@tanstack/react-query';
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { ApiError, DownloadApiError } from './api.error';
 import { DownloadResponse } from './download.types';
 import { LoginResponse } from './login.types';
@@ -93,35 +93,46 @@ export const useOpenSubtitlesUserInformation = () => {
 
 export const useSearchSubtitles = (
   tmdbId: string,
+  isOpen: boolean,
   season?: number,
   episode?: number
 ) => {
   const { data, error, isLoading } = useQuery<Datum[], AxiosError<ApiError>>({
-    queryKey: ['search-subtitles', tmdbId, season, episode],
+    queryKey: ['search-subtitles', tmdbId, season, episode, isOpen],
+    enabled: isOpen,
     queryFn: async () => {
-      const res = await baseApi.get('subtitles', {
+      const res = await baseApi.get<SearchResponse>('subtitles', {
         params: {
+          page: 1,
           tmdb_id: tmdbId,
           season_number: season,
           episode_number: episode,
-          page: 1,
         },
       });
 
       const promises = Array.from({ length: res.data.total_pages }, (_, i) => {
         if (i === 0) return null;
+        if (i % 5 === 0) {
+          // avoid rate limit
+          // eslint-disable-next-line no-promise-executor-return
+          return new Promise((resolve) => setTimeout(resolve, 1000));
+        }
         return baseApi.get<SearchResponse>('subtitles', {
           params: {
+            page: i + 1,
             tmdb_id: tmdbId,
             season_number: season,
             episode_number: episode,
-            page: i + 1,
           },
         });
       });
-      const responseData = await Promise.all(promises);
+      const responseData = (await Promise.all(
+        promises
+      )) as AxiosResponse<SearchResponse>[];
+
       const finalData = responseData
         .filter((x) => x !== null)
+        .filter((x) => x !== undefined)
         .map((r) => r.data.data)
         .flat()
         .concat(res.data.data);

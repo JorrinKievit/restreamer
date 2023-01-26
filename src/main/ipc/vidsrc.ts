@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ipcMain } from 'electron';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
-import { P_A_C_K_E_R } from '../utils/unpack';
+import { runInContext } from '../utils/vmContext';
 
 ipcMain.handle(
   'vidsrc',
@@ -17,7 +17,7 @@ ipcMain.handle(
           : '';
       let res = await axios.get(url);
 
-      let $ = load(res.data);
+      const $ = load(res.data);
       const hashes = $('div.source')
         .map((_, el) => $(el).attr('data-hash'))
         .get();
@@ -75,8 +75,11 @@ ipcMain.handle(
             });
             if (res.request.res.responseUrl.includes('m3u8')) {
               return {
-                server: 'pro',
+                server: 'VidSrc Pro',
                 url: res.request.res.responseUrl,
+                referer: 'https://vidsrc.stream/',
+                origin: 'https://vidsrc.stream',
+                type: 'm3u8',
                 extractorData: server.extractorData,
               };
             }
@@ -85,40 +88,47 @@ ipcMain.handle(
             res = await axios.post(
               `https://embedsito.com/api/source/${server.url.split('/').pop()}`
             );
+            res = await axios.get(res.data.data[0].file, {
+              maxRedirects: 0,
+              validateStatus: (status) => {
+                return status >= 200 && status < 400;
+              },
+            });
             return {
-              server: 'embedsito',
-              url: res.data.data[0].file as string,
+              server: 'Embedsito',
+              url: res.headers.location,
+              type: 'mp4',
             };
           }
           // mixdrop doesn't work yet, HTTP 509
-          if (server.server === 'mixdrop') {
-            res = await axios.get(server.url);
-            $ = load(res.data);
-            const result = $('script')
-              .map((_, el) => $(el).html())
-              .get()
-              .filter((el) => el.includes('MDCore.ref'))[0];
+          // if (server.server === 'mixdrop') {
+          //   res = await axios.get(server.url);
+          //   $ = load(res.data);
+          //   const result = $('script')
+          //     .map((_, el) => $(el).html())
+          //     .get()
+          //     .filter((el) => el.includes('MDCore.ref'))[0];
 
-            const unpackedResult = P_A_C_K_E_R.unpack(result);
-            // get everything after MDCore.wurl=
-            const regex = /MDCore.wurl="([^"]*)/g;
-            const result2 = regex.exec(unpackedResult);
+          //   const unpackedContext = runInContext(result, {
+          //     MDCore: { wurl: '' },
+          //   });
+          //   const mixdropSourceUrl = unpackedContext.MDCore.wurl;
 
-            if (!result2) {
-              return {
-                server: 'mixdrop',
-                url: '',
-              };
-            }
-            return {
-              server: 'mixdrop',
-              url: result2[1].replace('//', 'https://'),
-            };
-          }
+          //   if (!mixdropSourceUrl) {
+          //     return null;
+          //   }
+          //   return {
+          //     server: 'Mixdrop',
+          //     url: mixdropSourceUrl.replace('//', 'https://'),
+          //     referer: 'https://mixdrop.co/',
+          //     origin: 'https://mixdrop.co',
+          //     type: 'mp4',
+          //   };
+          // }
           return null;
         })
       );
-      return sourceURLS;
+      return sourceURLS.filter((el) => el);
     } catch (error) {
       return null;
     }
