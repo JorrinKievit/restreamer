@@ -2,7 +2,6 @@ import axios from 'axios';
 import { ipcMain } from 'electron';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
-import { runInContext } from '../utils/vmContext';
 
 ipcMain.handle(
   'vidsrc',
@@ -24,7 +23,7 @@ ipcMain.handle(
 
       const serverlist = await Promise.all(
         hashes.map(async (hash) => {
-          res = await axios.get(`https://v2.vidsrc.me/src/${hash}`, {
+          res = await axios.get(`https://v2.vidsrc.me/srcrcp/${hash}`, {
             headers: {
               referer: 'https://v2.vidsrc.me/',
             },
