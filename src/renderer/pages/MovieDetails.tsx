@@ -8,21 +8,27 @@ import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import TvShowDetails from 'renderer/components/TvShowDetails';
 import { Spinner, useBoolean } from '@chakra-ui/react';
+import { PlayingData } from 'types/localstorage';
+import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 
 const MovieDetails: FC = () => {
+  const { id } = useParams();
+  const query = useQuery();
+  const mediaType = query.get('media_type') as ContentType;
+
+  const [playingData, setPlayingData] = useLocalStorage<PlayingData>(
+    'playingData',
+    {}
+  );
   const [isLoading, setIsLoading] = useBoolean(false);
   const [sources, setSources] = useState<VidSrcResponse>([]);
   const [showDetails, setShowDetails] = useState<{
     season: number;
     episode: number;
   }>({
-    season: 1,
-    episode: 1,
+    season: playingData[id]?.season || 1,
+    episode: playingData[id]?.episode || 1,
   });
-  const { id } = useParams();
-  const query = useQuery();
-
-  const mediaType = query.get('media_type') as ContentType;
 
   useEffect(() => {
     const getSources = async () => {
@@ -37,11 +43,19 @@ const MovieDetails: FC = () => {
     setIsLoading.toggle();
     // eslint-disable-next-line promise/catch-or-return
     getSources().then(() => setIsLoading.toggle());
+
+    setPlayingData({
+      ...playingData,
+      [id]: {
+        season: mediaType === 'tv' ? showDetails.season : undefined,
+        episode: mediaType === 'tv' ? showDetails.episode : undefined,
+        playingTime: playingData[id]?.playingTime,
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, mediaType, showDetails, setIsLoading]);
 
   if (isLoading) return <Spinner />;
-
-  console.log(sources);
 
   return (
     <div>

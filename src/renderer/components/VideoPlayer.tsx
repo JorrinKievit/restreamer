@@ -13,9 +13,10 @@ import { Options } from 'plyr';
 import Hls from 'hls.js';
 import { APITypes, PlyrProps, usePlyr } from 'plyr-react';
 import { LoginResponse } from 'renderer/api/opensubtitles/login.types';
-import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { VidSrcResponse } from 'types/vidsrc';
 import { Box } from '@chakra-ui/react';
+import { PlayingData } from 'types/localstorage';
+import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { InsertSubtitleButton, SubtitleSelector } from './SubtitlesPlayer';
 import SourceSelector from './SourceSelector';
 
@@ -99,13 +100,10 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     'opensubtitles',
     null
   );
-  const [playingData, setPlayingData] = useLocalStorage('playingData', {
-    [tmdbId]: {
-      season,
-      episode,
-      playingTime: 0,
-    },
-  });
+  const [playingData, setPlayingData] = useLocalStorage<PlayingData>(
+    'playingData',
+    {}
+  );
 
   useEffect(() => {
     if (selectedSource.referer || selectedSource.origin) {
@@ -146,11 +144,13 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         });
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [opensubtitlesData?.token, playingData, tmdbId]
   );
 
   useEffect(() => {
     return () => {
+      if (!ref.current?.plyr?.source) return;
       setPlayingData({
         ...playingData,
         [tmdbId]: {
@@ -160,7 +160,8 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         },
       });
     };
-  }, [episode, playingData, season, setPlayingData, tmdbId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [episode, season, tmdbId]);
 
   return (
     <Box gap={4}>

@@ -37,7 +37,7 @@ const TvShowDetails: FC<TvShowDetailsProps> = ({
 
   return (
     <Box py={6}>
-      <Accordion allowMultiple defaultIndex={[activeEpisode.season]}>
+      <Accordion allowMultiple defaultIndex={[activeEpisode.season - 1]}>
         {data?.seasons.map((season) => (
           <AccordionItem key={season.id}>
             <h2>

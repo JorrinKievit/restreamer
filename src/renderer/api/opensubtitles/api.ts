@@ -112,7 +112,7 @@ export const useSearchSubtitles = (
 
       const promises = Array.from({ length: res.data.total_pages }, (_, i) => {
         if (i === 0) return null;
-        if (i % 4 === 0) {
+        if (i % 3 === 0) {
           // avoid rate limit
           // eslint-disable-next-line no-promise-executor-return
           return new Promise((resolve) => setTimeout(resolve, 1000));
