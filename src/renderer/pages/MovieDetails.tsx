@@ -50,7 +50,7 @@ const MovieDetails: FC = () => {
           sources={sources}
           tmdbId={id}
           season={mediaType === 'tv' ? showDetails.season : undefined}
-          number={mediaType === 'tv' ? showDetails.episode : undefined}
+          episode={mediaType === 'tv' ? showDetails.episode : undefined}
           key="video"
         />
       ) : (

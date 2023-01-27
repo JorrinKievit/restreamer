@@ -2,6 +2,7 @@ import {
   FC,
   forwardRef,
   MutableRefObject,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -10,7 +11,7 @@ import { generateProxy } from 'hlsd/proxy';
 import { Options } from 'plyr';
 
 import Hls from 'hls.js';
-import { APITypes, PlyrInstance, PlyrProps, usePlyr } from 'plyr-react';
+import { APITypes, PlyrProps, usePlyr } from 'plyr-react';
 import { LoginResponse } from 'renderer/api/opensubtitles/login.types';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { VidSrcResponse } from 'types/vidsrc';
@@ -22,7 +23,7 @@ interface VideoPlayerProps {
   sources: VidSrcResponse;
   tmdbId: string;
   season?: number;
-  number?: number;
+  episode?: number;
 }
 
 const useHls = (src?: string, options?: Options | null) => {
@@ -38,14 +39,7 @@ const useHls = (src?: string, options?: Options | null) => {
     if (!src) return;
     hls.current.loadSource(src);
     hls.current.attachMedia(document.querySelector('.plyr-react')!);
-    /**
-     * You can all your custom event listener here
-     * For this example we iterate over the qualities and pass them to plyr player
-     * ref.current.plyr.play() ❌
-     * console.log.bind(console, 'MANIFEST_PARSED') ✅
-     * NOTE: you can only start play the audio here
-     * Uncaught (in promise) DOMException: play() failed because the user didn't interact with the document first.
-     */
+
     hls.current.on(Hls.Events.MANIFEST_PARSED, () => {
       if (hasQuality.current) return; // early quit if already set
 
@@ -72,24 +66,16 @@ const useHls = (src?: string, options?: Options | null) => {
 
 const CustomPlyrInstance = forwardRef<
   APITypes,
-  PlyrProps & { hlsSource: string; isLoggedIn: boolean }
+  PlyrProps & {
+    hlsSource: string;
+  }
 >((props, ref) => {
-  const { source, options = null, hlsSource, isLoggedIn } = props;
+  const { source, options = null, hlsSource } = props;
 
   const raptorRef = usePlyr(ref, {
     ...useHls(hlsSource, options),
     source,
   }) as MutableRefObject<HTMLVideoElement>;
-
-  useEffect(() => {
-    const { current } = ref as MutableRefObject<APITypes>;
-    if (current.plyr.source === null) return;
-
-    const api = current as { plyr: PlyrInstance };
-    api.plyr.on('loadeddata', () => {
-      if (isLoggedIn) InsertSubtitleButton();
-    });
-  });
 
   return (
     // eslint-disable-next-line jsx-a11y/media-has-caption
@@ -105,14 +91,21 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   sources,
   tmdbId,
   season,
-  number,
+  episode,
 }) => {
-  const [selectedSource, setSelectedSource] = useState(sources[0]);
   const ref = useRef<APITypes>(null);
+  const [selectedSource, setSelectedSource] = useState(sources[0]);
   const [opensubtitlesData] = useLocalStorage<LoginResponse>(
     'opensubtitles',
     null
   );
+  const [playingData, setPlayingData] = useLocalStorage('playingData', {
+    [tmdbId]: {
+      season,
+      episode,
+      playingTime: 0,
+    },
+  });
 
   useEffect(() => {
     if (selectedSource.referer || selectedSource.origin) {
@@ -141,10 +134,38 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     };
   }, [selectedSource?.extractorData]);
 
+  const onRefChange = useCallback(
+    (newRef: APITypes) => {
+      if (newRef && newRef.plyr.source) {
+        ref.current = newRef;
+        newRef.plyr.on('loadeddata', () => {
+          if (opensubtitlesData?.token) InsertSubtitleButton();
+          if (playingData[tmdbId]) {
+            newRef.plyr.currentTime = playingData[tmdbId].playingTime;
+          }
+        });
+      }
+    },
+    [opensubtitlesData?.token, playingData, tmdbId]
+  );
+
+  useEffect(() => {
+    return () => {
+      setPlayingData({
+        ...playingData,
+        [tmdbId]: {
+          season,
+          episode,
+          playingTime: ref.current.plyr.currentTime,
+        },
+      });
+    };
+  }, [episode, playingData, season, setPlayingData, tmdbId]);
+
   return (
     <Box gap={4}>
       <CustomPlyrInstance
-        ref={ref}
+        ref={onRefChange}
         source={
           selectedSource.type === 'mp4'
             ? {
@@ -171,7 +192,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
           },
           autoplay: true,
         }}
-        isLoggedIn={!!opensubtitlesData?.token}
       />
       <SourceSelector
         sources={sources}
@@ -179,7 +199,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         selectSource={setSelectedSource}
       />
       {opensubtitlesData?.token && (
-        <SubtitleSelector tmbdId={tmdbId} season={season} number={number} />
+        <SubtitleSelector tmbdId={tmdbId} season={season} episode={episode} />
       )}
     </Box>
   );
