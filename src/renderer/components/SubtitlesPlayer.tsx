@@ -26,13 +26,13 @@ import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 interface SubtitleSelectorProps {
   tmbdId: string;
   season?: number;
-  number?: number;
+  episode?: number;
 }
 
 export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   tmbdId,
   season,
-  number,
+  episode,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [language, setLanguage] = useState('');
@@ -44,7 +44,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
     data,
     error: searchError,
     isLoading: searchIsLoading,
-  } = useSearchSubtitles(tmbdId, isOpen, season, number);
+  } = useSearchSubtitles(tmbdId, isOpen, season, episode);
   const {
     mutate,
     error: downloadError,
