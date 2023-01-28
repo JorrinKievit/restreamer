@@ -1,8 +1,20 @@
-import { Heading, Spinner, VStack } from '@chakra-ui/react';
+import {
+  AspectRatio,
+  Flex,
+  Grid,
+  GridItem,
+  Heading,
+  Spinner,
+  Tag,
+  Tooltip,
+  VStack,
+  Image,
+  Text,
+} from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
-import { useDiscoverTMDB } from 'renderer/api/tmdb/api';
-import SearchResults from 'renderer/components/SearchResults';
+import { TMDB_IMAGE_BASE_URL, useDiscoverTMDB } from 'renderer/api/tmdb/api';
 import ShowFilter, { FilterOptions } from 'renderer/components/ShowFilter';
+import { Link } from 'react-router-dom';
 
 const Movies: FC = () => {
   const [options, setOptions] = useState<FilterOptions>({
@@ -31,7 +43,47 @@ const Movies: FC = () => {
         Movies
       </Heading>
       <ShowFilter defaultShowType={options.type} callback={callbackHandler} />
-      <SearchResults data={data} type={options.type} />
+      <Grid
+        templateColumns={{
+          base: 'repeat(2, 1fr)',
+          md: 'repeat(6, 1fr)',
+        }}
+        gap={6}
+      >
+        {data?.results.map((show) => {
+          return (
+            show.poster_path && (
+              <GridItem key={show.id}>
+                <Link to={`/details/${show.id}?media_type=movie`}>
+                  <AspectRatio ratio={2 / 3}>
+                    <Image
+                      src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`}
+                      alt={show.name}
+                    />
+                  </AspectRatio>
+                  <VStack mt={1}>
+                    <Tooltip label={show.title}>
+                      <Text w="full" textAlign="left" noOfLines={1}>
+                        {show.title}
+                      </Text>
+                    </Tooltip>
+                    <Flex w="full">
+                      <Text flex="1">
+                        {new Date(
+                          show.release_date
+                            ? show.release_date
+                            : show.first_air_date
+                        ).getFullYear()}
+                      </Text>
+                      <Tag colorScheme="blue">Movie</Tag>
+                    </Flex>
+                  </VStack>
+                </Link>
+              </GridItem>
+            )
+          );
+        })}
+      </Grid>
     </VStack>
   );
 };
