@@ -90,30 +90,32 @@ export const useDiscoverTMDB = <T extends FilterOptions['type']>(
 };
 
 export const useGetShowsById = (playingData: PlayingData) => {
-  const { data, error, isLoading } = useQuery<MovieOrTvShowDetailsResults>({
-    queryKey: ['get-shows-by-id', playingData],
-    queryFn: async () => {
-      const playingDataWithTypes = Object.entries(playingData).map(
-        ([key, value]) => {
+  const { data, error, isLoading, isInitialLoading } =
+    useQuery<MovieOrTvShowDetailsResults>({
+      queryKey: ['get-shows-by-id', playingData],
+      enabled: playingData !== null,
+      queryFn: async () => {
+        const playingDataWithTypes = Object.entries(playingData).map(
+          ([key, value]) => {
+            return {
+              id: key,
+              showType: value.season ? ('tv' as const) : ('movie' as const),
+            };
+          }
+        );
+        const promises = playingDataWithTypes.map(async (show) => {
+          const res = (await axios.get(
+            `${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${TMDB_API_KEY}`
+          )) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
+
           return {
-            id: key,
-            showType: value.season ? ('tv' as const) : ('movie' as const),
+            ...res.data,
+            media_type: show.showType,
           };
-        }
-      );
-      const promises = playingDataWithTypes.map(async (show) => {
-        const res = (await axios.get(
-          `${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${TMDB_API_KEY}`
-        )) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
+        });
 
-        return {
-          ...res.data,
-          media_type: show.showType,
-        };
-      });
-
-      return Promise.all(promises) as Promise<MovieOrTvShowDetailsResults>;
-    },
-  });
-  return { data, error, isLoading };
+        return Promise.all(promises) as Promise<MovieOrTvShowDetailsResults>;
+      },
+    });
+  return { data, error, isLoading, isInitialLoading };
 };

@@ -45,10 +45,10 @@ ipcMain.handle(
               },
             });
             const m3u8Regex = /((https:|http:)\/\/.*\.m3u8)/g;
-            const srcm3u8 = m3u8Regex.exec(res.data)[0];
+            const srcm3u8 = m3u8Regex.exec(res.data)![0];
             const extractorDataRegex = /['"](.*set_pass[^"']*)/;
             const extractorData = extractorDataRegex
-              .exec(res.data)[1]
+              .exec(res.data)![1]
               .replace('//', 'https://');
             return {
               server: 'pro',

@@ -17,8 +17,9 @@ import { VidSrcResponse } from 'types/vidsrc';
 import { Box } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
-import { InsertSubtitleButton, SubtitleSelector } from './SubtitlesPlayer';
+import { InsertSubtitleButton, SubtitleSelector } from './SubtitleSelector';
 import SourceSelector from './SourceSelector';
+import SyncSubtitlesModal from './SyncSubtitlesModal';
 
 interface VideoPlayerProps {
   sources: VidSrcResponse;
@@ -30,7 +31,9 @@ interface VideoPlayerProps {
 const useHls = (src?: string, options?: Options | null) => {
   const hls = useRef<Hls>(new Hls());
   const hasQuality = useRef<boolean>(false);
-  const [plyrOptions, setPlyrOptions] = useState<Options | null>(options);
+  const [plyrOptions, setPlyrOptions] = useState<Options | null | undefined>(
+    options
+  );
 
   useEffect(() => {
     hasQuality.current = false;
@@ -68,7 +71,7 @@ const useHls = (src?: string, options?: Options | null) => {
 const CustomPlyrInstance = forwardRef<
   APITypes,
   PlyrProps & {
-    hlsSource: string;
+    hlsSource?: string;
   }
 >((props, ref) => {
   const { source, options = null, hlsSource } = props;
@@ -94,9 +97,9 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   season,
   episode,
 }) => {
-  const ref = useRef<APITypes>(null);
+  const ref = useRef<APITypes | null>(null);
   const [selectedSource, setSelectedSource] = useState(sources[0]);
-  const [opensubtitlesData] = useLocalStorage<LoginResponse>(
+  const [opensubtitlesData] = useLocalStorage<LoginResponse | null>(
     'opensubtitles',
     null
   );
@@ -104,6 +107,18 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     'playingData',
     {}
   );
+
+  const setPlayingDataOnUnmount = () => {
+    if (!ref.current?.plyr?.source) return;
+    setPlayingData({
+      ...playingData,
+      [tmdbId]: {
+        season,
+        episode,
+        playingTime: ref.current.plyr.currentTime,
+      },
+    });
+  };
 
   useEffect(() => {
     if (selectedSource.referer || selectedSource.origin) {
@@ -120,11 +135,11 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   }, [selectedSource]);
 
   useEffect(() => {
-    let interval;
-    if (selectedSource?.extractorData) {
-      window.electron.ipcRenderer.validatePass(selectedSource?.extractorData);
+    let interval: NodeJS.Timer;
+    if (selectedSource.extractorData) {
+      window.electron.ipcRenderer.validatePass(selectedSource.extractorData);
       interval = setInterval(() => {
-        window.electron.ipcRenderer.validatePass(selectedSource?.extractorData);
+        window.electron.ipcRenderer.validatePass(selectedSource.extractorData!);
       }, 1000 * 60);
     }
     return () => {
@@ -149,19 +164,31 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   );
 
   useEffect(() => {
+    const keyDown = new KeyboardEvent('keydown', {
+      bubbles: true,
+      key: 'k',
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        document.dispatchEvent(keyDown);
+      }
+    });
+
     return () => {
-      if (!ref.current?.plyr?.source) return;
-      setPlayingData({
-        ...playingData,
-        [tmdbId]: {
-          season,
-          episode,
-          playingTime: ref.current.plyr.currentTime,
-        },
-      });
+      setPlayingDataOnUnmount();
+      document.removeEventListener('keydown', () => {});
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [episode, season, tmdbId]);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', () => setPlayingDataOnUnmount);
+    return () => {
+      window.removeEventListener('beforeunload', () => setPlayingDataOnUnmount);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box gap={4}>
@@ -183,13 +210,17 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         hlsSource={
           selectedSource.type === 'm3u8'
             ? generateProxy(selectedSource.url)
-            : null
+            : undefined
         }
         options={{
           captions: {
             active: true,
             update: true,
             language: 'auto',
+          },
+          keyboard: {
+            focused: true,
+            global: true,
           },
           autoplay: true,
         }}
@@ -200,7 +231,10 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         selectSource={setSelectedSource}
       />
       {opensubtitlesData?.token && (
-        <SubtitleSelector tmbdId={tmdbId} season={season} episode={episode} />
+        <>
+          <SubtitleSelector tmbdId={tmdbId} season={season} episode={episode} />
+          <SyncSubtitlesModal />
+        </>
       )}
     </Box>
   );

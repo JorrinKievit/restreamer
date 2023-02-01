@@ -13,6 +13,7 @@ import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 
 const MovieDetails: FC = () => {
   const { id } = useParams();
+
   const query = useQuery();
   const mediaType = query.get('media_type') as ContentType;
 
@@ -26,14 +27,14 @@ const MovieDetails: FC = () => {
     season: number;
     episode: number;
   }>({
-    season: playingData[id]?.season || 1,
-    episode: playingData[id]?.episode || 1,
+    season: playingData[id!]?.season || 1,
+    episode: playingData[id!]?.episode || 1,
   });
 
   useEffect(() => {
     const getSources = async () => {
       const vidSrcSources = await window.electron.ipcRenderer.getVidSrc(
-        id,
+        id!,
         mediaType,
         mediaType === 'tv' ? showDetails.season : undefined,
         mediaType === 'tv' ? showDetails.episode : undefined
@@ -46,10 +47,10 @@ const MovieDetails: FC = () => {
 
     setPlayingData({
       ...playingData,
-      [id]: {
+      [id!]: {
         season: mediaType === 'tv' ? showDetails.season : undefined,
         episode: mediaType === 'tv' ? showDetails.episode : undefined,
-        playingTime: playingData[id]?.playingTime,
+        playingTime: playingData[id!]?.playingTime,
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,7 +63,7 @@ const MovieDetails: FC = () => {
       {sources && sources[0] ? (
         <VideoPlayer
           sources={sources}
-          tmdbId={id}
+          tmdbId={id!}
           season={mediaType === 'tv' ? showDetails.season : undefined}
           episode={mediaType === 'tv' ? showDetails.episode : undefined}
           key="video"
@@ -72,7 +73,7 @@ const MovieDetails: FC = () => {
       )}
       {mediaType === 'tv' && (
         <TvShowDetails
-          id={id}
+          id={id!}
           showDetails={setShowDetails}
           activeEpisode={showDetails}
         />

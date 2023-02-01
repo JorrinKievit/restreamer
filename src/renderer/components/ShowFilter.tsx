@@ -36,7 +36,7 @@ const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
   const [genres, setGenres] = useState<
     MultiValue<{ label: string; value: number }>
   >([]);
-  const [year, setYear] = useState(undefined);
+  const [year, setYear] = useState('');
   const [type, setType] = useState<ShowType>(defaultShowType);
   const [sortBy, setSortBy] = useState(
     TMBD_SORT_BY.find((sort) => sort.value === 'popularity.desc')
@@ -48,9 +48,9 @@ const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
   const handleSubmit = () => {
     callback({
       genres: genres.map((genre) => genre.value),
-      year,
+      year: Number(year),
       type,
-      sortBy: sortBy.value,
+      sortBy: sortBy?.value ? sortBy.value : 'popularity.desc',
     });
   };
 
@@ -85,7 +85,7 @@ const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
             label: type === 'movie' ? 'Movie' : 'TV Show',
             value: type,
           }}
-          onChange={(value) => setType(value.value as ShowType)}
+          onChange={(value) => setType(value?.value as ShowType)}
         />
       </FormControl>
       <FormControl minW="255px" maxW="255px">
@@ -96,7 +96,12 @@ const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
             value: sort.value,
           }))}
           value={sortBy}
-          onChange={setSortBy}
+          onChange={(e) =>
+            setSortBy({
+              label: e?.label as string,
+              value: e?.value as string,
+            })
+          }
         />
       </FormControl>
       <Box w={40}>
