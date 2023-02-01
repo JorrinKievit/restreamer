@@ -1,13 +1,13 @@
 import { ipcMain } from 'electron';
 import path from 'path';
-import { fork } from 'child_process';
+import { ChildProcess, fork } from 'child_process';
 
 const PROXY_PATH =
   process.env.NODE_ENV === 'production'
     ? path.join(process.resourcesPath, 'proxy/@warren-bank/hls-proxy/proxy.js')
     : path.join(__dirname, '../../../proxy/@warren-bank/hls-proxy/proxy.js');
 
-let proxy = null;
+let proxy: ChildProcess | null = null;
 
 ipcMain.on('start-proxy', (event, referer, origin) => {
   if (proxy) {

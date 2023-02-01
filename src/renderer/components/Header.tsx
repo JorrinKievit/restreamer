@@ -8,13 +8,13 @@ import {
   Input,
   InputGroup,
   InputRightAddon,
-  Link,
 } from '@chakra-ui/react';
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 const Header: FC = () => {
   const [searchInput, setSearchInput] = useState('');
+  const [version, setVersion] = useState<string | undefined>(undefined);
 
   const navigate = useNavigate();
 
@@ -23,12 +23,20 @@ const Header: FC = () => {
     navigate(`/search/${searchInput}`);
   };
 
+  useEffect(() => {
+    const getVersion = async () => {
+      const v = await window.electron.ipcRenderer.getVersion();
+      setVersion(v);
+    };
+    getVersion();
+  }, []);
+
   return (
     <chakra.header py={4} borderBottom="1px" borderBottomColor="gray.600">
       <Flex alignItems="center" justifyContent="space-between" mx="auto">
         <Flex>
           <Button variant="ghost">
-            <NavLink to="/">Restreamer</NavLink>
+            <NavLink to="/">Restreamer v{version}</NavLink>
           </Button>
         </Flex>
         <HStack display="flex" alignItems="center" spacing={4}>

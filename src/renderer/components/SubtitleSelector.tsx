@@ -21,6 +21,7 @@ import {
 import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
 import { OpenSubtitlesUser } from 'renderer/api/opensubtitles/user-information.types';
 import SubtitlesButton from 'renderer/assets/subtitle-button.png';
+import SyncSubtitlesButton from 'renderer/assets/sync-subtitles-button.png';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 
 interface SubtitleSelectorProps {
@@ -38,7 +39,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   const [language, setLanguage] = useState('');
   const [fileId, setFileId] = useState('');
   const [opensubtitlesData, setOpensubtitlesData] =
-    useLocalStorage<OpenSubtitlesUser>('opensubtitles', null);
+    useLocalStorage<OpenSubtitlesUser | null>('opensubtitles', null);
 
   const {
     data,
@@ -52,11 +53,11 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   } = useDownloadSubtitle();
 
   useEffect(() => {
-    document.addEventListener('open-modal', () => {
+    document.addEventListener('open-subtitles-modal', () => {
       if (!isOpen) onOpen();
     });
     return () => {
-      document.removeEventListener('open-modal', () => {
+      document.removeEventListener('open-subtitles-modal', () => {
         if (isOpen) onClose();
       });
     };
@@ -83,17 +84,17 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
             kind: 'subtitles',
             label: OPENSUBTITLES_LANGUAGES.find(
               (l) => l.language_code === language
-            ).language_name,
+            )?.language_name,
             srclang: language,
             default: true,
             src: res.link,
           });
-          video.appendChild(track);
+          video?.appendChild(track);
 
           setOpensubtitlesData({
-            ...opensubtitlesData,
+            ...opensubtitlesData!,
             user: {
-              ...opensubtitlesData.user,
+              ...opensubtitlesData?.user!,
               remaining_downloads: res.remaining,
             },
           });
@@ -134,7 +135,9 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
                       )
                   ),
                 ]
-                  .sort((a, b) => (a.language_name > b.language_name ? 1 : -1))
+                  .sort((a, b) =>
+                    a!.language_name > b!.language_name ? 1 : -1
+                  )
                   .map((lang) => (
                     <option
                       key={lang?.language_code}
@@ -197,21 +200,47 @@ export const InsertSubtitleButton = () => {
   const captionsButton = document.querySelector('[data-plyr="captions"]');
   if (!captionsButton) return;
   if (document.querySelector('[data-plyr="subtitles"]')) return;
-  const button = document.createElement('a');
-  button.className =
-    'plyr__controls__item plyr__control plyr__control--pressed subtitles_button';
-  button.style.height = '32px';
-  button.style.display = 'inline-block';
-  button.setAttribute('data-plyr', 'subtitles');
-  button.onclick = () => {
-    const event = new CustomEvent('open-modal');
+  if (document.querySelector('[data-plyr="sync-subtitles"]')) return;
+
+  const subtitlesButton = document.createElement('a');
+  subtitlesButton.className =
+    'plyr__controls__item plyr__control plyr__control--pressed subtitles__button';
+  subtitlesButton.style.height = '32px';
+  subtitlesButton.style.display = 'inline-block';
+  subtitlesButton.setAttribute('data-plyr', 'subtitles');
+  subtitlesButton.onclick = () => {
+    const event = new CustomEvent('open-subtitles-modal');
     document.dispatchEvent(event);
   };
-  const image = document.createElement('img');
-  image.src = SubtitlesButton;
-  image.alt = 'Subtitles';
-  image.style.width = '100%';
-  image.style.height = '100%';
-  button.appendChild(image);
-  captionsButton.parentNode.insertBefore(button, captionsButton.nextSibling);
+  const subtitlesImage = document.createElement('img');
+  subtitlesImage.src = SubtitlesButton;
+  subtitlesImage.alt = 'Subtitles';
+  subtitlesImage.style.width = '100%';
+  subtitlesImage.style.height = '100%';
+  subtitlesButton.appendChild(subtitlesImage);
+  captionsButton.parentNode!.insertBefore(
+    subtitlesButton,
+    captionsButton.nextSibling
+  );
+
+  const syncSubtitlesButton = document.createElement('a');
+  syncSubtitlesButton.className =
+    'plyr__controls__item plyr__control plyr__control--pressed sync__subtitles__button';
+  syncSubtitlesButton.style.height = '32px';
+  syncSubtitlesButton.style.display = 'inline-block';
+  syncSubtitlesButton.setAttribute('data-plyr', 'subtitles');
+  syncSubtitlesButton.onclick = () => {
+    const event = new CustomEvent('open-sync-subtitles-modal');
+    document.dispatchEvent(event);
+  };
+  const syncSubtitlesImage = document.createElement('img');
+  syncSubtitlesImage.src = SyncSubtitlesButton;
+  syncSubtitlesImage.alt = 'Sync Subtitles';
+  syncSubtitlesImage.style.width = '100%';
+  syncSubtitlesImage.style.height = '100%';
+  syncSubtitlesButton.appendChild(syncSubtitlesImage);
+  captionsButton.parentNode!.insertBefore(
+    syncSubtitlesButton,
+    subtitlesButton.nextSibling
+  );
 };

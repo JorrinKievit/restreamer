@@ -7,7 +7,8 @@ export type Channels =
   | 'validate-vidsrc'
   | 'start-proxy'
   | 'stop-proxy'
-  | 'proxy-started';
+  | 'proxy-started'
+  | 'app-close';
 
 const electronHandler = {
   ipcRenderer: {
@@ -25,12 +26,16 @@ const electronHandler = {
     validatePass(url: string) {
       return ipcRenderer.invoke('validate-vidsrc', url);
     },
-    startProxy(referer: string, origin: string) {
+    startProxy(referer?: string, origin?: string) {
       ipcRenderer.send('start-proxy', referer, origin);
     },
     stopProxy() {
       ipcRenderer.send('stop-proxy');
     },
+    getVersion() {
+      return ipcRenderer.invoke('get-version');
+    },
+
     on(channel: Channels, func: (...args: unknown[]) => void) {
       const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
         func(...args);
