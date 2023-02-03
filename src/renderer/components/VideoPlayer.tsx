@@ -195,13 +195,13 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('beforeunload', () => setPlayingDataOnUnmount);
+    window.addEventListener('beforeunload', setPlayingDataOnUnmount);
 
     // eslint-disable-next-line consistent-return
     return () => {
       setPlayingDataOnUnmount();
       document.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('beforeunload', () => setPlayingDataOnUnmount);
+      window.removeEventListener('beforeunload', setPlayingDataOnUnmount);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
