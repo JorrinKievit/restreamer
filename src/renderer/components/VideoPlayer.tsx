@@ -24,6 +24,7 @@ import SyncSubtitlesModal from './SyncSubtitlesModal';
 interface VideoPlayerProps {
   sources: VidSrcResponse;
   tmdbId: string;
+  isLastEpisode: boolean;
   season?: number;
   episode?: number;
 }
@@ -87,6 +88,7 @@ const CustomPlyrInstance = forwardRef<
       ref={raptorRef}
       className="plyr-react plyr"
       crossOrigin="anonymous"
+      tabIndex={-1}
     />
   );
 });
@@ -96,6 +98,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   tmdbId,
   season,
   episode,
+  isLastEpisode,
 }) => {
   const ref = useRef<APITypes | null>(null);
   const [selectedSource, setSelectedSource] = useState(sources[0]);
@@ -110,14 +113,38 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 
   const setPlayingDataOnUnmount = () => {
     if (!ref.current?.plyr?.source) return;
-    setPlayingData({
-      ...playingData,
-      [tmdbId]: {
-        season,
-        episode,
-        playingTime: ref.current.plyr.currentTime,
-      },
-    });
+
+    const data = playingData;
+    const progress = Math.floor(
+      (ref.current.plyr.currentTime / ref.current.plyr.duration) * 100
+    );
+
+    let newPlayingData = {};
+
+    if (!playingData[tmdbId] || progress <= 95) {
+      newPlayingData = {
+        ...playingData,
+        [tmdbId]: {
+          season,
+          episode,
+          playingTime: ref.current.plyr.currentTime,
+        },
+      };
+    } else if ((!season && !episode) || (season && episode && isLastEpisode)) {
+      delete data[tmdbId];
+      newPlayingData = data;
+    } else {
+      newPlayingData = {
+        ...data,
+        [tmdbId]: {
+          season,
+          episode,
+          playingTime: ref.current.plyr.currentTime,
+        },
+      };
+    }
+
+    setPlayingData(newPlayingData);
   };
 
   useEffect(() => {
@@ -147,6 +174,38 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     };
   }, [selectedSource?.extractorData]);
 
+  useEffect(() => {
+    if (ref.current?.plyr?.source) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && e.key === ' ') {
+        if (
+          ref.current?.plyr.elements.container?.contains(
+            e.target as unknown as Node
+          )
+        ) {
+          e.preventDefault();
+          if (ref.current.plyr.playing) {
+            ref.current.plyr.pause();
+          } else {
+            ref.current.plyr.play();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('beforeunload', () => setPlayingDataOnUnmount);
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      setPlayingDataOnUnmount();
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeunload', () => setPlayingDataOnUnmount);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onRefChange = useCallback(
     (newRef: APITypes) => {
       if (newRef && newRef.plyr.source) {
@@ -156,39 +215,13 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
           if (playingData[tmdbId]) {
             newRef.plyr.currentTime = playingData[tmdbId].playingTime;
           }
+          newRef.plyr.elements.container?.focus();
         });
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [opensubtitlesData?.token, playingData, tmdbId]
   );
-
-  useEffect(() => {
-    const keyDown = new KeyboardEvent('keydown', {
-      bubbles: true,
-      key: 'k',
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        document.dispatchEvent(keyDown);
-      }
-    });
-
-    return () => {
-      setPlayingDataOnUnmount();
-      document.removeEventListener('keydown', () => {});
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('beforeunload', () => setPlayingDataOnUnmount);
-    return () => {
-      window.removeEventListener('beforeunload', () => setPlayingDataOnUnmount);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <Box gap={4}>
