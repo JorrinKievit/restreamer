@@ -2,6 +2,7 @@ import axios from 'axios';
 import { ipcMain } from 'electron';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
+import { runInContext } from '../utils/vmContext';
 
 ipcMain.handle(
   'vidsrc',

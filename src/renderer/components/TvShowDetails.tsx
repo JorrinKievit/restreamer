@@ -8,10 +8,10 @@ import {
   Grid,
 } from '@chakra-ui/react';
 import React, { Dispatch, FC, SetStateAction } from 'react';
-import { useTvShowDetails } from 'renderer/api/tmdb/api';
+import { TvShowDetailsResults } from 'renderer/api/tmdb/tvshow-details.types';
 
 interface TvShowDetailsProps {
-  id: string;
+  showData: TvShowDetailsResults;
   activeEpisode: {
     season: number;
     episode: number;
@@ -25,20 +25,14 @@ interface TvShowDetailsProps {
 }
 
 const TvShowDetails: FC<TvShowDetailsProps> = ({
-  id,
+  showData,
   activeEpisode,
   showDetails,
 }) => {
-  const { data, isLoading, error } = useTvShowDetails(id);
-
-  if (isLoading) return <div>Loading...</div>;
-
-  if (error) return <div>{error.toString()}</div>;
-
   return (
     <Box py={6}>
       <Accordion allowMultiple defaultIndex={[activeEpisode.season - 1]}>
-        {data?.seasons.map((season) => (
+        {showData?.seasons.map((season) => (
           <AccordionItem key={season.id}>
             <h2>
               <AccordionButton>

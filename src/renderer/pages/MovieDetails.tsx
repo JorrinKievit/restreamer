@@ -10,6 +10,7 @@ import TvShowDetails from 'renderer/components/TvShowDetails';
 import { Spinner, useBoolean } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
+import { useTvShowDetails } from 'renderer/api/tmdb/api';
 
 const MovieDetails: FC = () => {
   const { id } = useParams();
@@ -17,11 +18,14 @@ const MovieDetails: FC = () => {
   const query = useQuery();
   const mediaType = query.get('media_type') as ContentType;
 
+  const { data, isLoading, error } = useTvShowDetails(id);
+
   const [playingData, setPlayingData] = useLocalStorage<PlayingData>(
     'playingData',
     {}
   );
-  const [isLoading, setIsLoading] = useBoolean(false);
+
+  const [sourcesLoading, setSourcesLoading] = useBoolean(false);
   const [sources, setSources] = useState<VidSrcResponse>([]);
   const [showDetails, setShowDetails] = useState<{
     season: number;
@@ -41,9 +45,9 @@ const MovieDetails: FC = () => {
       );
       setSources(vidSrcSources);
     };
-    setIsLoading.toggle();
+    setSourcesLoading.toggle();
     // eslint-disable-next-line promise/catch-or-return
-    getSources().then(() => setIsLoading.toggle());
+    getSources().then(() => setSourcesLoading.toggle());
 
     setPlayingData({
       ...playingData,
@@ -54,9 +58,11 @@ const MovieDetails: FC = () => {
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, mediaType, showDetails, setIsLoading]);
+  }, [id, mediaType, showDetails, setSourcesLoading]);
 
-  if (isLoading) return <Spinner />;
+  if (isLoading || sourcesLoading) return <Spinner />;
+
+  console.log(data);
 
   return (
     <div>
@@ -67,13 +73,18 @@ const MovieDetails: FC = () => {
           season={mediaType === 'tv' ? showDetails.season : undefined}
           episode={mediaType === 'tv' ? showDetails.episode : undefined}
           key="video"
+          isLastEpisode={
+            data?.seasons.find(
+              (s) => s.season_number === data.number_of_seasons
+            )?.episode_count === showDetails.episode
+          }
         />
       ) : (
         <div>No sources found</div>
       )}
-      {mediaType === 'tv' && (
+      {mediaType === 'tv' && data && (
         <TvShowDetails
-          id={id!}
+          showData={data}
           showDetails={setShowDetails}
           activeEpisode={showDetails}
         />
