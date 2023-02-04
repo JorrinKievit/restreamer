@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { useQuery } from '@tanstack/react-query';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { FilterOptions } from 'renderer/components/ShowFilter';
 import { PlayingData } from 'types/localstorage';
 import { MovieDetailsResults } from './movie-details.types';
@@ -8,6 +8,7 @@ import { DiscoverMovieResults, DiscoverTvShowsResults } from './discover.types';
 import { SearchResponse } from './search.types';
 import { TvShowDetailsResults } from './tvshow-details.types';
 import { MovieOrTvShowDetailsResults } from './details.types';
+import { TmdbApiError } from './api.error';
 
 export const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const TMBD_API_ENDPOINT = 'https://api.themoviedb.org/3';
@@ -25,7 +26,10 @@ export const usePopularMovies = () => {
 };
 
 export const useMovieDetails = (movieId: string | undefined) => {
-  const { data, error, isLoading } = useQuery<MovieDetailsResults>({
+  const { data, error, isLoading } = useQuery<
+    MovieDetailsResults,
+    AxiosError<TmdbApiError>
+  >({
     queryKey: ['movie', movieId],
     queryFn: () =>
       axios
@@ -38,7 +42,10 @@ export const useMovieDetails = (movieId: string | undefined) => {
 };
 
 export const useSearchMoviesAndShows = (query: string | undefined) => {
-  const { data, error, isLoading } = useQuery<SearchResponse>({
+  const { data, error, isLoading } = useQuery<
+    SearchResponse,
+    AxiosError<TmdbApiError>
+  >({
     queryKey: ['search', query],
     queryFn: () =>
       axios
@@ -53,7 +60,10 @@ export const useSearchMoviesAndShows = (query: string | undefined) => {
 };
 
 export const useTvShowDetails = (tvShowId: string | undefined) => {
-  const { data, error, isLoading } = useQuery<TvShowDetailsResults>({
+  const { data, error, isLoading } = useQuery<
+    TvShowDetailsResults,
+    AxiosError<TmdbApiError>
+  >({
     queryKey: ['tv-show', tvShowId],
     queryFn: () =>
       axios
@@ -70,7 +80,8 @@ export const useDiscoverTMDB = <T extends FilterOptions['type']>(
   type: T
 ) => {
   const { data, error, isLoading } = useQuery<
-    T extends 'movie' ? DiscoverMovieResults : DiscoverTvShowsResults
+    T extends 'movie' ? DiscoverMovieResults : DiscoverTvShowsResults,
+    AxiosError<TmdbApiError>
   >({
     queryKey: ['discover', options, type],
     queryFn: () =>
@@ -90,32 +101,34 @@ export const useDiscoverTMDB = <T extends FilterOptions['type']>(
 };
 
 export const useGetShowsById = (playingData: PlayingData) => {
-  const { data, error, isLoading, isInitialLoading } =
-    useQuery<MovieOrTvShowDetailsResults>({
-      queryKey: ['get-shows-by-id', playingData],
-      enabled: playingData !== null,
-      queryFn: async () => {
-        const playingDataWithTypes = Object.entries(playingData).map(
-          ([key, value]) => {
-            return {
-              id: key,
-              showType: value.season ? ('tv' as const) : ('movie' as const),
-            };
-          }
-        );
-        const promises = playingDataWithTypes.map(async (show) => {
-          const res = (await axios.get(
-            `${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${TMDB_API_KEY}`
-          )) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
-
+  const { data, error, isLoading, isInitialLoading } = useQuery<
+    MovieOrTvShowDetailsResults,
+    AxiosError<TmdbApiError>
+  >({
+    queryKey: ['get-shows-by-id', playingData],
+    enabled: playingData !== null,
+    queryFn: async () => {
+      const playingDataWithTypes = Object.entries(playingData).map(
+        ([key, value]) => {
           return {
-            ...res.data,
-            media_type: show.showType,
+            id: key,
+            showType: value.season ? ('tv' as const) : ('movie' as const),
           };
-        });
+        }
+      );
+      const promises = playingDataWithTypes.map(async (show) => {
+        const res = (await axios.get(
+          `${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${TMDB_API_KEY}`
+        )) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
 
-        return Promise.all(promises) as Promise<MovieOrTvShowDetailsResults>;
-      },
-    });
+        return {
+          ...res.data,
+          media_type: show.showType,
+        };
+      });
+
+      return Promise.all(promises) as Promise<MovieOrTvShowDetailsResults>;
+    },
+  });
   return { data, error, isLoading, isInitialLoading };
 };

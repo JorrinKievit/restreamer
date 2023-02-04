@@ -15,6 +15,7 @@ import React, { FC, useState } from 'react';
 import { TMDB_IMAGE_BASE_URL, useDiscoverTMDB } from 'renderer/api/tmdb/api';
 import ShowFilter, { FilterOptions } from 'renderer/components/ShowFilter';
 import { Link } from 'react-router-dom';
+import ErrorToast from 'renderer/components/ErrorToast';
 
 const Movies: FC = () => {
   const [options, setOptions] = useState<FilterOptions>({
@@ -35,7 +36,8 @@ const Movies: FC = () => {
   };
 
   if (isLoading) return <Spinner />;
-  if (error) return <div>{error.toString()}</div>;
+  if (error)
+    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <VStack gap={4}>

@@ -11,6 +11,7 @@ import { Spinner, useBoolean } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { useTvShowDetails } from 'renderer/api/tmdb/api';
+import ErrorToast from 'renderer/components/ErrorToast';
 
 const MovieDetails: FC = () => {
   const { id } = useParams();
@@ -19,12 +20,10 @@ const MovieDetails: FC = () => {
   const mediaType = query.get('media_type') as ContentType;
 
   const { data, isLoading, error } = useTvShowDetails(id);
-
   const [playingData, setPlayingData] = useLocalStorage<PlayingData>(
     'playingData',
     {}
   );
-
   const [sourcesLoading, setSourcesLoading] = useBoolean(false);
   const [sources, setSources] = useState<VidSrcResponse>([]);
   const [showDetails, setShowDetails] = useState<{
@@ -49,20 +48,23 @@ const MovieDetails: FC = () => {
     // eslint-disable-next-line promise/catch-or-return
     getSources().then(() => setSourcesLoading.toggle());
 
-    setPlayingData({
-      ...playingData,
-      [id!]: {
-        season: mediaType === 'tv' ? showDetails.season : undefined,
-        episode: mediaType === 'tv' ? showDetails.episode : undefined,
-        playingTime: playingData[id!]?.playingTime,
-      },
-    });
+    if (sources && sources[0]) {
+      setPlayingData({
+        ...playingData,
+        [id!]: {
+          season: mediaType === 'tv' ? showDetails.season : undefined,
+          episode: mediaType === 'tv' ? showDetails.episode : undefined,
+          playingTime: playingData[id!]?.playingTime,
+        },
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, mediaType, showDetails, setSourcesLoading]);
 
   if (isLoading || sourcesLoading) return <Spinner />;
 
-  console.log(data);
+  if (error)
+    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <div>

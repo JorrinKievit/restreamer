@@ -22,7 +22,7 @@ type ShowType = 'movie' | 'tv';
 
 export type FilterOptions = {
   genres: number[];
-  year: number;
+  year?: number;
   type: ShowType;
   sortBy: string;
 };

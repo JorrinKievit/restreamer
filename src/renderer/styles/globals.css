@@ -4,6 +4,14 @@
 
 @import '~plyr/dist/plyr.css';
 
+.plyr__captions {
+  font-size: 1.8rem;
+}
+
+.plyr:fullscreen .plyr__captions {
+  font-size: 1.8rem;
+}
+
 html,
 body {
   padding: 0;

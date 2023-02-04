@@ -18,13 +18,18 @@ import { useReadLocalStorage } from 'usehooks-ts';
 import { PlayingData } from 'types/localstorage';
 import { TMDB_IMAGE_BASE_URL, useGetShowsById } from 'renderer/api/tmdb/api';
 import { Link } from 'react-router-dom';
+import ErrorToast from 'renderer/components/ErrorToast';
 
 const Index: FC = () => {
   const playingData = useReadLocalStorage<PlayingData>('playingData');
-
   const { data, error, isLoading, isInitialLoading } = useGetShowsById(
     playingData as PlayingData
   );
+
+  if (isLoading) return <Spinner />;
+
+  if (error)
+    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <VStack>
@@ -33,13 +38,13 @@ const Index: FC = () => {
           Continue watching
         </Heading>
         {isInitialLoading && <Spinner />}
-        {error && <div>{error.toString()}</div>}
         <Grid
           templateColumns={{
             base: 'repeat(2, 1fr)',
             md: 'repeat(6, 1fr)',
           }}
           gap={6}
+          w="full"
         >
           {data
             ? data.map((show) => {

@@ -16,15 +16,16 @@ import {
   Image,
   Text,
 } from '@chakra-ui/react';
+import ErrorToast from 'renderer/components/ErrorToast';
 
 const SearchResultsPage: FC = () => {
   const { query } = useParams();
-
   const { data, error, isLoading } = useSearchMoviesAndShows(query);
 
   if (isLoading) return <Spinner />;
 
-  if (error) return <div>{error.toString()}</div>;
+  if (error)
+    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <Grid

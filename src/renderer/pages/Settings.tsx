@@ -73,7 +73,7 @@ const Settings: FC = () => {
   };
 
   const handleLogout = async () => {
-    mutateLogout(null, {
+    mutateLogout(undefined, {
       onSuccess: () => {
         setOpensubtitlesData(initialOpenSubtitlesData);
       },
@@ -105,8 +105,8 @@ const Settings: FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </FormControl>
-              {errorLogout && (
-                <Text color="tomato">{errorLogin.response.data.message}</Text>
+              {errorLogin && (
+                <Text color="tomato">{errorLogin.response?.data.message}</Text>
               )}
             </VStack>
           </CardBody>
