@@ -1,12 +1,12 @@
 import { CheckIcon, StarIcon } from '@chakra-ui/icons';
 import { Box, Button, Flex, Text } from '@chakra-ui/react';
 import React, { FC } from 'react';
-import { VidSrcResponse } from 'types/vidsrc';
+import { Source, Sources } from 'types/sources';
 
 interface SourceSelectorProps {
-  sources: VidSrcResponse;
-  activeSource: VidSrcResponse[number];
-  selectSource: (source: VidSrcResponse[number]) => void;
+  sources: Sources;
+  activeSource: Source;
+  selectSource: (source: Source) => void;
 }
 
 const SourceSelector: FC<SourceSelectorProps> = ({
@@ -14,7 +14,6 @@ const SourceSelector: FC<SourceSelectorProps> = ({
   activeSource,
   selectSource,
 }) => {
-  console.log(sources);
   return (
     <Flex align="center" justify="center" w="full" gap={4} mt={4}>
       {sources.map((source) => (
