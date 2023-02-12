@@ -13,20 +13,22 @@ import {
   Image,
   Text,
   Progress,
+  Skeleton,
 } from '@chakra-ui/react';
 import { useReadLocalStorage } from 'usehooks-ts';
 import { PlayingData } from 'types/localstorage';
 import { TMDB_IMAGE_BASE_URL, useGetShowsById } from 'renderer/api/tmdb/api';
 import { Link } from 'react-router-dom';
 import ErrorToast from 'renderer/components/ErrorToast';
+import SkeletonGrid from 'renderer/components/SkeletonGrid';
 
 const Index: FC = () => {
   const playingData = useReadLocalStorage<PlayingData>('playingData');
-  const { data, error, isLoading, isInitialLoading } = useGetShowsById(
+  const { data, error, isInitialLoading } = useGetShowsById(
     playingData as PlayingData
   );
 
-  if (isLoading) return <Spinner />;
+  if (isInitialLoading) return <SkeletonGrid />;
 
   if (error)
     return <ErrorToast description={error.response?.data.status_message} />;
@@ -37,7 +39,7 @@ const Index: FC = () => {
         <Heading w="full" textAlign="left">
           Continue watching
         </Heading>
-        {isInitialLoading && <Spinner />}
+
         <Grid
           templateColumns={{
             base: 'repeat(2, 1fr)',

@@ -77,6 +77,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+  mainWindow.webContents.setUserAgent(app.userAgentFallback);
   mainWindow.removeMenu();
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

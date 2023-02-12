@@ -69,9 +69,9 @@ const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
         />
       </FormControl>
       <FormControl minW="150px" maxW="150px">
-        <FormLabel>Year (empty is all)</FormLabel>
+        <FormLabel>Year</FormLabel>
         <NumberInput min={1900} max={2100} value={year} onChange={setYear}>
-          <NumberInputField />
+          <NumberInputField placeholder="all" />
         </NumberInput>
       </FormControl>
       <FormControl minW="150px" maxW="150px">

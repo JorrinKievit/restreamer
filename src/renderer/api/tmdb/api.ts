@@ -60,7 +60,7 @@ export const useSearchMoviesAndShows = (query: string | undefined) => {
 };
 
 export const useTvShowDetails = (tvShowId: string | undefined) => {
-  const { data, error, isLoading } = useQuery<
+  const { data, error, isInitialLoading } = useQuery<
     TvShowDetailsResults,
     AxiosError<TmdbApiError>
   >({
@@ -72,7 +72,7 @@ export const useTvShowDetails = (tvShowId: string | undefined) => {
     enabled: !!tvShowId,
   });
 
-  return { data, error, isLoading };
+  return { data, error, isInitialLoading };
 };
 
 export const useDiscoverTMDB = <T extends FilterOptions['type']>(

@@ -8,66 +8,27 @@ import {
   useState,
 } from 'react';
 import { generateProxy } from 'hlsd/proxy';
-import { Options } from 'plyr';
 
-import Hls from 'hls.js';
 import { APITypes, PlyrProps, usePlyr } from 'plyr-react';
 import { LoginResponse } from 'renderer/api/opensubtitles/login.types';
-import { VidSrcResponse } from 'types/vidsrc';
+import { Source } from 'types/sources';
 import { Box } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
+import { useHls } from 'renderer/hooks/useHls';
+import { SourceInfo } from 'plyr';
+import { randomString } from 'renderer/utils/string';
+import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
 import { InsertSubtitleButton, SubtitleSelector } from './SubtitleSelector';
-import SourceSelector from './SourceSelector';
 import SyncSubtitlesModal from './SyncSubtitlesModal';
 
 interface VideoPlayerProps {
-  sources: VidSrcResponse;
+  selectedSource: Source;
   tmdbId: string;
   isLastEpisode: boolean;
   season?: number;
   episode?: number;
 }
-
-const useHls = (src?: string, options?: Options | null) => {
-  const hls = useRef<Hls>(new Hls());
-  const hasQuality = useRef<boolean>(false);
-  const [plyrOptions, setPlyrOptions] = useState<Options | null | undefined>(
-    options
-  );
-
-  useEffect(() => {
-    hasQuality.current = false;
-  }, [options]);
-
-  useEffect(() => {
-    if (!src) return;
-    hls.current.loadSource(src);
-    hls.current.attachMedia(document.querySelector('.plyr-react')!);
-
-    hls.current.on(Hls.Events.MANIFEST_PARSED, () => {
-      if (hasQuality.current) return; // early quit if already set
-
-      const { levels } = hls.current;
-      const quality: Options['quality'] = {
-        default: levels[levels.length - 1].height,
-        options: levels.map((level) => level.height),
-        forced: true,
-        onChange: (newQuality: number) => {
-          levels.forEach((level, levelIndex) => {
-            if (level.height === newQuality) {
-              hls.current.currentLevel = levelIndex;
-            }
-          });
-        },
-      };
-      setPlyrOptions({ ...plyrOptions, quality });
-      hasQuality.current = true;
-    });
-  });
-
-  return { options: plyrOptions };
-};
 
 const CustomPlyrInstance = forwardRef<
   APITypes,
@@ -75,7 +36,20 @@ const CustomPlyrInstance = forwardRef<
     hlsSource?: string;
   }
 >((props, ref) => {
-  const { source, options = null, hlsSource } = props;
+  const { options = null } = props;
+
+  const [source, setSource] = useState<SourceInfo | null>(props.source);
+  const [hlsSource, setHlsSource] = useState<string | undefined>(
+    props.hlsSource
+  );
+
+  useEffect(() => {
+    setSource(props.source);
+  }, [props.source]);
+
+  useEffect(() => {
+    setHlsSource(props.hlsSource);
+  }, [props.hlsSource]);
 
   const raptorRef = usePlyr(ref, {
     ...useHls(hlsSource, options),
@@ -94,14 +68,13 @@ const CustomPlyrInstance = forwardRef<
 });
 
 const VideoPlayer: FC<VideoPlayerProps> = ({
-  sources,
+  selectedSource,
   tmdbId,
   season,
   episode,
   isLastEpisode,
 }) => {
   const ref = useRef<APITypes | null>(null);
-  const [selectedSource, setSelectedSource] = useState(sources[0]);
   const [opensubtitlesData] = useLocalStorage<LoginResponse | null>(
     'opensubtitles',
     null
@@ -110,14 +83,14 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     'playingData',
     {}
   );
+  const currentTime = useRef(0);
+  const duration = useRef(0);
 
   const setPlayingDataOnUnmount = () => {
-    if (!ref.current?.plyr?.source) return;
+    if (!ref.current?.plyr && !ref.current?.plyr.source) return;
 
     const data = playingData;
-    const progress = Math.floor(
-      (ref.current.plyr.currentTime / ref.current.plyr.duration) * 100
-    );
+    const progress = Math.floor((currentTime.current / duration.current) * 100);
 
     let newPlayingData = {};
 
@@ -127,7 +100,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         [tmdbId]: {
           season,
           episode,
-          playingTime: ref.current.plyr.currentTime,
+          playingTime: currentTime.current,
         },
       };
     } else if ((!season && !episode) || (season && episode && isLastEpisode)) {
@@ -139,7 +112,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         [tmdbId]: {
           season,
           episode,
-          playingTime: ref.current.plyr.currentTime,
+          playingTime: currentTime.current,
         },
       };
     }
@@ -148,7 +121,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   };
 
   useEffect(() => {
-    if (selectedSource.referer || selectedSource.origin) {
+    if (selectedSource.requiresProxy) {
       window.electron.ipcRenderer.startProxy(
         selectedSource.referer,
         selectedSource.origin
@@ -163,7 +136,10 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 
   useEffect(() => {
     let interval: NodeJS.Timer;
-    if (selectedSource.extractorData) {
+    if (
+      selectedSource.extractorData &&
+      selectedSource.server === 'VidSrc Pro'
+    ) {
       window.electron.ipcRenderer.validatePass(selectedSource.extractorData);
       interval = setInterval(() => {
         window.electron.ipcRenderer.validatePass(selectedSource.extractorData!);
@@ -172,7 +148,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     return () => {
       clearInterval(interval);
     };
-  }, [selectedSource?.extractorData]);
+  }, [selectedSource?.extractorData, selectedSource?.server]);
 
   useEffect(() => {
     if (ref.current?.plyr?.source) return;
@@ -206,63 +182,92 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!ref.current?.plyr?.source) return;
+
+    setPlayingDataOnUnmount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSource]);
+
   const onRefChange = useCallback(
     (newRef: APITypes) => {
-      if (newRef && newRef.plyr.source) {
+      if (newRef && newRef?.plyr?.source) {
         ref.current = newRef;
-        newRef.plyr.on('loadeddata', () => {
-          if (opensubtitlesData?.token) InsertSubtitleButton();
+        ref.current.plyr.on('loadeddata', () => {
+          if (opensubtitlesData?.token) InsertSubtitleButton(ref.current!);
           if (playingData[tmdbId]) {
-            newRef.plyr.currentTime = playingData[tmdbId].playingTime;
+            if (currentTime.current !== 0) {
+              ref.current!.plyr.currentTime = currentTime.current;
+            } else {
+              ref.current!.plyr.currentTime = playingData[tmdbId].playingTime;
+            }
           }
-          newRef.plyr.elements.container?.focus();
+          if (selectedSource.subtitles) {
+            const video = document.querySelector('video');
+            selectedSource.subtitles.forEach((subtitle) => {
+              const track = document.createElement('track');
+              Object.assign(track, {
+                kind: 'captions',
+                label: subtitle.label,
+                srclang:
+                  OPENSUBTITLES_LANGUAGES.find(
+                    (l) => l.language_name === subtitle.label
+                  )?.language_code || randomString(2),
+                default: subtitle.label === 'English',
+                src: subtitle.file,
+              });
+              video?.appendChild(track);
+            });
+          }
+          ref.current!.plyr.elements?.container?.focus();
         });
+        ref.current.plyr.on('timeupdate', () => {
+          currentTime.current = ref.current!.plyr.currentTime;
+        });
+        duration.current = ref.current.plyr.duration;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [opensubtitlesData?.token, playingData, tmdbId]
+    [opensubtitlesData?.token, playingData, tmdbId, selectedSource]
   );
 
   return (
     <Box gap={4}>
-      <CustomPlyrInstance
-        ref={onRefChange}
-        source={
-          selectedSource.type === 'mp4'
-            ? {
-                type: 'video',
-                sources: [
-                  {
-                    src: selectedSource.url,
-                    type: 'video/mp4',
-                  },
-                ],
-              }
-            : null
-        }
-        hlsSource={
-          selectedSource.type === 'm3u8'
-            ? generateProxy(selectedSource.url)
-            : undefined
-        }
-        options={{
-          captions: {
-            active: true,
-            update: true,
-            language: 'auto',
-          },
-          keyboard: {
-            focused: true,
-            global: true,
-          },
-          autoplay: true,
-        }}
-      />
-      <SourceSelector
-        sources={sources}
-        activeSource={selectedSource}
-        selectSource={setSelectedSource}
-      />
+      <div>
+        <CustomPlyrInstance
+          ref={onRefChange}
+          source={
+            selectedSource.type === 'mp4'
+              ? {
+                  type: 'video',
+                  sources: [
+                    {
+                      src: selectedSource.url,
+                      type: 'video/mp4',
+                    },
+                  ],
+                }
+              : null
+          }
+          hlsSource={
+            // eslint-disable-next-line no-nested-ternary
+            selectedSource.type === 'm3u8'
+              ? selectedSource.requiresProxy
+                ? generateProxy(selectedSource.url)
+                : selectedSource.url
+              : undefined
+          }
+          options={{
+            captions: { active: true, update: true, language: 'en' },
+            keyboard: { focused: true, global: true },
+            autoplay: true,
+            tooltips: {
+              controls: true,
+              seek: true,
+            },
+          }}
+        />
+      </div>
       {opensubtitlesData?.token && (
         <>
           <SubtitleSelector tmbdId={tmdbId} season={season} episode={episode} />

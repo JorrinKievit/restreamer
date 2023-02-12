@@ -1,6 +1,6 @@
 import { app, contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { ContentType } from 'types/tmbd';
-import { VidSrcResponse } from 'types/vidsrc';
+import { Sources } from 'types/sources';
 
 export type Channels =
   | 'vidsrc'
@@ -15,13 +15,20 @@ const electronHandler = {
     sendMessage(channel: Channels, args: unknown[]) {
       ipcRenderer.send(channel, args);
     },
-    getVidSrc(
+    async getSources(
       id: string,
       type: ContentType,
       season?: number,
       episode?: number
-    ): Promise<VidSrcResponse> {
-      return ipcRenderer.invoke('vidsrc', id, type, season, episode);
+    ): Promise<Sources> {
+      const response = await ipcRenderer.invoke(
+        'get-sources',
+        id,
+        type,
+        season,
+        episode
+      );
+      return response;
     },
     validatePass(url: string) {
       return ipcRenderer.invoke('validate-vidsrc', url);

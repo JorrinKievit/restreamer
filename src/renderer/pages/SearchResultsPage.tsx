@@ -9,20 +9,21 @@ import {
   Flex,
   Grid,
   GridItem,
-  Spinner,
   Tag,
   Tooltip,
   VStack,
   Image,
   Text,
+  Skeleton,
 } from '@chakra-ui/react';
 import ErrorToast from 'renderer/components/ErrorToast';
+import SkeletonGrid from 'renderer/components/SkeletonGrid';
 
 const SearchResultsPage: FC = () => {
   const { query } = useParams();
   const { data, error, isLoading } = useSearchMoviesAndShows(query);
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) return <SkeletonGrid />;
 
   if (error)
     return <ErrorToast description={error.response?.data.status_message} />;
@@ -41,10 +42,12 @@ const SearchResultsPage: FC = () => {
             <GridItem key={show.id}>
               <Link to={`/details/${show.id}?media_type=${show.media_type}`}>
                 <AspectRatio ratio={2 / 3}>
-                  <Image
-                    src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`}
-                    alt={show.name}
-                  />
+                  <Skeleton isLoaded={!isLoading}>
+                    <Image
+                      src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`}
+                      alt={show.name}
+                    />
+                  </Skeleton>
                 </AspectRatio>
                 <VStack mt={1}>
                   <Tooltip label={show.name ? show.name : show.title}>
