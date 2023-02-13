@@ -76,7 +76,7 @@ const TvShows: FC = () => {
                       </Tooltip>
                       <Flex w="full">
                         <Text flex="1">
-                          {new Date(show.first_air_date).getFullYear()}
+                          {new Date(show.first_air_date).getFullYear() || 'N/A'}
                         </Text>
                         <Tag colorScheme="blue">TV</Tag>
                       </Flex>

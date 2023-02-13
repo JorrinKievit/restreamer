@@ -194,6 +194,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
       if (newRef && newRef?.plyr?.source) {
         ref.current = newRef;
         ref.current.plyr.on('loadeddata', () => {
+          duration.current = ref.current!.plyr.duration;
           if (opensubtitlesData?.token) InsertSubtitleButton(ref.current!);
           if (playingData[tmdbId]) {
             if (currentTime.current !== 0) {
@@ -204,15 +205,32 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
           }
           if (selectedSource.subtitles) {
             const video = document.querySelector('video');
+
+            const languageCounts: { [key: string]: number } = {};
+
             selectedSource.subtitles.forEach((subtitle) => {
+              let language = OPENSUBTITLES_LANGUAGES.find((lang) =>
+                lang.language_name.includes(subtitle.label.split(' ')[0].trim())
+              );
+
+              if (!language) {
+                language = {
+                  language_name: subtitle.label,
+                  language_code: randomString(2),
+                };
+              }
+
+              if (!languageCounts[language.language_name]) {
+                languageCounts[language.language_name] = 0;
+              }
+              const count = languageCounts[language.language_name] + 1;
+              languageCounts[language.language_name] = count;
+
               const track = document.createElement('track');
               Object.assign(track, {
                 kind: 'captions',
                 label: subtitle.label,
-                srclang:
-                  OPENSUBTITLES_LANGUAGES.find(
-                    (l) => l.language_name === subtitle.label
-                  )?.language_code || randomString(2),
+                srclang: `${language.language_code}-${count}`,
                 default: subtitle.label === 'English',
                 src: subtitle.file,
               });
@@ -224,7 +242,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         ref.current.plyr.on('timeupdate', () => {
           currentTime.current = ref.current!.plyr.currentTime;
         });
-        duration.current = ref.current.plyr.duration;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

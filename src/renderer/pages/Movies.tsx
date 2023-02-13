@@ -14,8 +14,8 @@ import React, { FC, useState } from 'react';
 import { TMDB_IMAGE_BASE_URL, useDiscoverTMDB } from 'renderer/api/tmdb/api';
 import ShowFilter, { FilterOptions } from 'renderer/components/ShowFilter';
 import { Link } from 'react-router-dom';
-import ErrorToast from 'renderer/components/ErrorToast';
 import SkeletonGrid from 'renderer/components/SkeletonGrid';
+import ErrorToast from 'renderer/components/ErrorToast';
 
 const Movies: FC = () => {
   const [options, setOptions] = useState<FilterOptions>({
@@ -78,7 +78,7 @@ const Movies: FC = () => {
                             show.release_date
                               ? show.release_date
                               : show.first_air_date
-                          ).getFullYear()}
+                          ).getFullYear() || 'N/A'}
                         </Text>
                         <Tag colorScheme="blue">Movie</Tag>
                       </Flex>

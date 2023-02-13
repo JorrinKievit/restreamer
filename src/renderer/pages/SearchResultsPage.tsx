@@ -61,7 +61,7 @@ const SearchResultsPage: FC = () => {
                         show.release_date
                           ? show.release_date
                           : show.first_air_date
-                      ).getFullYear()}
+                      ).getFullYear() || 'N/A'}
                     </Text>
                     <Tag colorScheme="blue">
                       {show.media_type === 'tv' ? 'TV' : 'Movie'}

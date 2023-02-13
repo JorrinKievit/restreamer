@@ -12,6 +12,14 @@
   font-size: 1.8rem;
 }
 
+.plyr__menu__container::-webkit-scrollbar {
+  display: none;
+}
+.plyr__menu__container {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
 html,
 body {
   padding: 0;

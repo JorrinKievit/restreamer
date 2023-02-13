@@ -90,7 +90,7 @@ const Index: FC = () => {
                                 show.media_type === 'tv'
                                   ? show.first_air_date
                                   : show.release_date
-                              ).getFullYear()}
+                              ).getFullYear() || 'N/A'}
                             </Text>
                             <Tag colorScheme="blue">
                               {show.media_type === 'tv' ? 'TV' : 'Movie'}
