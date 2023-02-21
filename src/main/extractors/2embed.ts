@@ -12,7 +12,7 @@ export class TwoEmbedExtractor {
   private static referer: string = 'https://www.2embed.to/';
 
   public static extractUrls = async (
-    id: string,
+    imdbId: string,
     type: ContentType,
     season?: number,
     episode?: number
@@ -20,9 +20,9 @@ export class TwoEmbedExtractor {
     const url =
       // eslint-disable-next-line no-nested-ternary
       type === 'movie'
-        ? `${this.url}embed/tmdb/movie?id=${id}`
+        ? `${this.url}embed/imdb/movie?id=${imdbId}`
         : type === 'tv'
-        ? `${this.url}embed/tmdb/tv?id=${id}&s=${season}&e=${episode}/`
+        ? `${this.url}embed/imdb/tv?id=${imdbId}&s=${season}&e=${episode}/`
         : '';
 
     let res = await axios.get(url);

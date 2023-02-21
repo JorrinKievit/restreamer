@@ -56,6 +56,52 @@ export interface SpokenLanguage {
   name: string;
 }
 
+export interface ExternalIds {
+  imdb_id: string;
+  freebase_mid: string;
+  freebase_id: string;
+  tvdb_id: number;
+  tvrage_id: number;
+  wikidata_id: string;
+  facebook_id: string;
+  instagram_id: string;
+  twitter_id: string;
+}
+
+export interface Cast {
+  adult: boolean;
+  gender: number;
+  id: number;
+  known_for_department: string;
+  name: string;
+  original_name: string;
+  popularity: number;
+  profile_path: string;
+  character: string;
+  credit_id: string;
+  order: number;
+}
+
+export interface Crew {
+  adult: boolean;
+  gender: number;
+  id: number;
+  known_for_department: string;
+  name: string;
+  original_name: string;
+  popularity: number;
+  profile_path: string;
+  credit_id: string;
+  department: string;
+  job: string;
+}
+
+export interface Credits {
+  id: number;
+  cast: Cast[];
+  crew: Crew[];
+}
+
 export interface TvShowDetailsResults {
   adult: boolean;
   backdrop_path: string;
@@ -89,4 +135,6 @@ export interface TvShowDetailsResults {
   type: string;
   vote_average: number;
   vote_count: number;
+  external_ids: ExternalIds;
+  credits: Credits;
 }

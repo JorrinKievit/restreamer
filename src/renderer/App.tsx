@@ -34,10 +34,10 @@ const App = () => {
   return (
     <ChakraProvider theme={extendedTheme}>
       <QueryClientProvider client={queryClient}>
-        <Container maxW="7xl">
+        <Container maxW="7xl" h="full">
           <Router>
             <Header />
-            <Box py={4}>
+            <Box py={4} h="full">
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/search/:query" element={<SearchResultsPage />} />

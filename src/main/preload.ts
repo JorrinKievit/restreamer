@@ -16,14 +16,19 @@ const electronHandler = {
       ipcRenderer.send(channel, args);
     },
     async getSources(
-      id: string,
+      imdbId: string | undefined,
+      showName: string | undefined,
       type: ContentType,
       season?: number,
       episode?: number
     ): Promise<Sources> {
+      if (!imdbId && !showName) {
+        return [];
+      }
       const response = await ipcRenderer.invoke(
         'get-sources',
-        id,
+        imdbId,
+        showName,
         type,
         season,
         episode

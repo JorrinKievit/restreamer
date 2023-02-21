@@ -26,19 +26,21 @@ export const usePopularMovies = () => {
 };
 
 export const useMovieDetails = (movieId: string | undefined) => {
-  const { data, error, isLoading } = useQuery<
+  const { data, error, isLoading, isInitialLoading } = useQuery<
     MovieDetailsResults,
     AxiosError<TmdbApiError>
   >({
     queryKey: ['movie', movieId],
     queryFn: () =>
       axios
-        .get(`${TMBD_API_ENDPOINT}/movie/${movieId}?api_key=${TMDB_API_KEY}`)
+        .get(
+          `${TMBD_API_ENDPOINT}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits`
+        )
         .then((res) => res.data),
     enabled: !!movieId,
   });
 
-  return { data, error, isLoading };
+  return { data, error, isLoading, isInitialLoading };
 };
 
 export const useSearchMoviesAndShows = (query: string | undefined) => {
@@ -67,7 +69,9 @@ export const useTvShowDetails = (tvShowId: string | undefined) => {
     queryKey: ['tv-show', tvShowId],
     queryFn: () =>
       axios
-        .get(`${TMBD_API_ENDPOINT}/tv/${tvShowId}?api_key=${TMDB_API_KEY}`)
+        .get(
+          `${TMBD_API_ENDPOINT}/tv/${tvShowId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids,credits`
+        )
         .then((res) => res.data),
     enabled: !!tvShowId,
   });
@@ -106,13 +110,13 @@ export const useGetShowsById = (playingData: PlayingData) => {
     AxiosError<TmdbApiError>
   >({
     queryKey: ['get-shows-by-id', playingData],
-    enabled: playingData !== null,
+    enabled: playingData && Object.keys(playingData).length > 0,
     queryFn: async () => {
       const playingDataWithTypes = Object.entries(playingData).map(
         ([key, value]) => {
           return {
             id: key,
-            showType: value.season ? ('tv' as const) : ('movie' as const),
+            showType: value.episode ? ('tv' as const) : ('movie' as const),
           };
         }
       );

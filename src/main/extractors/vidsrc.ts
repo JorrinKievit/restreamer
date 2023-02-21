@@ -9,7 +9,7 @@ export class VidSrcExtractor {
   private static embedUrl: string = 'https://v2.vidsrc.me/embed/';
 
   public static extractUrls = async (
-    id: string,
+    imdbId: string,
     type: ContentType,
     season?: number,
     episode?: number
@@ -18,9 +18,9 @@ export class VidSrcExtractor {
       const url =
         // eslint-disable-next-line no-nested-ternary
         type === 'movie'
-          ? `${this.embedUrl}${id}/`
+          ? `${this.embedUrl}${imdbId}/`
           : type === 'tv'
-          ? `${this.embedUrl}${id}/${season}-${episode}/`
+          ? `${this.embedUrl}${imdbId}/${season}-${episode}/`
           : '';
       let res = await axios.get(url);
 
@@ -83,6 +83,7 @@ export class VidSrcExtractor {
                 server: 'VidSrc Pro',
                 url: res.request.res.responseUrl as string,
                 type: 'm3u8',
+                quality: '720p/1080p',
                 referer: 'https://vidsrc.stream/',
                 origin: 'https://vidsrc.stream',
                 extractorData: server.extractorData,
@@ -104,6 +105,7 @@ export class VidSrcExtractor {
               server: 'Embedsito',
               url: res.headers.location!,
               type: 'mp4',
+              quality: '720p/1080p',
               requiresProxy: false,
             } as Source;
           }

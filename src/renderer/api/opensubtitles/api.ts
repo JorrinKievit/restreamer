@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios, { AxiosError, AxiosResponse } from 'axios';
+import toWebVTT from 'srt-webvtt';
 import { ApiError, DownloadApiError } from './api.error';
 import { DownloadResponse } from './download.types';
 import { LoginResponse } from './login.types';
@@ -112,7 +113,7 @@ export const useSearchSubtitles = (
 
       const promises = Array.from({ length: res.data.total_pages }, (_, i) => {
         if (i === 0) return null;
-        if (i % 3 === 0) {
+        if (i % 2 === 0) {
           // avoid rate limit
           // eslint-disable-next-line no-promise-executor-return
           return new Promise((resolve) => setTimeout(resolve, 1000));

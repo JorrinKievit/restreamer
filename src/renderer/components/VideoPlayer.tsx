@@ -19,6 +19,7 @@ import { useHls } from 'renderer/hooks/useHls';
 import { SourceInfo } from 'plyr';
 import { randomString } from 'renderer/utils/string';
 import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
+import { convertSrtToWebVTT } from 'renderer/utils/subtitles';
 import { InsertSubtitleButton, SubtitleSelector } from './SubtitleSelector';
 import SyncSubtitlesModal from './SyncSubtitlesModal';
 
@@ -190,20 +191,23 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   }, [selectedSource]);
 
   const onRefChange = useCallback(
+    // eslint-disable-next-line consistent-return
     (newRef: APITypes) => {
       if (newRef && newRef?.plyr?.source) {
+        let initialLoad = true;
         ref.current = newRef;
-        ref.current.plyr.on('loadeddata', () => {
-          duration.current = ref.current!.plyr.duration;
-          if (opensubtitlesData?.token) InsertSubtitleButton(ref.current!);
-          if (playingData[tmdbId]) {
-            if (currentTime.current !== 0) {
-              ref.current!.plyr.currentTime = currentTime.current;
-            } else {
-              ref.current!.plyr.currentTime = playingData[tmdbId].playingTime;
-            }
+
+        const onLoadData = () => {
+          if (initialLoad) {
+            initialLoad = false;
+            if (selectedSource.type === 'mp4') return;
           }
+
+          if (opensubtitlesData?.token) InsertSubtitleButton(ref.current!);
+
           if (selectedSource.subtitles) {
+            if (document.querySelectorAll('track').length > 0) return;
+
             const video = document.querySelector('video');
 
             const languageCounts: { [key: string]: number } = {};
@@ -238,10 +242,45 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
             });
           }
           ref.current!.plyr.elements?.container?.focus();
-        });
-        ref.current.plyr.on('timeupdate', () => {
+
+          if (playingData[tmdbId]) {
+            if (currentTime.current !== 0) {
+              ref.current!.plyr.currentTime = currentTime.current;
+            } else {
+              ref.current!.plyr.currentTime = playingData[tmdbId].playingTime;
+            }
+          }
+        };
+
+        const onLanguageChange = () => {
+          const tracks = document.querySelectorAll('track');
+          const selectedTrack =
+            tracks[ref.current?.plyr.currentTrack!] ??
+            document.querySelector('track[default]');
+
+          if (!selectedTrack) return;
+
+          if (selectedTrack.src.includes('.srt')) {
+            convertSrtToWebVTT(selectedTrack.src).then((vtt) => {
+              selectedTrack.setAttribute('src', vtt);
+            });
+          }
+        };
+
+        const onTimeUpdate = () => {
           currentTime.current = ref.current!.plyr.currentTime;
-        });
+          duration.current = ref.current!.plyr.duration;
+        };
+
+        ref.current.plyr.on('loadeddata', onLoadData);
+        ref.current.plyr.on('languagechange', onLanguageChange);
+        ref.current.plyr.on('timeupdate', onTimeUpdate);
+
+        return () => {
+          ref.current!.plyr.off('loadeddata', onLoadData);
+          ref.current!.plyr.off('languagechange', onLanguageChange);
+          ref.current!.plyr.off('timeupdate', onTimeUpdate);
+        };
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,7 +314,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
               : undefined
           }
           options={{
-            captions: { active: true, update: true, language: 'en' },
+            captions: { active: true, update: true, language: 'auto' },
             keyboard: { focused: true, global: true },
             autoplay: true,
             tooltips: {

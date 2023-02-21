@@ -31,6 +31,7 @@ export class StreamlareExtractor {
           server: 'Streamlare',
           url: res.data.result.Original.file,
           type: 'mp4',
+          quality: '720p/1080p',
           requiresProxy: false,
         };
       }

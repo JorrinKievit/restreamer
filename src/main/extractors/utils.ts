@@ -42,3 +42,11 @@ export const getCaptchaToken = async (siteKey: string, url: string) => {
   );
   return JSON.parse(res.data.split('\n')[1])[1];
 };
+
+export const randomString = (length: number) => {
+  const chars = '0123456789abcdef';
+  let result = '';
+  for (let i = length; i > 0; i -= 1)
+    result += chars[Math.floor(Math.random() * chars.length)];
+  return result;
+};

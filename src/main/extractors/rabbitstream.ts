@@ -99,6 +99,7 @@ export class RabbitStreamExtractor {
         server: 'VidCloud',
         url: sourceUrl,
         type: isHls ? 'm3u8' : 'mp4',
+        quality: '720p/1080p',
         requiresProxy: false,
         subtitles,
       };
@@ -107,5 +108,3 @@ export class RabbitStreamExtractor {
     }
   };
 }
-
-// [{"file":"https://b-g-eu-12.feetcdn.com:2223/v3-hls-playback/902e42e6fee81096adf6d124a196177f0cf4baf650cb2ee1e9cff3dc7185a819e10b923f1a8b2add93c5d6caabf6db375281f8331cfb3023533a2169625aadd7249b87ea2e630f31b2b49cc6e640df5e0560da3a2db598aed8664b3d17336073f1cd2b0497d219c02ee9d08a3128ba82e368be21a6cdabc72ed0939583506ce31ac40b94982cf1c095da68ed598dab0e41e06d5a4535e26e615331d315608b1453668eb0664404d42dc52ef51cf5f695/playlist.m3u8","type":"hls"}]
