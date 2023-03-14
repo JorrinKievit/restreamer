@@ -44,7 +44,7 @@ const MovieDetails: FC = () => {
   const [sourcesLoading, setSourcesLoading] = useBoolean(true);
   const [sources, setSources] = useState<Sources>([]);
   const [selectedSource, setSelectedSource] = useState(sources[0]);
-  const [showDetails, setShowDetails] = useState<{
+  const [activeEpisode, setActiveEpisode] = useState<{
     season: number;
     episode: number;
   }>({
@@ -52,14 +52,21 @@ const MovieDetails: FC = () => {
     episode: playingData[id!]?.episode ?? 1,
   });
 
+  const isLastEpisode =
+    mediaType === 'tv'
+      ? tvData?.seasons.find(
+          (s) => s.season_number === tvData.number_of_seasons
+        )?.episode_count === activeEpisode.episode
+      : false;
+
   useEffect(() => {
     const getSources = async () => {
       const sourcesResponse = await window.electron.ipcRenderer.getSources(
         mediaType === 'tv' ? tvData?.external_ids.imdb_id : movieData?.imdb_id,
         mediaType === 'tv' ? tvData?.name : movieData?.title,
         mediaType,
-        mediaType === 'tv' ? showDetails.season : undefined,
-        mediaType === 'tv' ? showDetails.episode : undefined
+        mediaType === 'tv' ? activeEpisode.season : undefined,
+        mediaType === 'tv' ? activeEpisode.episode : undefined
       );
       setSources(sourcesResponse);
       setSelectedSource(sourcesResponse[0]);
@@ -72,7 +79,7 @@ const MovieDetails: FC = () => {
     id,
     mediaType,
     movieData?.imdb_id,
-    showDetails,
+    activeEpisode,
     tvData?.external_ids.imdb_id,
   ]);
 
@@ -96,6 +103,33 @@ const MovieDetails: FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourcesLoading, sources]);
+
+  useEffect(() => {
+    const handleNextEpisode = () => {
+      if (!tvData) return;
+      const currentSeason = tvData.seasons.find(
+        (s) => s.season_number === activeEpisode.season
+      );
+
+      if (activeEpisode.episode < currentSeason!.episode_count) {
+        setActiveEpisode({
+          season: activeEpisode.season,
+          episode: activeEpisode.episode + 1,
+        });
+      } else {
+        setActiveEpisode({
+          season: activeEpisode.season + 1,
+          episode: 1,
+        });
+      }
+    };
+
+    document.addEventListener('next-episode', handleNextEpisode);
+
+    return () => {
+      document.removeEventListener('next-episode', handleNextEpisode);
+    };
+  }, [activeEpisode.episode, activeEpisode.season, tvData]);
 
   if (tvError || movieError)
     return (
@@ -121,15 +155,9 @@ const MovieDetails: FC = () => {
           <VideoPlayer
             selectedSource={selectedSource}
             tmdbId={id!}
-            season={mediaType === 'tv' ? showDetails.season : undefined}
-            episode={mediaType === 'tv' ? showDetails.episode : undefined}
-            isLastEpisode={
-              mediaType === 'tv'
-                ? tvData?.seasons.find(
-                    (s) => s.season_number === tvData.number_of_seasons
-                  )?.episode_count === showDetails.episode
-                : false
-            }
+            season={mediaType === 'tv' ? activeEpisode.season : undefined}
+            episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
+            isLastEpisode={isLastEpisode}
           />
           <SourceSelector
             sources={sources}
@@ -140,9 +168,9 @@ const MovieDetails: FC = () => {
       )}
       {mediaType === 'tv' && tvData && (
         <EpisodeList
-          showData={tvData}
-          showDetails={setShowDetails}
-          activeEpisode={showDetails}
+          tvData={tvData}
+          setActiveEpisode={setActiveEpisode}
+          activeEpisode={activeEpisode}
         />
       )}
       {mediaType === 'movie' && movieData && (

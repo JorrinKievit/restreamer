@@ -26,12 +26,13 @@ export class StreamlareExtractor {
           },
         }
       );
+
       if (res.data.result?.Original?.file) {
         return {
           server: 'Streamlare',
           url: res.data.result.Original.file,
-          type: 'mp4',
-          quality: '720p/1080p',
+          type: res.data.type.includes('mp4') ? 'mp4' : 'm3u8',
+          quality: res.data.result.Original.label,
           requiresProxy: false,
         };
       }

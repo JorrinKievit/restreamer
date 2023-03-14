@@ -4,16 +4,10 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  HStack,
   NumberInput,
   NumberInputField,
 } from '@chakra-ui/react';
-import {
-  GroupBase,
-  MultiValue,
-  OptionsOrGroups,
-  Select,
-} from 'chakra-react-select';
+import { MultiValue, Select } from 'chakra-react-select';
 import React, { FC, useState } from 'react';
 import { TMDB_MOVIE_GENRES, TMDB_TV_GENRES } from 'renderer/api/tmdb/genres';
 import { TMBD_SORT_BY } from 'renderer/api/tmdb/sort-by';

@@ -192,7 +192,7 @@ export class SuperStreamExtractor {
           url: link.path,
           server: 'SuperStream',
           type: 'mp4',
-          quality: link.quality as Source['quality'],
+          quality: link.real_quality as Source['quality'],
           requiresProxy: false,
           subtitles: subtitleDataResponse.data.list.flatMap((subtitleList) => {
             const subtitles = subtitleList.subtitles.slice(0, 3);

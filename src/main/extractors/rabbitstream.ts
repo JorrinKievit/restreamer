@@ -1,6 +1,8 @@
 import axios from 'axios';
+import * as m3u8Parser from 'm3u8-parser';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
+import { getResolutionName } from './utils';
 
 export class RabbitStreamExtractor {
   private static url: string = 'https://rabbitstream.net/';
@@ -50,11 +52,9 @@ export class RabbitStreamExtractor {
     return this.decryptSourceUrl(decryptionKey, input);
   };
 
-  static getDecryptionKey = async (type: 'rapidclown' | 'rabbitstream') => {
+  static getDecryptionKey = async () => {
     const res = await axios.get(
-      type === 'rapidclown'
-        ? 'https://raw.githubusercontent.com/consumet/rapidclown/main/key.txt'
-        : 'https://raw.githubusercontent.com/consumet/rapidclown/rabbitstream/key.txt'
+      'https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt'
     );
     return res.data;
   };
@@ -67,27 +67,15 @@ export class RabbitStreamExtractor {
     const sourceString = res.data.sources;
     const subtitles = res.data.tracks;
 
-    try {
-      const decryptionKey = await this.getDecryptionKey('rapidclown');
-      const decryptedSourceUrl = this.decrypt(sourceString, decryptionKey);
-      const json = JSON.parse(decryptedSourceUrl);
+    const decryptionKey = await this.getDecryptionKey();
+    const decryptedSourceUrl = this.decrypt(sourceString, decryptionKey);
+    const json = JSON.parse(decryptedSourceUrl);
 
-      return {
-        sourceUrl: json[0].file,
-        subtitles,
-        isHls: json[0].type === 'hls',
-      };
-    } catch (e) {
-      const decryptionKey = await this.getDecryptionKey('rabbitstream');
-      const decryptedSourceUrl = this.decrypt(sourceString, decryptionKey);
-      const json = JSON.parse(decryptedSourceUrl);
-
-      return {
-        sourceUrl: json[0].file,
-        subtitles,
-        isHls: json[0].type === 'hls',
-      };
-    }
+    return {
+      sourceUrl: json[0].file,
+      subtitles,
+      isHls: json[0].type === 'hls',
+    };
   };
 
   public static extractUrl = async (
@@ -95,11 +83,27 @@ export class RabbitStreamExtractor {
   ): Promise<Source | undefined> => {
     try {
       const { sourceUrl, subtitles, isHls } = await this.extractSourceUrl(url);
+
+      const m3u8Manifest = await axios.get(sourceUrl);
+
+      const parser = new m3u8Parser.Parser();
+      parser.push(m3u8Manifest.data);
+      parser.end();
+
+      const parsedManifest = parser.manifest;
+      const highestQuality = parsedManifest.playlists.reduce(
+        (prev: any, current: any) => {
+          return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH
+            ? prev
+            : current;
+        }
+      );
+
       return {
         server: 'VidCloud',
         url: sourceUrl,
         type: isHls ? 'm3u8' : 'mp4',
-        quality: '720p/1080p',
+        quality: getResolutionName(highestQuality.attributes.RESOLUTION.height),
         requiresProxy: false,
         subtitles,
       };

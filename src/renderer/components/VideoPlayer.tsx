@@ -20,7 +20,8 @@ import { SourceInfo } from 'plyr';
 import { randomString } from 'renderer/utils/string';
 import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
 import { convertSrtToWebVTT } from 'renderer/utils/subtitles';
-import { InsertSubtitleButton, SubtitleSelector } from './SubtitleSelector';
+import { insertPlayerButtons } from 'renderer/utils/player';
+import { SubtitleSelector } from './SubtitleSelector';
 import SyncSubtitlesModal from './SyncSubtitlesModal';
 
 interface VideoPlayerProps {
@@ -203,7 +204,12 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
             if (selectedSource.type === 'mp4') return;
           }
 
-          if (opensubtitlesData?.token) InsertSubtitleButton(ref.current!);
+          if (opensubtitlesData?.token)
+            insertPlayerButtons(
+              ref.current!,
+              season && episode ? 'tv' : 'movie',
+              isLastEpisode
+            );
 
           if (selectedSource.subtitles) {
             if (document.querySelectorAll('track').length > 0) return;
@@ -246,7 +252,11 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
           if (playingData[tmdbId]) {
             if (currentTime.current !== 0) {
               ref.current!.plyr.currentTime = currentTime.current;
-            } else {
+            } else if (
+              (playingData[tmdbId].season === season &&
+                playingData[tmdbId].episode === episode) ||
+              (!playingData[tmdbId].season && !playingData[tmdbId].episode)
+            ) {
               ref.current!.plyr.currentTime = playingData[tmdbId].playingTime;
             }
           }
@@ -321,6 +331,17 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
               controls: true,
               seek: true,
             },
+            controls: [
+              'play-large',
+              'play',
+              'progress',
+              'current-time',
+              'mute',
+              'volume',
+              'captions',
+              'settings',
+              'fullscreen',
+            ],
           }}
         />
       </div>

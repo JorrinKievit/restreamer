@@ -10,11 +10,9 @@ import {
   ModalOverlay,
   Select,
   Skeleton,
-  Spinner,
   useDisclosure,
   VStack,
 } from '@chakra-ui/react';
-import { APITypes } from 'plyr-react';
 import React, { FC, useEffect, useState } from 'react';
 import {
   useDownloadSubtitle,
@@ -22,8 +20,6 @@ import {
 } from 'renderer/api/opensubtitles/api';
 import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
 import { OpenSubtitlesUser } from 'renderer/api/opensubtitles/user-information.types';
-import SubtitlesButton from 'renderer/assets/subtitle-button.png';
-import SyncSubtitlesButton from 'renderer/assets/sync-subtitles-button.png';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 
 interface SubtitleSelectorProps {
@@ -193,68 +189,5 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
         </ModalFooter>
       </ModalContent>
     </Modal>
-  );
-};
-
-export const InsertSubtitleButton = (ref: APITypes) => {
-  const captionsButton = document.querySelector('[data-plyr="captions"]');
-  if (!captionsButton) return;
-  if (document.querySelector('[data-plyr="subtitles"]')) return;
-  if (document.querySelector('[data-plyr="sync-subtitles"]')) return;
-
-  const subtitlesButton = document.createElement('a');
-  subtitlesButton.className =
-    'plyr__controls__item plyr__control plyr__control--pressed subtitles__button';
-  subtitlesButton.style.height = '32px';
-  subtitlesButton.style.display = 'inline-block';
-  subtitlesButton.setAttribute('data-plyr', 'subtitles');
-  subtitlesButton.onclick = () => {
-    if (ref.plyr.fullscreen.active) ref.plyr.fullscreen.exit();
-    const event = new CustomEvent('open-subtitles-modal');
-    document.dispatchEvent(event);
-  };
-  const subtitlesImage = document.createElement('img');
-  subtitlesImage.src = SubtitlesButton;
-  subtitlesImage.alt = 'Subtitles';
-  subtitlesImage.style.width = '100%';
-  subtitlesImage.style.height = '100%';
-
-  const subtitlesTooltip = document.createElement('span');
-  subtitlesTooltip.className = 'plyr__tooltip';
-  subtitlesTooltip.innerText = 'Add OpenSubtitles.com subtitle';
-
-  subtitlesButton.appendChild(subtitlesImage);
-  subtitlesButton.appendChild(subtitlesTooltip);
-  captionsButton.parentNode!.insertBefore(
-    subtitlesButton,
-    captionsButton.nextSibling
-  );
-
-  const syncSubtitlesButton = document.createElement('a');
-  syncSubtitlesButton.className =
-    'plyr__controls__item plyr__control plyr__control--pressed sync__subtitles__button';
-  syncSubtitlesButton.style.height = '32px';
-  syncSubtitlesButton.style.display = 'inline-block';
-  syncSubtitlesButton.setAttribute('data-plyr', 'subtitles');
-  syncSubtitlesButton.onclick = () => {
-    if (ref.plyr.fullscreen.active) ref.plyr.fullscreen.exit();
-    const event = new CustomEvent('open-sync-subtitles-modal');
-    document.dispatchEvent(event);
-  };
-  const syncSubtitlesImage = document.createElement('img');
-  syncSubtitlesImage.src = SyncSubtitlesButton;
-  syncSubtitlesImage.alt = 'Sync Subtitles';
-  syncSubtitlesImage.style.width = '100%';
-  syncSubtitlesImage.style.height = '100%';
-
-  const syncSubtitlesTooltip = document.createElement('span');
-  syncSubtitlesTooltip.className = 'plyr__tooltip';
-  syncSubtitlesTooltip.innerText = 'Sync subtitles';
-
-  syncSubtitlesButton.appendChild(syncSubtitlesImage);
-  syncSubtitlesButton.appendChild(syncSubtitlesTooltip);
-  captionsButton.parentNode!.insertBefore(
-    syncSubtitlesButton,
-    subtitlesButton.nextSibling
   );
 };

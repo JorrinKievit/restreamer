@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { load } from 'cheerio';
+import { Source } from 'types/sources';
 
 export const getCaptchaToken = async (siteKey: string, url: string) => {
   const uri = new URL(url);
@@ -49,4 +50,23 @@ export const randomString = (length: number) => {
   for (let i = length; i > 0; i -= 1)
     result += chars[Math.floor(Math.random() * chars.length)];
   return result;
+};
+
+export const getResolutionName = (resolution: number): Source['quality'] => {
+  switch (resolution) {
+    case 2160:
+      return '4K';
+    case 1440:
+      return '1440p';
+    case 1080:
+      return '1080p';
+    case 720:
+      return '720p';
+    case 480:
+      return '480p';
+    case 360:
+      return '360p';
+    default:
+      return `Unknown`;
+  }
 };

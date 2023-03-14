@@ -57,6 +57,7 @@ export class VidSrcExtractor {
             const extractorData = extractorDataRegex
               .exec(res.data)![1]
               .replace('//', 'https://');
+
             return {
               server: 'pro',
               url: srcm3u8,
@@ -83,7 +84,7 @@ export class VidSrcExtractor {
                 server: 'VidSrc Pro',
                 url: res.request.res.responseUrl as string,
                 type: 'm3u8',
-                quality: '720p/1080p',
+                quality: 'Unknown',
                 referer: 'https://vidsrc.stream/',
                 origin: 'https://vidsrc.stream',
                 extractorData: server.extractorData,
@@ -95,7 +96,13 @@ export class VidSrcExtractor {
             res = await axios.post(
               `https://embedsito.com/api/source/${server.url.split('/').pop()}`
             );
-            res = await axios.get(res.data.data[0].file, {
+
+            const file = res.data.data[res.data.data.length - 1];
+            const redirectUrl = file.file;
+            const quality = file.label;
+            const fileType = file.type;
+
+            const finalUrl = await axios.get(redirectUrl, {
               maxRedirects: 0,
               validateStatus: (status) => {
                 return status >= 200 && status < 400;
@@ -103,9 +110,9 @@ export class VidSrcExtractor {
             });
             return {
               server: 'Embedsito',
-              url: res.headers.location!,
-              type: 'mp4',
-              quality: '720p/1080p',
+              url: finalUrl.headers.location!,
+              type: fileType === 'mp4' ? 'mp4' : 'm3u8',
+              quality,
               requiresProxy: false,
             } as Source;
           }
@@ -140,7 +147,6 @@ export class VidSrcExtractor {
       const sources = sourceURLS.filter((el) => el !== undefined) as Sources;
       return sources;
     } catch (error) {
-      console.log(error);
       return [];
     }
   };

@@ -5,7 +5,7 @@ import Header from './components/Header';
 import Index from './pages/Index';
 import MovieDetails from './pages/MovieDetails';
 import Movies from './pages/Movies';
-import SearchResultsPage from './pages/SearchResultsPage';
+import Search from './pages/Search';
 import Settings from './pages/Settings';
 import TvShows from './pages/TvShows';
 
@@ -40,7 +40,7 @@ const App = () => {
             <Box py={4} h="full">
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/search/:query" element={<SearchResultsPage />} />
+                <Route path="/search/:query" element={<Search />} />
                 <Route path="/details/:id" element={<MovieDetails />} />
                 <Route path="/movies" element={<Movies />} />
                 <Route path="/tvshows" element={<TvShows />} />

@@ -1,10 +1,5 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Box,
   Button,
   Card,
@@ -12,21 +7,26 @@ import {
   Grid,
   Menu,
   MenuButton,
-  MenuItem,
   MenuList,
   MenuOptionGroup,
   MenuItemOption,
 } from '@chakra-ui/react';
-import React, { Dispatch, FC, SetStateAction, useState } from 'react';
+import React, {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react';
 import { TvShowDetailsResults } from 'renderer/api/tmdb/tvshow-details.types';
 
 interface EpisodeListProps {
-  showData: TvShowDetailsResults;
+  tvData: TvShowDetailsResults;
   activeEpisode: {
     season: number;
     episode: number;
   };
-  showDetails: Dispatch<
+  setActiveEpisode: Dispatch<
     SetStateAction<{
       season: number;
       episode: number;
@@ -35,18 +35,21 @@ interface EpisodeListProps {
 }
 
 const EpisodeList: FC<EpisodeListProps> = ({
-  showData,
+  tvData,
   activeEpisode,
-  showDetails,
+  setActiveEpisode,
 }) => {
   const [selectedSeason, setSelectedSeason] = useState(activeEpisode.season);
 
   const currentSeason =
-    showData.seasons[0].season_number === 0
-      ? showData.seasons[selectedSeason]
-      : showData.seasons[selectedSeason - 1];
+    tvData.seasons[0].season_number === 0
+      ? tvData.seasons[selectedSeason]
+      : tvData.seasons[selectedSeason - 1];
 
-  console.log(showData);
+  useEffect(() => {
+    setSelectedSeason(activeEpisode.season);
+  }, [activeEpisode.season]);
+
   return (
     <Card p={6}>
       <Flex gap={4} flexDirection="column" w="full">
@@ -55,8 +58,8 @@ const EpisodeList: FC<EpisodeListProps> = ({
             {currentSeason.name}
           </MenuButton>
           <MenuList minH="0" h="200px" overflowY="auto">
-            <MenuOptionGroup defaultValue={activeEpisode.season.toString()}>
-              {showData?.seasons.map((season) => (
+            <MenuOptionGroup value={selectedSeason.toString()}>
+              {tvData?.seasons.map((season) => (
                 <MenuItemOption
                   value={season.season_number.toString()}
                   key={season.id}
@@ -94,7 +97,7 @@ const EpisodeList: FC<EpisodeListProps> = ({
                   : ''
               }
               onClick={() =>
-                showDetails({
+                setActiveEpisode({
                   season: currentSeason.season_number,
                   episode: episodeNumber,
                 })

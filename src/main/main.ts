@@ -12,9 +12,15 @@ import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import electronDl from 'electron-dl';
 import { resolveHtmlPath } from './util';
 
 import './ipc/index';
+
+electronDl({
+  saveAs: true,
+  openFolderWhenDone: true,
+});
 
 class AppUpdater {
   constructor() {
