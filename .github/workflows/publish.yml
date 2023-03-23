@@ -18,9 +18,10 @@ jobs:
         os: [macos-latest]
 
     steps:
-      - name: Checkout git repo
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
       - name: Install Node and pnpm
         uses: actions/setup-node@v3
         with:
@@ -31,9 +32,7 @@ jobs:
         run: |
           export TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
           export OPENSUBTITLES_API_KEY=${{ secrets.OPENSUBTITLES_API_KEY }}
-          echo $TMDB_API_KEY
-          echo $OPENSUBTITLES_API_KEY
-          pnpm install
+          pnpm install --frozen-lockfile
           pnpm run postinstall
           pnpm run build
 
