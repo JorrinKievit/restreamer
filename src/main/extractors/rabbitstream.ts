@@ -3,17 +3,21 @@ import * as m3u8Parser from 'm3u8-parser';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
 import { getResolutionName } from './utils';
+import { IExtractor } from './IExtractor';
 
-export class RabbitStreamExtractor {
-  private static url: string = 'https://rabbitstream.net/';
+export class RabbitStreamExtractor implements IExtractor {
+  url: string = 'https://rabbitstream.net/';
 
-  private static referer: string = 'https://rabbitstream.net/';
+  referer: string = 'https://rabbitstream.net/';
 
-  static md5 = (input: Buffer): Buffer => {
+  private decryptionKeyUrl =
+    'https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt';
+
+  private md5 = (input: Buffer): Buffer => {
     return crypto.createHash('md5').update(input).digest();
   };
 
-  static generateKey = (salt: Buffer, secret: Buffer): Buffer => {
+  private generateKey = (salt: Buffer, secret: Buffer): Buffer => {
     let key = this.md5(Buffer.concat([secret, salt]));
     let currentKey = key;
     while (currentKey.length < 48) {
@@ -23,7 +27,7 @@ export class RabbitStreamExtractor {
     return currentKey;
   };
 
-  static decryptSourceUrl = (
+  private decryptSourceUrl = (
     decryptionKey: Buffer,
     sourceUrl: string
   ): string => {
@@ -44,7 +48,7 @@ export class RabbitStreamExtractor {
     return decryptedData.toString('utf8');
   };
 
-  static decrypt = (input: string, key: string): string => {
+  private decrypt = (input: string, key: string): string => {
     const decryptionKey = this.generateKey(
       Buffer.from(input, 'base64').slice(8, 16),
       Buffer.from(key, 'utf8')
@@ -52,35 +56,39 @@ export class RabbitStreamExtractor {
     return this.decryptSourceUrl(decryptionKey, input);
   };
 
-  static getDecryptionKey = async () => {
-    const res = await axios.get(
-      'https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt'
-    );
+  private getDecryptionKey = async () => {
+    const res = await axios.get(this.decryptionKeyUrl);
     return res.data;
   };
 
-  static extractSourceUrl = async (url: string) => {
+  private extractSourceUrl = async (url: string) => {
     const id = url.split('/').pop()!.split('?')[0];
     const apiUrl = `${this.url}ajax/embed-5/getSources?id=${id}`;
     const res = await axios.get(apiUrl);
 
-    const sourceString = res.data.sources;
+    const sources = res.data.sources;
     const subtitles = res.data.tracks;
 
-    const decryptionKey = await this.getDecryptionKey();
-    const decryptedSourceUrl = this.decrypt(sourceString, decryptionKey);
-    const json = JSON.parse(decryptedSourceUrl);
+    const isDecrypted = !sources[0].file.includes('https://');
+
+    let source = null;
+    if (isDecrypted) {
+      const decryptionKey = await this.getDecryptionKey();
+      const decryptedSourceUrl = this.decrypt(sources, decryptionKey);
+      const json = JSON.parse(decryptedSourceUrl);
+      source = json[0];
+    } else {
+      source = sources[0];
+    }
 
     return {
-      sourceUrl: json[0].file,
+      sourceUrl: source.file,
       subtitles,
-      isHls: json[0].type === 'hls',
+      isHls: source.type === 'hls',
     };
   };
 
-  public static extractUrl = async (
-    url: string
-  ): Promise<Source | undefined> => {
+  extractUrl = async (url: string): Promise<Source | undefined> => {
     try {
       const { sourceUrl, subtitles, isHls } = await this.extractSourceUrl(url);
 

@@ -1,15 +1,14 @@
 import axios from 'axios';
 import { app } from 'electron';
 import { Source } from 'types/sources';
+import { IExtractor } from './IExtractor';
 
-export class StreamlareExtractor {
-  private static url: string = 'https://streamlare.com/';
+export class StreamlareExtractor implements IExtractor {
+  url: string = 'https://streamlare.com/';
 
-  private static referer: string = 'https://sltube.org/';
+  referer: string = 'https://sltube.org/';
 
-  public static extractUrl = async (
-    url: string
-  ): Promise<Source | undefined> => {
+  extractUrl = async (url: string): Promise<Source | undefined> => {
     try {
       const id = url.split('/').pop();
       // Streamlare endpoint requires the same userAgent that is used in the API request

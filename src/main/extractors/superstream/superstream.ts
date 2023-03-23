@@ -2,50 +2,48 @@ import axios from 'axios';
 import crypto from 'crypto';
 import { Source, Sources } from 'types/sources';
 import { ContentType } from 'types/tmbd';
+import { IExtractor } from '../IExtractor';
 import { randomString } from '../utils';
 import { DownloadResponse, SearchResponse, SubtitleResponse } from './types';
 
 // This code is based on https://github.com/recloudstream/cloudstream-extensions/blob/master/SuperStream/src/main/kotlin/com/lagradost/SuperStream.kt
 // Complies with the LGPL-3.0 License see: ./LICENSE and https://github.com/recloudstream/cloudstream-extensions/blob/master/LICENSE
 
-export class SuperStreamExtractor {
-  private static url: string = Buffer.from(
+export class SuperStreamExtractor implements IExtractor {
+  url: string = Buffer.from(
     'aHR0cHM6Ly9zaG93Ym94LnNoZWd1Lm5ldC9hcGkvYXBpX2NsaWVudC9pbmRleC8=',
     'base64'
   ).toString();
 
-  private static secondUrl: string = Buffer.from(
+  private secondUrl: string = Buffer.from(
     'aHR0cHM6Ly9tYnBhcGkuc2hlZ3UubmV0L2FwaS9hcGlfY2xpZW50L2luZGV4Lw==',
     'base64'
   ).toString();
 
-  private static iv: string = Buffer.from('d0VpcGhUbiE=', 'base64').toString();
+  private iv: string = Buffer.from('d0VpcGhUbiE=', 'base64').toString();
 
-  private static key: string = Buffer.from(
+  private key: string = Buffer.from(
     'MTIzZDZjZWRmNjI2ZHk1NDIzM2FhMXc2',
     'base64'
   ).toString();
 
-  private static appKey: string = Buffer.from(
-    'bW92aWVib3g=',
-    'base64'
-  ).toString();
+  private appKey: string = Buffer.from('bW92aWVib3g=', 'base64').toString();
 
-  private static appid: string = Buffer.from(
+  private appid: string = Buffer.from(
     'Y29tLnRkby5zaG93Ym94',
     'base64'
   ).toString();
 
-  private static secondAppid: string = Buffer.from(
+  private secondAppid: string = Buffer.from(
     'Y29tLm1vdmllYm94cHJvLmFuZHJvaWQ=',
     'base64'
   ).toString();
 
-  private static version: string = '14.7';
+  private version: string = '14.7';
 
-  private static versionCode: string = '160';
+  private versionCode: string = '160';
 
-  private static baseData = {
+  private baseData = {
     childmode: '0',
     app_version: this.version,
     appid: this.secondAppid,
@@ -54,24 +52,24 @@ export class SuperStreamExtractor {
     platform: 'android',
   };
 
-  private static baseHeaders = {
+  private baseHeaders = {
     platform: 'android',
     Accept: 'charset=utf-8',
     'Content-Type': 'application/x-www-form-urlencoded',
   };
 
-  private static getExpireDate = () => {
+  private getExpireDate = () => {
     const date = new Date();
     date.setHours(date.getHours() + 12);
     return date.getTime();
   };
 
-  private static md5 = (input: string) => {
+  private md5 = (input: string) => {
     const hash = crypto.createHash('md5').update(input).digest();
     return hash.toString('hex').toLowerCase();
   };
 
-  private static encryptQuery = (query: string) => {
+  private encryptQuery = (query: string) => {
     const cipher = crypto.createCipheriv('des-ede3-cbc', this.key, this.iv);
     cipher.setAutoPadding(true);
     const encrypted =
@@ -80,7 +78,7 @@ export class SuperStreamExtractor {
     return encrypted;
   };
 
-  private static getVerify = (encryptedQuery: string) => {
+  private getVerify = (encryptedQuery: string) => {
     const md5Hash = crypto.createHash('md5');
     md5Hash.update(this.appKey);
     const hash1 = md5Hash.digest('hex');
@@ -90,7 +88,7 @@ export class SuperStreamExtractor {
     return hash2.digest('hex');
   };
 
-  private static executeApiCall = async <T>(
+  private executeApiCall = async <T>(
     queryData: object,
     useSecondaryApi: boolean
   ): Promise<T> => {
@@ -125,7 +123,7 @@ export class SuperStreamExtractor {
     return response.data;
   };
 
-  public static extractUrl = async (
+  extractUrls = async (
     searchQuery: string,
     type: ContentType,
     season?: number,

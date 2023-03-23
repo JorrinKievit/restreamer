@@ -65,6 +65,8 @@ const CustomPlyrInstance = forwardRef<
       className="plyr-react plyr"
       crossOrigin="anonymous"
       tabIndex={-1}
+      // eslint-disable-next-line jsx-a11y/no-interactive-element-to-noninteractive-role
+      role="application"
     />
   );
 });
@@ -155,30 +157,10 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   useEffect(() => {
     if (ref.current?.plyr?.source) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && e.key === ' ') {
-        if (
-          ref.current?.plyr.elements.container?.contains(
-            e.target as unknown as Node
-          )
-        ) {
-          e.preventDefault();
-          if (ref.current.plyr.playing) {
-            ref.current.plyr.pause();
-          } else {
-            ref.current.plyr.play();
-          }
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
     window.addEventListener('beforeunload', setPlayingDataOnUnmount);
 
-    // eslint-disable-next-line consistent-return
     return () => {
       setPlayingDataOnUnmount();
-      document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('beforeunload', setPlayingDataOnUnmount);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,7 +174,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   }, [selectedSource]);
 
   const onRefChange = useCallback(
-    // eslint-disable-next-line consistent-return
     (newRef: APITypes) => {
       if (newRef && newRef?.plyr?.source) {
         let initialLoad = true;

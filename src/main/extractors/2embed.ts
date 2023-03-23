@@ -2,16 +2,21 @@ import axios from 'axios';
 import { load } from 'cheerio';
 import { Source, Sources } from 'types/sources';
 import { ContentType } from 'types/tmbd';
+import { IExtractor } from './IExtractor';
 import { RabbitStreamExtractor } from './rabbitstream';
 import { StreamlareExtractor } from './streamlare';
 import { getCaptchaToken } from './utils';
 
-export class TwoEmbedExtractor {
-  private static url: string = 'https://www.2embed.to/';
+export class TwoEmbedExtractor implements IExtractor {
+  url: string = 'https://www.2embed.to/';
 
-  private static referer: string = 'https://www.2embed.to/';
+  referer: string = 'https://www.2embed.to/';
 
-  public static extractUrls = async (
+  private streamlareExtractor = new StreamlareExtractor();
+
+  private rabbitStreamExtractor = new RabbitStreamExtractor();
+
+  extractUrls = async (
     imdbId: string,
     type: ContentType,
     season?: number,
@@ -57,10 +62,10 @@ export class TwoEmbedExtractor {
     const finalServerlist: (Source | undefined)[] = await Promise.all(
       serverlist.map(async (server: string) => {
         if (server.includes('streamlare')) {
-          return StreamlareExtractor.extractUrl(server);
+          return this.streamlareExtractor.extractUrl(server);
         }
         if (server.includes('rabbitstream')) {
-          return RabbitStreamExtractor.extractUrl(server);
+          return this.rabbitStreamExtractor.extractUrl(server);
         }
         return undefined;
       })

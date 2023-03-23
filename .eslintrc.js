@@ -22,6 +22,8 @@ module.exports = {
     'class-methods-use-this': 'off',
     'promise/catch-or-return': 'off',
     'promise/always-return': 'off',
+    'consistent-return': 'off',
+    'prefer-destructuring': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

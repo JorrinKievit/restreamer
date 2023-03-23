@@ -2,13 +2,21 @@ import axios from 'axios';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
 import { Source, Sources } from 'types/sources';
+import { IExtractor } from './IExtractor';
+import { EmbedsitoExtractor } from './embedsito';
 
-export class VidSrcExtractor {
-  private static mainUrl: string = 'https://v2.vidsrc.me/';
+export class VidSrcExtractor implements IExtractor {
+  url: string = 'https://v2.vidsrc.me/';
 
-  private static embedUrl: string = 'https://v2.vidsrc.me/embed/';
+  referer: string = 'https://vidsrc.stream/';
 
-  public static extractUrls = async (
+  origin: string = 'https://vidsrc.stream';
+
+  private embedUrl: string = `${this.url}embed/`;
+
+  private embedsitoExtractor = new EmbedsitoExtractor();
+
+  public extractUrls = async (
     imdbId: string,
     type: ContentType,
     season?: number,
@@ -31,9 +39,9 @@ export class VidSrcExtractor {
 
       const serverlist = await Promise.all(
         hashes.map(async (hash) => {
-          res = await axios.get(`${this.mainUrl}srcrcp/${hash}`, {
+          res = await axios.get(`${this.url}srcrcp/${hash}`, {
             headers: {
-              referer: this.mainUrl,
+              referer: this.url,
             },
           });
           return res.request.res.responseUrl;
@@ -48,7 +56,7 @@ export class VidSrcExtractor {
           if (linkfixed.includes('/pro')) {
             res = await axios.get(server, {
               headers: {
-                referer: this.mainUrl,
+                referer: this.url,
               },
             });
             const m3u8Regex = /((https:|http:)\/\/.*\.m3u8)/g;
@@ -76,7 +84,7 @@ export class VidSrcExtractor {
             res = await axios.get(server.url, {
               method: 'GET',
               headers: {
-                referer: 'https://vidsrc.stream/',
+                referer: this.referer,
               },
             });
             if (res.request.res.responseUrl.includes('m3u8')) {
@@ -85,36 +93,18 @@ export class VidSrcExtractor {
                 url: res.request.res.responseUrl as string,
                 type: 'm3u8',
                 quality: 'Unknown',
-                referer: 'https://vidsrc.stream/',
-                origin: 'https://vidsrc.stream',
+                referer: this.referer,
+                origin: this.origin,
                 extractorData: server.extractorData,
                 requiresProxy: true,
-              } as Source;
+              };
             }
           }
           if (server.server === 'embedsito') {
-            res = await axios.post(
-              `https://embedsito.com/api/source/${server.url.split('/').pop()}`
+            const source = await this.embedsitoExtractor.extractUrl(
+              server.url.split('/').pop()!
             );
-
-            const file = res.data.data[res.data.data.length - 1];
-            const redirectUrl = file.file;
-            const quality = file.label;
-            const fileType = file.type;
-
-            const finalUrl = await axios.get(redirectUrl, {
-              maxRedirects: 0,
-              validateStatus: (status) => {
-                return status >= 200 && status < 400;
-              },
-            });
-            return {
-              server: 'Embedsito',
-              url: finalUrl.headers.location!,
-              type: fileType === 'mp4' ? 'mp4' : 'm3u8',
-              quality,
-              requiresProxy: false,
-            } as Source;
+            return source;
           }
           // mixdrop doesn't work yet, HTTP 509
           // if (server.server === 'mixdrop') {

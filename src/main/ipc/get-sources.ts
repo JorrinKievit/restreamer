@@ -15,21 +15,25 @@ ipcMain.handle(
     season?: number,
     episode?: number
   ) => {
-    const superStreamSources = await SuperStreamExtractor.extractUrl(
+    const superStreamExtractor = new SuperStreamExtractor();
+    const twoEmbedExtractor = new TwoEmbedExtractor();
+    const vidSrcExtractor = new VidSrcExtractor();
+
+    const superStreamSources = await superStreamExtractor.extractUrls(
       showName,
       type,
       season,
       episode
     );
 
-    const twoEmbedSources = await TwoEmbedExtractor.extractUrls(
+    const twoEmbedSources = await twoEmbedExtractor.extractUrls(
       imdbId,
       type,
       season,
       episode
     );
 
-    const vidSrcSources = await VidSrcExtractor.extractUrls(
+    const vidSrcSources = await vidSrcExtractor.extractUrls(
       imdbId,
       type,
       season,
