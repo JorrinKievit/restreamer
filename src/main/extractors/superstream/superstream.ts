@@ -1,7 +1,7 @@
-import axios from 'axios';
 import crypto from 'crypto';
 import { Source, Sources } from 'types/sources';
 import { ContentType } from 'types/tmbd';
+import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../IExtractor';
 import { randomString } from '../utils';
 import { DownloadResponse, SearchResponse, SubtitleResponse } from './types';
@@ -116,7 +116,7 @@ export class SuperStreamExtractor implements IExtractor {
       medium: `Website&token${randomString(32)}`,
     };
 
-    const response = await axios.post(apiUrl, data, {
+    const response = await axiosInstance.post(apiUrl, data, {
       headers: this.baseHeaders,
     });
 
@@ -202,7 +202,8 @@ export class SuperStreamExtractor implements IExtractor {
           }),
         },
       ];
-    } catch (e) {
+    } catch (error: any) {
+      console.error('SuperStream: ', error.message);
       return Promise.resolve([]);
     }
   };

@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { app } from 'electron';
 import { Source } from 'types/sources';
+import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 
 export class StreamlareExtractor implements IExtractor {
@@ -14,7 +14,7 @@ export class StreamlareExtractor implements IExtractor {
       // Streamlare endpoint requires the same userAgent that is used in the API request
       const userAgent = app.userAgentFallback;
 
-      const res = await axios.post(
+      const res = await axiosInstance.post(
         `${this.url}api/video/stream/get`,
         {
           id,
@@ -36,7 +36,8 @@ export class StreamlareExtractor implements IExtractor {
         };
       }
       return undefined;
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Streamlare: ', error.message);
       return Promise.resolve(undefined);
     }
   };

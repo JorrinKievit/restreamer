@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
 import { Source, Sources } from 'types/sources';
+import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 import { EmbedsitoExtractor } from './embedsito';
 
@@ -30,7 +30,7 @@ export class VidSrcExtractor implements IExtractor {
           : type === 'tv'
           ? `${this.embedUrl}${imdbId}/${season}-${episode}/`
           : '';
-      let res = await axios.get(url);
+      let res = await axiosInstance.get(url);
 
       const $ = load(res.data);
       const hashes = $('div.source')
@@ -39,7 +39,7 @@ export class VidSrcExtractor implements IExtractor {
 
       const serverlist = await Promise.all(
         hashes.map(async (hash) => {
-          res = await axios.get(`${this.url}srcrcp/${hash}`, {
+          res = await axiosInstance.get(`${this.url}srcrcp/${hash}`, {
             headers: {
               referer: this.url,
             },
@@ -54,7 +54,7 @@ export class VidSrcExtractor implements IExtractor {
             'https://embedsito.com/'
           );
           if (linkfixed.includes('/pro')) {
-            res = await axios.get(server, {
+            res = await axiosInstance.get(server, {
               headers: {
                 referer: this.url,
               },
@@ -81,7 +81,7 @@ export class VidSrcExtractor implements IExtractor {
       const sourceURLS: (Source | undefined)[] = await Promise.all(
         finalServerlist.map(async (server) => {
           if (server.server === 'pro') {
-            res = await axios.get(server.url, {
+            res = await axiosInstance.get(server.url, {
               method: 'GET',
               headers: {
                 referer: this.referer,
@@ -136,8 +136,9 @@ export class VidSrcExtractor implements IExtractor {
       );
       const sources = sourceURLS.filter((el) => el !== undefined) as Sources;
       return sources;
-    } catch (error) {
-      return [];
+    } catch (error: any) {
+      console.log('VidSrc: ', error.message);
+      return Promise.resolve([]);
     }
   };
 }

@@ -1,7 +1,7 @@
-import axios from 'axios';
 import * as m3u8Parser from 'm3u8-parser';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
+import { axiosInstance } from '../utils/axios';
 import { getResolutionName } from './utils';
 import { IExtractor } from './IExtractor';
 
@@ -57,14 +57,14 @@ export class RabbitStreamExtractor implements IExtractor {
   };
 
   private getDecryptionKey = async () => {
-    const res = await axios.get(this.decryptionKeyUrl);
+    const res = await axiosInstance.get(this.decryptionKeyUrl);
     return res.data;
   };
 
   private extractSourceUrl = async (url: string) => {
     const id = url.split('/').pop()!.split('?')[0];
     const apiUrl = `${this.url}ajax/embed-5/getSources?id=${id}`;
-    const res = await axios.get(apiUrl);
+    const res = await axiosInstance.get(apiUrl);
 
     const sources = res.data.sources;
     const subtitles = res.data.tracks;
@@ -92,7 +92,7 @@ export class RabbitStreamExtractor implements IExtractor {
     try {
       const { sourceUrl, subtitles, isHls } = await this.extractSourceUrl(url);
 
-      const m3u8Manifest = await axios.get(sourceUrl);
+      const m3u8Manifest = await axiosInstance.get(sourceUrl);
 
       const parser = new m3u8Parser.Parser();
       parser.push(m3u8Manifest.data);
@@ -115,7 +115,8 @@ export class RabbitStreamExtractor implements IExtractor {
         requiresProxy: false,
         subtitles,
       };
-    } catch (error) {
+    } catch (error: any) {
+      console.log('VidCloud: ', error.message);
       return Promise.resolve(undefined);
     }
   };
