@@ -69,7 +69,7 @@ export class RabbitStreamExtractor implements IExtractor {
     const sources = res.data.sources;
     const subtitles = res.data.tracks;
 
-    const isDecrypted = !sources[0].file.includes('https://');
+    const isDecrypted = !sources.includes('https://');
 
     let source = null;
     if (isDecrypted) {
