@@ -96,6 +96,7 @@ export const useDiscoverTMDB = <T extends FilterOptions['type']>(
               options.genres.length > 0 ? options.genres.join(',') : undefined,
             primary_release_year: options.year,
             sort_by: options.sortBy,
+            page: options.page,
           },
         })
         .then((res) => res.data),

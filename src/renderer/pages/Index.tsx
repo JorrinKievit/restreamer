@@ -48,7 +48,7 @@ const Index: FC = () => {
           <Grid
             templateColumns={{
               base: 'repeat(2, 1fr)',
-              md: 'repeat(6, 1fr)',
+              md: 'repeat(5, 1fr)',
             }}
             gap={6}
             w="full"

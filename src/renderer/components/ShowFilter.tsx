@@ -19,6 +19,7 @@ export type FilterOptions = {
   year?: number;
   type: ShowType;
   sortBy: string;
+  page: number;
 };
 
 interface ShowFilterProps {
@@ -45,6 +46,7 @@ const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
       year: Number(year),
       type,
       sortBy: sortBy?.value ? sortBy.value : 'popularity.desc',
+      page: 1,
     });
   };
 
