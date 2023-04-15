@@ -22,15 +22,25 @@ electronDl({
   openFolderWhenDone: true,
 });
 
+let mainWindow: BrowserWindow | null = null;
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.fullChangelog = true;
+    autoUpdater.autoInstallOnAppQuit = false;
+    autoUpdater.checkForUpdates();
+
+    autoUpdater.on('update-available', () => {
+      autoUpdater.downloadUpdate();
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+      mainWindow!.webContents.send('app-update-available', info);
+    });
   }
 }
-
-let mainWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

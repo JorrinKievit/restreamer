@@ -8,7 +8,11 @@ export type Channels =
   | 'start-proxy'
   | 'stop-proxy'
   | 'proxy-started'
-  | 'app-close';
+  | 'app-close'
+  | 'app-update-available'
+  | 'app-update-available-confirm'
+  | 'get-version'
+  | 'app-download-progress';
 
 const electronHandler = {
   ipcRenderer: {
@@ -47,7 +51,9 @@ const electronHandler = {
     getVersion() {
       return ipcRenderer.invoke('get-version');
     },
-
+    confirmUpdate() {
+      ipcRenderer.send('app-update-available-confirm');
+    },
     on(channel: Channels, func: (...args: unknown[]) => void) {
       const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
         func(...args);

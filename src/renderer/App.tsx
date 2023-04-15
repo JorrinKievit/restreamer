@@ -2,6 +2,7 @@ import { Box, ChakraProvider, Container } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import UpdateModal from './components/UpdateModal';
 import Index from './pages/Index';
 import MovieDetails from './pages/MovieDetails';
 import Movies from './pages/Movies';
@@ -37,6 +38,7 @@ const App = () => {
         <Container maxW="7xl" h="full">
           <Router>
             <Header />
+            <UpdateModal />
             <Box py={4} h="full">
               <Routes>
                 <Route path="/" element={<Index />} />
