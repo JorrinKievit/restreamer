@@ -17,11 +17,20 @@ let mainWindow: BrowserWindow | null = null;
 
 class AppUpdater {
   constructor() {
-    log.transports.file.level = 'info';
+    log.transports.file.level = 'debug';
     autoUpdater.logger = log;
     autoUpdater.fullChangelog = true;
     autoUpdater.autoInstallOnAppQuit = false;
+    autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
+
+    autoUpdater.on('checking-for-update', () => {
+      console.log('checking-for-update');
+    });
+
+    autoUpdater.on('error', (err) => {
+      console.log('error', err);
+    });
 
     autoUpdater.on('update-available', () => {
       autoUpdater.downloadUpdate();
@@ -111,10 +120,6 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
 };
 
 /**
@@ -132,6 +137,8 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
+    // eslint-disable-next-line no-new
+    new AppUpdater();
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
