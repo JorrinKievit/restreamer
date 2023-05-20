@@ -1,4 +1,3 @@
-import { BellIcon, SettingsIcon } from '@chakra-ui/icons';
 import {
   Button,
   Modal,
@@ -16,14 +15,16 @@ import {
 } from '@chakra-ui/react';
 import { UpdateInfo } from 'electron-updater';
 import { FC, useState } from 'react';
+import { client } from 'renderer/api/trpc';
 
 const UpdateModal: FC = () => {
+  const { mutate } = client.updater.quitAndInstall.useMutation();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [releaseNotes, setReleaseNotes] =
     useState<UpdateInfo['releaseNotes']>(null);
 
   const handleUpdate = () => {
-    window.electron.ipcRenderer.confirmUpdate();
+    mutate();
   };
 
   const parseHTML = (htmlString: string) => {

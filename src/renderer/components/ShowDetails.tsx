@@ -8,7 +8,7 @@ import {
   Tag,
 } from '@chakra-ui/react';
 import React, { FC } from 'react';
-import { TMDB_IMAGE_BASE_URL } from 'renderer/api/tmdb/api';
+import { TMDB_IMAGE_BASE_URL } from 'renderer/constants';
 
 interface ShowDetailsProps {
   posterPath: string;

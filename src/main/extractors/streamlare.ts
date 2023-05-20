@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { app } from 'electron';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../utils/axios';
@@ -36,8 +37,10 @@ export class StreamlareExtractor implements IExtractor {
         };
       }
       return undefined;
-    } catch (error: any) {
-      console.error('Streamlare: ', error.message);
+    } catch (error) {
+      if (isAxiosError(error) || error instanceof Error) {
+        console.log('Streamlare: ', error.message);
+      }
       return Promise.resolve(undefined);
     }
   };

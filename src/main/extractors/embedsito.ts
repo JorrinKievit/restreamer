@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
@@ -29,8 +30,10 @@ export class EmbedsitoExtractor implements IExtractor {
         quality,
         requiresProxy: false,
       };
-    } catch (error: any) {
-      console.error('Embedsito: ', error.message);
+    } catch (error) {
+      if (isAxiosError(error) || error instanceof Error) {
+        console.log('Embedsito: ', error.message);
+      }
       return Promise.resolve(undefined);
     }
   };

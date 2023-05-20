@@ -10,7 +10,10 @@ import {
   MenuList,
   MenuOptionGroup,
   MenuItemOption,
+  Text,
+  Tooltip,
 } from '@chakra-ui/react';
+import { TvShowDetailsResults } from 'main/api/tmdb/tvshow-details.types';
 import React, {
   Dispatch,
   FC,
@@ -18,10 +21,9 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { TvShowDetailsResults } from 'renderer/api/tmdb/tvshow-details.types';
 
 interface EpisodeListProps {
-  tvData: TvShowDetailsResults;
+  tvData: TvShowDetailsResults & { episodeNames: string[][] };
   activeEpisode: {
     season: number;
     episode: number;
@@ -51,7 +53,7 @@ const EpisodeList: FC<EpisodeListProps> = ({
   }, [activeEpisode.season]);
 
   return (
-    <Card p={6}>
+    <Card p={6} background="blue.900">
       <Flex gap={4} flexDirection="column" w="full">
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />} w="150px">
@@ -79,7 +81,7 @@ const EpisodeList: FC<EpisodeListProps> = ({
         <Grid
           templateColumns={{
             base: 'repeat(2, 1fr)',
-            md: 'repeat(6, 1fr)',
+            md: 'repeat(4, 1fr)',
           }}
           gap={6}
         >
@@ -103,10 +105,26 @@ const EpisodeList: FC<EpisodeListProps> = ({
                 })
               }
               sx={{
-                textDecoration: 'underline',
+                background: 'blue.800',
+                borderRadius: '0.375rem',
+                padding: '0.5rem',
               }}
             >
-              Episode {episodeNumber}
+              <Tooltip
+                label={
+                  tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1]
+                    ? tvData.episodeNames[selectedSeason][episodeNumber - 1]
+                    : ''
+                }
+              >
+                <Text noOfLines={1}>
+                  {tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1]
+                    ? `Episode ${episodeNumber}: ${
+                        tvData.episodeNames[selectedSeason][episodeNumber - 1]
+                      }`
+                    : `Episode ${episodeNumber}`}
+                </Text>
+              </Tooltip>
             </Box>
           ))}
         </Grid>

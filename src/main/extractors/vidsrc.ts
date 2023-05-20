@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
 import { Source, Sources } from 'types/sources';
@@ -39,71 +40,88 @@ export class VidSrcExtractor implements IExtractor {
 
       const serverlist = await Promise.all(
         hashes.map(async (hash) => {
-          res = await axiosInstance.get(`${this.url}srcrcp/${hash}`, {
-            headers: {
-              referer: this.url,
-            },
-          });
-          return res.request.res.responseUrl;
-        })
-      );
-      const finalServerlist = await Promise.all(
-        serverlist.map(async (server) => {
-          const linkfixed = server.replace(
-            'https://vidsrc.xyz/',
-            'https://embedsito.com/'
-          );
-          if (linkfixed.includes('/pro')) {
-            res = await axiosInstance.get(server, {
+          try {
+            res = await axiosInstance.get(`${this.url}srcrcp/${hash}`, {
               headers: {
                 referer: this.url,
               },
             });
-            const m3u8Regex = /((https:|http:)\/\/.*\.m3u8)/g;
-            const srcm3u8 = m3u8Regex.exec(res.data)![0];
-            const extractorDataRegex = /['"](.*set_pass[^"']*)/;
-            const extractorData = extractorDataRegex
-              .exec(res.data)![1]
-              .replace('//', 'https://');
-
-            return {
-              server: 'pro',
-              url: srcm3u8,
-              extractorData,
-            };
+            return res.request.res.responseUrl;
+          } catch (error) {
+            if (isAxiosError(error) || error instanceof Error) {
+              console.log('VidSrc rcp: ', error.message);
+            }
+            return Promise.resolve(undefined);
           }
-          return {
-            server: linkfixed.split('/')[2].split('.')[0],
-            url: linkfixed,
-          };
         })
+      );
+      const finalServerlist = await Promise.all(
+        serverlist
+          .filter((x) => x !== undefined)
+          .map(async (server) => {
+            const linkfixed = server.replace(
+              'https://vidsrc.xyz/',
+              'https://embedsito.com/'
+            );
+            if (linkfixed.includes('/pro')) {
+              res = await axiosInstance.get(server, {
+                headers: {
+                  referer: this.url,
+                },
+              });
+              const m3u8Regex = /((https:|http:)\/\/.*\.m3u8)/g;
+              const srcm3u8 = m3u8Regex.exec(res.data)![0];
+              const extractorDataRegex = /['"](.*set_pass[^"']*)/;
+              const extractorData = extractorDataRegex
+                .exec(res.data)![1]
+                .replace('//', 'https://');
+
+              return {
+                server: 'pro',
+                url: srcm3u8,
+                extractorData,
+              };
+            }
+            return {
+              server: linkfixed.split('/')[2].split('.')[0],
+              url: linkfixed,
+            };
+          })
       );
       const sourceURLS: (Source | undefined)[] = await Promise.all(
         finalServerlist.map(async (server) => {
           if (server.server === 'pro') {
-            res = await axiosInstance.get(server.url, {
-              method: 'GET',
-              headers: {
-                referer: this.referer,
-              },
-            });
-            if (res.request.res.responseUrl.includes('m3u8')) {
-              return {
-                server: 'VidSrc Pro',
-                url: res.request.res.responseUrl as string,
-                type: 'm3u8',
-                quality: 'Unknown',
-                referer: this.referer,
-                origin: this.origin,
-                extractorData: server.extractorData,
-                requiresProxy: true,
-              };
+            try {
+              res = await axiosInstance.get(server.url, {
+                method: 'GET',
+                headers: {
+                  referer: this.referer,
+                },
+              });
+              if (res.request.res.responseUrl.includes('m3u8')) {
+                return {
+                  server: 'VidSrc Pro',
+                  url: res.request.res.responseUrl as string,
+                  type: 'm3u8',
+                  quality: 'Unknown',
+                  referer: this.referer,
+                  origin: this.origin,
+                  extractorData: server.extractorData,
+                  requiresProxy: true,
+                };
+              }
+            } catch (error) {
+              if (isAxiosError(error) || error instanceof Error) {
+                console.log('VidSrc Pro: ', error.message);
+              }
+              return undefined;
             }
           }
           if (server.server === 'embedsito') {
             const source = await this.embedsitoExtractor.extractUrl(
               server.url.split('/').pop()!
             );
+
             return source;
           }
           // mixdrop doesn't work yet, HTTP 509
@@ -136,8 +154,10 @@ export class VidSrcExtractor implements IExtractor {
       );
       const sources = sourceURLS.filter((el) => el !== undefined) as Sources;
       return sources;
-    } catch (error: any) {
-      console.log('VidSrc: ', error.message);
+    } catch (error) {
+      if (isAxiosError(error) || error instanceof Error) {
+        console.log('VidSrc: ', error.message);
+      }
       return Promise.resolve([]);
     }
   };

@@ -1,24 +1,16 @@
-/* eslint-disable camelcase */
 import React, { FC, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Sources } from 'types/sources';
+import { Source } from 'types/sources';
 import VideoPlayer from 'renderer/components/VideoPlayer';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import EpisodeList from 'renderer/components/EpisodeList';
-import {
-  Heading,
-  Skeleton,
-  useBoolean,
-  useToast,
-  Flex,
-} from '@chakra-ui/react';
+import { Skeleton, useToast, Flex, VStack } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
-import { useMovieDetails, useTvShowDetails } from 'renderer/api/tmdb/api';
-import ErrorToast from 'renderer/components/ErrorToast';
 import SourceSelector from 'renderer/components/SourceSelector';
 import ShowDetails from 'renderer/components/ShowDetails';
+import { client } from 'renderer/api/trpc';
 
 const MovieDetails: FC = () => {
   const { id } = useParams();
@@ -28,22 +20,7 @@ const MovieDetails: FC = () => {
   const query = useQuery();
   const mediaType = query.get('media_type')! as ContentType;
 
-  const {
-    data: tvData,
-    isInitialLoading: tvInitialLoading,
-    error: tvError,
-  } = useTvShowDetails(mediaType === 'tv' ? id : undefined);
-
-  const {
-    data: movieData,
-    isInitialLoading: movieIsInitialLoading,
-    error: movieError,
-  } = useMovieDetails(mediaType === 'movie' ? id : undefined);
-
   const [playingData] = useLocalStorage<PlayingData>('playingData', {});
-  const [sourcesLoading, setSourcesLoading] = useBoolean(true);
-  const [sources, setSources] = useState<Sources>([]);
-  const [selectedSource, setSelectedSource] = useState(sources[0]);
   const [activeEpisode, setActiveEpisode] = useState<{
     season: number;
     episode: number;
@@ -51,6 +28,44 @@ const MovieDetails: FC = () => {
     season: playingData[id!]?.season ?? 1,
     episode: playingData[id!]?.episode ?? 1,
   });
+
+  const { data: tvData, isInitialLoading: tvInitialLoading } =
+    client.tmdb.tvShowDetails.useQuery(
+      {
+        tvShowId: mediaType === 'tv' ? id : '',
+      },
+      {
+        enabled: mediaType === 'tv' && !!id,
+      }
+    );
+
+  const { data: movieData, isInitialLoading: movieIsInitialLoading } =
+    client.tmdb.movieDetails.useQuery(
+      {
+        movieId: mediaType === 'movie' ? id : '',
+      },
+      {
+        enabled: mediaType === 'movie' && !!id,
+      }
+    );
+
+  const { data: sources, isLoading: sourcesLoading } =
+    client.app.getSources.useQuery(
+      {
+        imdbId:
+          (mediaType === 'tv'
+            ? tvData?.external_ids.imdb_id
+            : movieData?.imdb_id) || '',
+        showName: (mediaType === 'tv' ? tvData?.name : movieData?.title) || '',
+        type: mediaType,
+        season: mediaType === 'tv' ? activeEpisode.season : undefined,
+        episode: mediaType === 'tv' ? activeEpisode.episode : undefined,
+      },
+      {
+        enabled: !!tvData || !!movieData,
+      }
+    );
+  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
   const isLastEpisode =
     mediaType === 'tv'
@@ -60,43 +75,23 @@ const MovieDetails: FC = () => {
       : false;
 
   useEffect(() => {
-    const getSources = async () => {
-      const sourcesResponse = await window.electron.ipcRenderer.getSources(
-        mediaType === 'tv' ? tvData?.external_ids.imdb_id : movieData?.imdb_id,
-        mediaType === 'tv' ? tvData?.name : movieData?.title,
-        mediaType,
-        mediaType === 'tv' ? activeEpisode.season : undefined,
-        mediaType === 'tv' ? activeEpisode.episode : undefined
-      );
-      setSources(sourcesResponse);
-      setSelectedSource(sourcesResponse[0]);
-    };
-    setSourcesLoading.on();
-    setSources([]);
-    getSources().then(() => setSourcesLoading.off());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    id,
-    mediaType,
-    movieData?.imdb_id,
-    activeEpisode,
-    tvData?.external_ids.imdb_id,
-  ]);
+    if (sources && sources.length > 0) {
+      setSelectedSource(sources[0]);
+    }
+  }, [sources]);
 
   useEffect(() => {
     if (
       !tvInitialLoading &&
       !movieIsInitialLoading &&
       !sourcesLoading &&
+      sources &&
       sources.length === 0
     ) {
       toast({
         title: 'No sources found',
         description: 'No sources found for this video',
         status: 'error',
-        position: 'top-right',
-        duration: 5000,
-        isClosable: true,
       });
 
       if (mediaType === 'movie') navigate(-1);
@@ -131,26 +126,26 @@ const MovieDetails: FC = () => {
     };
   }, [activeEpisode.episode, activeEpisode.season, tvData]);
 
-  if (tvError || movieError)
-    return (
-      <ErrorToast
-        description={
-          tvError
-            ? tvError.response?.data.status_message
-            : movieError?.response?.data.status_message
-        }
-      />
-    );
-
   return (
     <Flex flexDirection="column" gap={4}>
       {sourcesLoading && (
         <>
-          <Skeleton height="500px" w="full" />
-          <Skeleton height="50px" w="full" />
+          <Skeleton height="700px" w="full" />
+          <Flex
+            height="50px"
+            w="full"
+            alignItems="center"
+            justifyContent="center"
+            gap={4}
+          >
+            {Array.from({ length: 4 }).map((_, i) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Skeleton key={i} h="full" w="200px" borderRadius="0.375rem" />
+            ))}
+          </Flex>
         </>
       )}
-      {sources && sources[0] && (
+      {sources && sources[0] && selectedSource && (
         <Flex gap={4} flexDirection="column">
           <VideoPlayer
             selectedSource={selectedSource}
@@ -165,6 +160,12 @@ const MovieDetails: FC = () => {
             selectSource={setSelectedSource}
           />
         </Flex>
+      )}
+      {(tvInitialLoading || movieIsInitialLoading) && (
+        <VStack gap={4} w="full">
+          <Skeleton height="200px" w="full" />
+          <Skeleton height="200px" w="full" />
+        </VStack>
       )}
       {mediaType === 'tv' && tvData && (
         <EpisodeList
@@ -200,9 +201,6 @@ const MovieDetails: FC = () => {
           productionCompanies={tvData.production_companies}
           votingAverage={tvData.vote_average}
         />
-      )}
-      {(tvInitialLoading || movieIsInitialLoading) && (
-        <Skeleton height="200px" w="full" />
       )}
     </Flex>
   );

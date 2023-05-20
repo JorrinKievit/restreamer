@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import * as m3u8Parser from 'm3u8-parser';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
@@ -115,8 +116,10 @@ export class RabbitStreamExtractor implements IExtractor {
         requiresProxy: false,
         subtitles,
       };
-    } catch (error: any) {
-      console.log('VidCloud: ', error.message);
+    } catch (error) {
+      if (isAxiosError(error) || error instanceof Error) {
+        console.log('VidCloud: ', error.message);
+      }
       return Promise.resolve(undefined);
     }
   };

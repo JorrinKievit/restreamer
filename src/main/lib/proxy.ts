@@ -1,4 +1,3 @@
-import { ipcMain } from 'electron';
 import path from 'path';
 import { ChildProcess, fork } from 'child_process';
 
@@ -9,7 +8,7 @@ const PROXY_PATH =
 
 let proxy: ChildProcess | null = null;
 
-ipcMain.on('start-proxy', (event, referer, origin) => {
+export const startProxy = (referer: string, origin: string) => {
   if (proxy) {
     proxy.kill();
   }
@@ -24,7 +23,7 @@ ipcMain.on('start-proxy', (event, referer, origin) => {
       '--origin',
       origin,
       '-v',
-      '4',
+      '-1',
     ],
     {
       detached: true,
@@ -33,7 +32,6 @@ ipcMain.on('start-proxy', (event, referer, origin) => {
       },
     }
   );
-  event.reply('proxy-started');
   proxy.on('message', (msg) => {
     console.log(msg);
   });
@@ -46,11 +44,10 @@ ipcMain.on('start-proxy', (event, referer, origin) => {
   proxy.on('close', (code, signal) => {
     console.log('close', code, signal);
   });
-});
+};
 
-ipcMain.on('stop-proxy', (event) => {
+export const stopProxy = () => {
   if (proxy) {
     proxy.kill();
   }
-  event.reply('proxy-stopped');
-});
+};

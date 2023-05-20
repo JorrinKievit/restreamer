@@ -7,20 +7,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import { generateProxy } from 'hlsd/proxy';
-
 import { APITypes, PlyrProps, usePlyr } from 'plyr-react';
-import { LoginResponse } from 'renderer/api/opensubtitles/login.types';
+import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { Source } from 'types/sources';
-import { Box } from '@chakra-ui/react';
+import { AspectRatio, Box } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { useHls } from 'renderer/hooks/useHls';
 import { SourceInfo } from 'plyr';
 import { randomString } from 'renderer/utils/string';
-import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
+import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
 import { convertSrtToWebVTT } from 'renderer/utils/subtitles';
 import { insertPlayerButtons } from 'renderer/utils/player';
+import { getProxyUrl } from 'renderer/lib/proxy';
+import { client } from 'renderer/api/trpc';
 import { SubtitleSelector } from './SubtitleSelector';
 import SyncSubtitlesModal from './SyncSubtitlesModal';
 
@@ -87,6 +87,20 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
     'playingData',
     {}
   );
+  const { mutate: startProxy } = client.proxy.start.useMutation();
+  const { mutate: stopProxy } = client.proxy.stop.useMutation();
+  const { data: proxyData } = client.proxy.validate.useQuery(
+    {
+      url: selectedSource!.extractorData!,
+    },
+    {
+      enabled: !!(
+        selectedSource.extractorData && selectedSource.server === 'VidSrc Pro'
+      ),
+      refetchInterval: 1000 * 60,
+    }
+  );
+
   const currentTime = useRef(0);
   const duration = useRef(0);
 
@@ -125,34 +139,23 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   };
 
   useEffect(() => {
-    if (selectedSource.requiresProxy) {
-      window.electron.ipcRenderer.startProxy(
-        selectedSource.referer,
-        selectedSource.origin
-      );
-    } else {
-      window.electron.ipcRenderer.stopProxy();
-    }
-    return () => {
-      window.electron.ipcRenderer.stopProxy();
-    };
-  }, [selectedSource]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timer;
     if (
-      selectedSource.extractorData &&
-      selectedSource.server === 'VidSrc Pro'
+      selectedSource.requiresProxy &&
+      selectedSource.referer &&
+      selectedSource.origin
     ) {
-      window.electron.ipcRenderer.validatePass(selectedSource.extractorData);
-      interval = setInterval(() => {
-        window.electron.ipcRenderer.validatePass(selectedSource.extractorData!);
-      }, 1000 * 60);
+      startProxy({
+        referer: selectedSource.referer,
+        origin: selectedSource.origin,
+      });
+    } else {
+      stopProxy();
     }
     return () => {
-      clearInterval(interval);
+      stopProxy();
     };
-  }, [selectedSource?.extractorData, selectedSource?.server]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSource]);
 
   useEffect(() => {
     if (ref.current?.plyr?.source) return;
@@ -185,12 +188,13 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
             if (selectedSource.type === 'mp4') return;
           }
 
-          if (opensubtitlesData?.token)
-            insertPlayerButtons(
-              ref.current!,
-              season && episode ? 'tv' : 'movie',
-              isLastEpisode
-            );
+          insertPlayerButtons(
+            ref.current!,
+            season && episode ? 'tv' : 'movie',
+            !!opensubtitlesData?.token,
+            !!selectedSource.subtitles,
+            isLastEpisode
+          );
 
           if (selectedSource.subtitles) {
             if (document.querySelectorAll('track').length > 0) return;
@@ -222,7 +226,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
                 kind: 'captions',
                 label: subtitle.label,
                 srclang: `${language.language_code}-${count}`,
-                default: subtitle.label === 'English',
+                default: subtitle.label === 'English' && count === 1,
                 src: subtitle.file,
               });
               video?.appendChild(track);
@@ -280,7 +284,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 
   return (
     <Box gap={4}>
-      <div>
+      <AspectRatio ratio={16 / 9}>
         <CustomPlyrInstance
           ref={onRefChange}
           source={
@@ -300,7 +304,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
             // eslint-disable-next-line no-nested-ternary
             selectedSource.type === 'm3u8'
               ? selectedSource.requiresProxy
-                ? generateProxy(selectedSource.url)
+                ? getProxyUrl(selectedSource.url)
                 : selectedSource.url
               : undefined
           }
@@ -325,12 +329,12 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
             ],
           }}
         />
-      </div>
+      </AspectRatio>
       {opensubtitlesData?.token && (
-        <>
-          <SubtitleSelector tmbdId={tmdbId} season={season} episode={episode} />
-          <SyncSubtitlesModal />
-        </>
+        <SubtitleSelector tmdbId={tmdbId} season={season} episode={episode} />
+      )}
+      {(selectedSource.subtitles || opensubtitlesData?.token) && (
+        <SyncSubtitlesModal />
       )}
     </Box>
   );

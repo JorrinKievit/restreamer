@@ -8,9 +8,9 @@ import {
   NumberInputField,
 } from '@chakra-ui/react';
 import { MultiValue, Select } from 'chakra-react-select';
+import { TMDB_MOVIE_GENRES, TMDB_TV_GENRES } from 'main/api/tmdb/genres';
+import { TMBD_SORT_BY } from 'main/api/tmdb/sort-by';
 import React, { FC, useState } from 'react';
-import { TMDB_MOVIE_GENRES, TMDB_TV_GENRES } from 'renderer/api/tmdb/genres';
-import { TMBD_SORT_BY } from 'renderer/api/tmdb/sort-by';
 
 type ShowType = 'movie' | 'tv';
 

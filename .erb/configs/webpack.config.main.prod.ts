@@ -66,6 +66,8 @@ const configuration: webpack.Configuration = {
 
     new webpack.DefinePlugin({
       'process.type': '"browser"',
+      OPENSUBTITLES_API_KEY: JSON.stringify(process.env.OPENSUBTITLES_API_KEY),
+      TMDB_API_KEY: JSON.stringify(process.env.TMDB_API_KEY),
     }),
   ],
 

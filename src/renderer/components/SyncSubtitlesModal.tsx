@@ -10,19 +10,20 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
+  NumberInputStepper,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useSyncSubtitle } from 'renderer/api/opensubtitles/api';
 import React, { FC, useEffect, useState } from 'react';
+import { useSyncSubtitle } from 'renderer/lib/subtitles';
 
 const SyncSubtitlesModal: FC = () => {
-  const { mutate, data, error, isLoading } = useSyncSubtitle();
+  const { mutate, error, isLoading } = useSyncSubtitle();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [value, setValue] = useState(0);
-  const format = (val: number) => `${val}ms`;
-  const parse = (val: string) => val.replace(/^\$/, '');
 
   useEffect(() => {
     document.addEventListener('open-sync-subtitles-modal', () => {
@@ -36,7 +37,12 @@ const SyncSubtitlesModal: FC = () => {
   }, [isOpen, onClose, onOpen]);
 
   const handleSyncSubtitleChange = () => {
-    const track = document.querySelector('track[default]');
+    const selectedLanguage = document
+      .querySelector('[data-plyr="language"][aria-checked="true"]')
+      ?.querySelector('.plyr__badge');
+    const track = document.querySelector(
+      `track[srclang="${selectedLanguage?.textContent?.toLowerCase()}"]`
+    );
     if (!track) return;
     mutate(
       {
@@ -60,13 +66,31 @@ const SyncSubtitlesModal: FC = () => {
         <ModalCloseButton />
         <ModalBody>
           <FormControl isRequired>
-            <FormLabel>Timeshift in ms</FormLabel>
+            <FormLabel>
+              {/* eslint-disable no-nested-ternary */}
+              {value === 0
+                ? 'No subtitle delay'
+                : value > 0
+                ? `Use this if the subtitles are shown ${value}ms too early`
+                : `Use this if the subtitles are shown ${value
+                    .toString()
+                    .replace('-', '')}ms too late`}
+            </FormLabel>
             <NumberInput
-              onChange={(v) => setValue(Number(parse(v)))}
-              value={format(value)}
-              placeholder="-1 or 1"
+              onChange={(v) =>
+                Number.isNaN(parseInt(v, 10))
+                  ? setValue(0)
+                  : setValue(parseInt(v, 10))
+              }
+              value={value}
+              placeholder="-100 or 100"
+              step={100}
             >
               <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
             </NumberInput>
             {error ? (
               <FormErrorMessage>{error.toString()}</FormErrorMessage>

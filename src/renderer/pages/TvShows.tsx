@@ -11,12 +11,12 @@ import {
   Text,
 } from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
-import { TMDB_IMAGE_BASE_URL, useDiscoverTMDB } from 'renderer/api/tmdb/api';
 import ShowFilter, { FilterOptions } from 'renderer/components/ShowFilter';
 import { Link } from 'react-router-dom';
-import ErrorToast from 'renderer/components/ErrorToast';
 import SkeletonGrid from 'renderer/components/SkeletonGrid';
 import Pagination from 'renderer/components/Pagination';
+import { client } from 'renderer/api/trpc';
+import { TMDB_IMAGE_BASE_URL } from 'renderer/constants';
 
 const TvShows: FC = () => {
   const [options, setOptions] = useState<FilterOptions>({
@@ -26,12 +26,16 @@ const TvShows: FC = () => {
     type: 'tv',
     page: 1,
   });
-  const { data, error, isLoading } = useDiscoverTMDB(
-    {
-      ...options,
+
+  const { data, isLoading } = client.tmdb.discover.useQuery({
+    options: {
+      genres: options.genres,
+      sortBy: options.sortBy,
+      year: options.year,
+      page: options.page,
     },
-    'tv'
-  );
+    type: 'tv',
+  });
 
   const callbackHandler = (opts: FilterOptions) => {
     setOptions(opts);
@@ -40,9 +44,6 @@ const TvShows: FC = () => {
   const onPageChange = (page: number) => {
     setOptions({ ...options, page });
   };
-
-  if (error)
-    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <VStack gap={4}>

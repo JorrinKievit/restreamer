@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import { Source, Sources } from 'types/sources';
 import { ContentType } from 'types/tmbd';
@@ -76,8 +77,10 @@ export class TwoEmbedExtractor implements IExtractor {
       return finalServerlist.filter(
         (server) => server !== undefined
       ) as Sources;
-    } catch (error: any) {
-      console.log('2Embed: ', error.message);
+    } catch (error) {
+      if (isAxiosError(error) || error instanceof Error) {
+        console.log('2Embed: ', error.message);
+      }
       return Promise.resolve([]);
     }
   };

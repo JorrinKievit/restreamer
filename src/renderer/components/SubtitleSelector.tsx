@@ -14,22 +14,19 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { FC, useEffect, useState } from 'react';
-import {
-  useDownloadSubtitle,
-  useSearchSubtitles,
-} from 'renderer/api/opensubtitles/api';
-import { OPENSUBTITLES_LANGUAGES } from 'renderer/api/opensubtitles/languages';
-import { OpenSubtitlesUser } from 'renderer/api/opensubtitles/user-information.types';
+import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
+import { OpenSubtitlesUser } from 'main/api/opensubtitles/user-information.types';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
+import { client } from 'renderer/api/trpc';
 
 interface SubtitleSelectorProps {
-  tmbdId: string;
+  tmdbId: string;
   season?: number;
   episode?: number;
 }
 
 export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
-  tmbdId,
+  tmdbId,
   season,
   episode,
 }) => {
@@ -39,16 +36,19 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   const [opensubtitlesData, setOpensubtitlesData] =
     useLocalStorage<OpenSubtitlesUser | null>('opensubtitles', null);
 
-  const {
-    data,
-    error: searchError,
-    isLoading: searchIsLoading,
-  } = useSearchSubtitles(tmbdId, isOpen, season, episode);
-  const {
-    mutate,
-    error: downloadError,
-    isLoading: downloadIsLoading,
-  } = useDownloadSubtitle();
+  const { data, isLoading: searchIsLoading } =
+    client.opensubtitles.search.useQuery(
+      {
+        tmdbId,
+        season,
+        episode,
+      },
+      {
+        enabled: !!isOpen,
+      }
+    );
+  const { mutate, isLoading: downloadIsLoading } =
+    client.opensubtitles.download.useMutation();
 
   useEffect(() => {
     document.addEventListener('open-subtitles-modal', () => {
@@ -67,7 +67,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
 
   const handleSubtitleChange = () => {
     mutate(
-      { fileId: Number(fileId) },
+      { fileId: Number(fileId), token: opensubtitlesData!.token },
       {
         onSuccess: (res) => {
           const video = document.querySelector('video');

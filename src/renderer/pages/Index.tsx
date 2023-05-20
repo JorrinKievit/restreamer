@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 import {
   AspectRatio,
   Flex,
@@ -17,25 +17,25 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
-import { TMDB_IMAGE_BASE_URL, useGetShowsById } from 'renderer/api/tmdb/api';
 import { Link as RouterLink } from 'react-router-dom';
-import ErrorToast from 'renderer/components/ErrorToast';
-import SkeletonGrid from 'renderer/components/SkeletonGrid';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { DeleteIcon, ViewIcon } from '@chakra-ui/icons';
 import { useLocalStorage } from 'usehooks-ts';
+import SkeletonGrid from 'renderer/components/SkeletonGrid';
 import NotFoundImage from 'renderer/assets/undraw_page_not_found.svg';
+import { client } from 'renderer/api/trpc';
+import { TMDB_IMAGE_BASE_URL } from 'renderer/constants';
 
 const Index: FC = () => {
   const [playingData, setPlayingData] = useLocalStorage<PlayingData>(
     'playingData',
     {}
   );
-  const { data, error, isInitialLoading } = useGetShowsById(playingData);
+
+  const { data, isInitialLoading } = client.tmdb.getShowsById.useQuery({
+    playingData,
+  });
 
   if (isInitialLoading) return <SkeletonGrid />;
-
-  if (error)
-    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <VStack>
@@ -107,6 +107,35 @@ const Index: FC = () => {
                                 setPlayingData(newPlayingData);
                               }}
                             />
+                            <Flex
+                              flexDirection="column"
+                              w="100%"
+                              h="100%"
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              <IconButton
+                                icon={<ViewIcon />}
+                                colorScheme="blue"
+                                aria-label="View show details"
+                                size="sm"
+                                marginTop={
+                                  show.media_type === 'tv' ? '20px' : 0
+                                }
+                              />
+                              {show.media_type === 'tv' && (
+                                <Text>
+                                  Season {playingData![show.id].season} Episode{' '}
+                                  {playingData![show.id].episode}
+                                </Text>
+                              )}
+                              <Text>
+                                {(
+                                  playingData![show.id].playingTime / 60
+                                ).toFixed(0)}{' '}
+                                / {runtime ?? 'NaN'} min
+                              </Text>
+                            </Flex>
                           </Box>
                         </>
                       </AspectRatio>

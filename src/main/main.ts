@@ -1,21 +1,12 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import electronDl from 'electron-dl';
+import { createIPCHandler } from 'electron-trpc/main';
 import { resolveHtmlPath } from './util';
-
-import './ipc/index';
+import { router } from './api';
 
 electronDl({
   saveAs: true,
@@ -97,6 +88,8 @@ const createWindow = async () => {
   mainWindow.removeMenu();
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+
+  createIPCHandler({ router, windows: [mainWindow] });
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {

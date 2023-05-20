@@ -1,10 +1,6 @@
 import { FC } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  TMDB_IMAGE_BASE_URL,
-  useSearchMoviesAndShows,
-} from 'renderer/api/tmdb/api';
-import {
   AspectRatio,
   Flex,
   Grid,
@@ -16,17 +12,21 @@ import {
   Text,
   Skeleton,
 } from '@chakra-ui/react';
-import ErrorToast from 'renderer/components/ErrorToast';
 import SkeletonGrid from 'renderer/components/SkeletonGrid';
+import { client } from 'renderer/api/trpc';
+import { TMDB_IMAGE_BASE_URL } from 'renderer/constants';
 
 const SearchResultsPage: FC = () => {
   const { query } = useParams();
-  const { data, error, isLoading } = useSearchMoviesAndShows(query);
+
+  const { data, isLoading } = client.tmdb.search.useQuery(
+    {
+      query,
+    },
+    { enabled: !!query }
+  );
 
   if (isLoading) return <SkeletonGrid />;
-
-  if (error)
-    return <ErrorToast description={error.response?.data.status_message} />;
 
   return (
     <Grid

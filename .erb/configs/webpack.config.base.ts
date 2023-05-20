@@ -59,6 +59,10 @@ const configuration: webpack.Configuration = {
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),
+    new webpack.DefinePlugin({
+      OPENSUBTITLES_API_KEY: JSON.stringify(process.env.OPENSUBTITLES_API_KEY),
+      TMDB_API_KEY: JSON.stringify(process.env.TMDB_API_KEY),
+    }),
   ],
 };
 
