@@ -25,11 +25,14 @@ const initialOpenSubtitlesData: OpenSubtitlesUser = {
   token: '',
   user: {
     allowed_downloads: 0,
+    allowed_translations: 0,
     level: '',
     user_id: 0,
     ext_installed: false,
+    username: '',
     vip: false,
     remaining_downloads: 0,
+    downloads_count: 0,
   },
 };
 
@@ -124,12 +127,12 @@ const OpenSubtitlesSettings: FC = () => {
               <Table variant="simple">
                 <Tbody>
                   <Tr>
-                    <Td>User ID</Td>
-                    <Td>{opensubtitlesData.user.user_id}</Td>
+                    <Td>Username</Td>
+                    <Td>{opensubtitlesData.user.username}</Td>
                   </Tr>
                   <Tr>
-                    <Td>Allowed downloads</Td>
-                    <Td>{opensubtitlesData.user.allowed_downloads}</Td>
+                    <Td>User ID</Td>
+                    <Td>{opensubtitlesData.user.user_id}</Td>
                   </Tr>
                   <Tr>
                     <Td>Remaining downloads</Td>

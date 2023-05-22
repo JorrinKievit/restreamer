@@ -34,7 +34,7 @@ const TvShows: FC = () => {
       year: options.year,
       page: options.page,
     },
-    type: 'tv',
+    type: options.type,
   });
 
   const callbackHandler = (opts: FilterOptions) => {

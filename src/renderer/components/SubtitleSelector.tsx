@@ -164,8 +164,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
                       key={`${subtitle.attributes.files[0].file_id}-${i}`}
                       value={subtitle.attributes.files[0].file_id}
                     >
-                      {subtitle.attributes.files[0].file_name} -{' '}
-                      {subtitle.attributes.language} -{' '}
+                      {subtitle.attributes.files[0].file_name} | Downloads:{' '}
                       {subtitle.attributes.download_count}
                     </option>
                   ))}

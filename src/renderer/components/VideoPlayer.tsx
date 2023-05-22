@@ -182,6 +182,32 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         let initialLoad = true;
         ref.current = newRef;
 
+        const onLanguageChange = () => {
+          const tracks = document.querySelectorAll('track');
+          const plyrData = localStorage.getItem('plyr')
+            ? JSON.parse(localStorage.getItem('plyr') as string)
+            : null;
+
+          const selectedTrack: HTMLTrackElement | null =
+            (ref.current?.plyr.currentTrack === -1
+              ? document.querySelector(`track[srclang=${plyrData?.language}]`)
+              : tracks[ref.current?.plyr.currentTrack!]) ??
+            document.querySelector('track[default]');
+
+          if (!selectedTrack) return;
+
+          if (selectedTrack.src.includes('.srt')) {
+            convertSrtToWebVTT(selectedTrack.src).then((vtt) => {
+              selectedTrack.setAttribute('src', vtt);
+            });
+          }
+        };
+
+        const onTimeUpdate = () => {
+          currentTime.current = ref.current!.plyr.currentTime;
+          duration.current = ref.current!.plyr.duration;
+        };
+
         const onLoadData = () => {
           if (initialLoad) {
             initialLoad = false;
@@ -231,6 +257,8 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
               });
               video?.appendChild(track);
             });
+
+            onLanguageChange();
           }
           ref.current!.plyr.elements?.container?.focus();
 
@@ -245,26 +273,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
               ref.current!.plyr.currentTime = playingData[tmdbId].playingTime;
             }
           }
-        };
-
-        const onLanguageChange = () => {
-          const tracks = document.querySelectorAll('track');
-          const selectedTrack =
-            tracks[ref.current?.plyr.currentTrack!] ??
-            document.querySelector('track[default]');
-
-          if (!selectedTrack) return;
-
-          if (selectedTrack.src.includes('.srt')) {
-            convertSrtToWebVTT(selectedTrack.src).then((vtt) => {
-              selectedTrack.setAttribute('src', vtt);
-            });
-          }
-        };
-
-        const onTimeUpdate = () => {
-          currentTime.current = ref.current!.plyr.currentTime;
-          duration.current = ref.current!.plyr.duration;
         };
 
         ref.current.plyr.on('loadeddata', onLoadData);

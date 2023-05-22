@@ -34,7 +34,7 @@ const Movies: FC = () => {
       year: options.year,
       page: options.page,
     },
-    type: 'movie',
+    type: options.type,
   });
 
   const callbackHandler = (opts: FilterOptions) => {
@@ -60,6 +60,7 @@ const Movies: FC = () => {
               md: 'repeat(5, 1fr)',
             }}
             gap={6}
+            w="full"
           >
             {data.results.map((show) => {
               return (
