@@ -17,12 +17,12 @@ export class TwoEmbedExtractor implements IExtractor {
 
   private rabbitStreamExtractor = new RabbitStreamExtractor();
 
-  extractUrls = async (
+  async extractUrls(
     imdbId: string,
     type: ContentType,
     season?: number,
     episode?: number
-  ): Promise<Sources> => {
+  ): Promise<Sources> {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
@@ -32,9 +32,7 @@ export class TwoEmbedExtractor implements IExtractor {
           ? `${this.url}embed/imdb/tv?id=${imdbId}&s=${season}&e=${episode}/`
           : '';
 
-      let res = await axiosInstance.get(url, {
-        timeout: 3000,
-      });
+      let res = await axiosInstance.get(url);
       const $ = load(res.data);
       const captchaKey = $('[data-recaptcha-key]').attr('data-recaptcha-key');
 
@@ -81,7 +79,7 @@ export class TwoEmbedExtractor implements IExtractor {
       if (isAxiosError(error) || error instanceof Error) {
         console.log('2Embed: ', error.message);
       }
-      return Promise.resolve([]);
+      return [];
     }
-  };
+  }
 }

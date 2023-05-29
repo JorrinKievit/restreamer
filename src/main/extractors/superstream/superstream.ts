@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import crypto from 'crypto';
 import { Source, Sources } from 'types/sources';
 import { ContentType } from 'types/tmbd';
@@ -58,27 +59,27 @@ export class SuperStreamExtractor implements IExtractor {
     'Content-Type': 'application/x-www-form-urlencoded',
   };
 
-  private getExpireDate = () => {
+  private getExpireDate() {
     const date = new Date();
     date.setHours(date.getHours() + 12);
     return date.getTime();
-  };
+  }
 
-  private md5 = (input: string) => {
+  private md5(input: string) {
     const hash = crypto.createHash('md5').update(input).digest();
     return hash.toString('hex').toLowerCase();
-  };
+  }
 
-  private encryptQuery = (query: string) => {
+  private encryptQuery(query: string) {
     const cipher = crypto.createCipheriv('des-ede3-cbc', this.key, this.iv);
     cipher.setAutoPadding(true);
     const encrypted =
       cipher.update(query, 'utf-8', 'base64') + cipher.final('base64');
 
     return encrypted;
-  };
+  }
 
-  private getVerify = (encryptedQuery: string) => {
+  private getVerify(encryptedQuery: string) {
     const md5Hash = crypto.createHash('md5');
     md5Hash.update(this.appKey);
     const hash1 = md5Hash.digest('hex');
@@ -86,12 +87,12 @@ export class SuperStreamExtractor implements IExtractor {
     const hash2 = crypto.createHash('md5');
     hash2.update(hash1 + this.key + encryptedQuery);
     return hash2.digest('hex');
-  };
+  }
 
-  private executeApiCall = async <T>(
+  private async executeApiCall<T>(
     queryData: object,
     useSecondaryApi: boolean
-  ): Promise<T> => {
+  ): Promise<T> {
     let apiUrl = this.url;
     if (useSecondaryApi) apiUrl = this.secondUrl;
 
@@ -121,14 +122,14 @@ export class SuperStreamExtractor implements IExtractor {
     });
 
     return response.data;
-  };
+  }
 
-  extractUrls = async (
+  async extractUrls(
     searchQuery: string,
     type: ContentType,
     season?: number,
     episode?: number
-  ): Promise<Sources> => {
+  ): Promise<Sources> {
     try {
       const searchData = {
         ...this.baseData,
@@ -193,7 +194,7 @@ export class SuperStreamExtractor implements IExtractor {
           quality: link.real_quality as Source['quality'],
           requiresProxy: false,
           subtitles: subtitleDataResponse.data.list.flatMap((subtitleList) => {
-            const subtitles = subtitleList.subtitles.slice(0, 3);
+            const subtitles = subtitleList.subtitles.slice(0, 10);
             return subtitles.map((superStreamSubtitle) => ({
               file: superStreamSubtitle.file_path,
               label: superStreamSubtitle.language,
@@ -202,9 +203,10 @@ export class SuperStreamExtractor implements IExtractor {
           }),
         },
       ];
-    } catch (error: any) {
-      console.error('SuperStream: ', error.message);
-      return Promise.resolve([]);
+    } catch (error) {
+      if (isAxiosError(error) || error instanceof Error)
+        console.error('SuperStream: ', error.message);
+      return [];
     }
-  };
+  }
 }

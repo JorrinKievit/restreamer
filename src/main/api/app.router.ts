@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import z from 'zod';
 import { Sources } from 'types/sources';
+import { GoMoviesExtractor } from '../extractors/gomovies';
 import { TwoEmbedExtractor } from '../extractors/2embed';
 import { SuperStreamExtractor } from '../extractors/superstream/superstream';
 import { VidSrcExtractor } from '../extractors/vidsrc';
@@ -21,10 +22,19 @@ export const appRouter = t.router({
       })
     )
     .query(async (req) => {
+      const goMoviesExtractor = new GoMoviesExtractor();
       const superStreamExtractor = new SuperStreamExtractor();
       const twoEmbedExtractor = new TwoEmbedExtractor();
       const vidSrcExtractor = new VidSrcExtractor();
+
       const { imdbId, showName, type, season, episode } = req.input;
+
+      const GoMoviesSources = await goMoviesExtractor.extractUrls(
+        showName,
+        type,
+        season,
+        episode
+      );
 
       const superStreamSources = await superStreamExtractor.extractUrls(
         showName,
@@ -47,11 +57,12 @@ export const appRouter = t.router({
         episode
       );
 
-      const sources = [
+      const sources: Sources = [
+        ...GoMoviesSources,
         ...superStreamSources,
         ...twoEmbedSources,
         ...vidSrcSources,
-      ] as Sources;
+      ];
 
       return sources;
     }),

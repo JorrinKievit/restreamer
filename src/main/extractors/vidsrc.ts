@@ -17,12 +17,12 @@ export class VidSrcExtractor implements IExtractor {
 
   private embedsitoExtractor = new EmbedsitoExtractor();
 
-  public extractUrls = async (
+  async extractUrls(
     imdbId: string,
     type: ContentType,
     season?: number,
     episode?: number
-  ): Promise<Sources> => {
+  ): Promise<Sources> {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
@@ -35,6 +35,13 @@ export class VidSrcExtractor implements IExtractor {
 
       const $ = load(res.data);
       const hashes = $('div.source')
+        // Fembed is not working, timeout
+        .map((_, el) => {
+          const childDiv = $(el).find('div#name');
+          const text = childDiv.text();
+          if (text.includes('VidSrc Fembed')) return undefined;
+          return el;
+        })
         .map((_, el) => $(el).attr('data-hash'))
         .get();
 
@@ -158,7 +165,7 @@ export class VidSrcExtractor implements IExtractor {
       if (isAxiosError(error) || error instanceof Error) {
         console.log('VidSrc: ', error.message);
       }
-      return Promise.resolve([]);
+      return [];
     }
-  };
+  }
 }

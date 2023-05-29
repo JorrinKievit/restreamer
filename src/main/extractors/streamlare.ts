@@ -9,7 +9,7 @@ export class StreamlareExtractor implements IExtractor {
 
   referer: string = 'https://sltube.org/';
 
-  extractUrl = async (url: string): Promise<Source | undefined> => {
+  async extractUrl(url: string): Promise<Source | undefined> {
     try {
       const id = url.split('/').pop();
       // Streamlare endpoint requires the same userAgent that is used in the API request
@@ -32,7 +32,7 @@ export class StreamlareExtractor implements IExtractor {
           server: 'Streamlare',
           url: res.data.result.Original.file,
           type: res.data.type.includes('mp4') ? 'mp4' : 'm3u8',
-          quality: res.data.result.Original.label,
+          quality: 'Unknown',
           requiresProxy: false,
         };
       }
@@ -41,7 +41,7 @@ export class StreamlareExtractor implements IExtractor {
       if (isAxiosError(error) || error instanceof Error) {
         console.log('Streamlare: ', error.message);
       }
-      return Promise.resolve(undefined);
+      return undefined;
     }
-  };
+  }
 }

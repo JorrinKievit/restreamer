@@ -6,7 +6,7 @@ import { IExtractor } from './IExtractor';
 export class EmbedsitoExtractor implements IExtractor {
   url: string = 'https://embedsito.com/api/source/';
 
-  extractUrl = async (url: string): Promise<Source | undefined> => {
+  async extractUrl(url: string): Promise<Source | undefined> {
     try {
       const res = await axiosInstance.post(
         `https://embedsito.com/api/source/${url}`
@@ -34,7 +34,7 @@ export class EmbedsitoExtractor implements IExtractor {
       if (isAxiosError(error) || error instanceof Error) {
         console.log('Embedsito: ', error.message);
       }
-      return Promise.resolve(undefined);
+      return undefined;
     }
-  };
+  }
 }

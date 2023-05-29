@@ -14,11 +14,11 @@ export class RabbitStreamExtractor implements IExtractor {
   private decryptionKeyUrl =
     'https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt';
 
-  private md5 = (input: Buffer): Buffer => {
+  private md5(input: Buffer): Buffer {
     return crypto.createHash('md5').update(input).digest();
-  };
+  }
 
-  private generateKey = (salt: Buffer, secret: Buffer): Buffer => {
+  private generateKey(salt: Buffer, secret: Buffer): Buffer {
     let key = this.md5(Buffer.concat([secret, salt]));
     let currentKey = key;
     while (currentKey.length < 48) {
@@ -26,12 +26,9 @@ export class RabbitStreamExtractor implements IExtractor {
       currentKey = Buffer.concat([currentKey, key]);
     }
     return currentKey;
-  };
+  }
 
-  private decryptSourceUrl = (
-    decryptionKey: Buffer,
-    sourceUrl: string
-  ): string => {
+  private decryptSourceUrl(decryptionKey: Buffer, sourceUrl: string): string {
     const cipherData = Buffer.from(sourceUrl, 'base64');
     const encrypted = cipherData.slice(16);
     const algorithm = 'aes-256-cbc';
@@ -47,22 +44,22 @@ export class RabbitStreamExtractor implements IExtractor {
       decipher.final(),
     ]);
     return decryptedData.toString('utf8');
-  };
+  }
 
-  private decrypt = (input: string, key: string): string => {
+  private decrypt(input: string, key: string): string {
     const decryptionKey = this.generateKey(
       Buffer.from(input, 'base64').slice(8, 16),
       Buffer.from(key, 'utf8')
     );
     return this.decryptSourceUrl(decryptionKey, input);
-  };
+  }
 
-  private getDecryptionKey = async () => {
+  private async getDecryptionKey() {
     const res = await axiosInstance.get(this.decryptionKeyUrl);
     return res.data;
-  };
+  }
 
-  private extractSourceUrl = async (url: string) => {
+  private async extractSourceUrl(url: string) {
     const id = url.split('/').pop()!.split('?')[0];
     const apiUrl = `${this.url}ajax/embed-5/getSources?id=${id}`;
     const res = await axiosInstance.get(apiUrl);
@@ -87,9 +84,9 @@ export class RabbitStreamExtractor implements IExtractor {
       subtitles,
       isHls: source.type === 'hls',
     };
-  };
+  }
 
-  extractUrl = async (url: string): Promise<Source | undefined> => {
+  async extractUrl(url: string): Promise<Source | undefined> {
     try {
       const { sourceUrl, subtitles, isHls } = await this.extractSourceUrl(url);
 
@@ -120,7 +117,7 @@ export class RabbitStreamExtractor implements IExtractor {
       if (isAxiosError(error) || error instanceof Error) {
         console.log('VidCloud: ', error.message);
       }
-      return Promise.resolve(undefined);
+      return undefined;
     }
-  };
+  }
 }

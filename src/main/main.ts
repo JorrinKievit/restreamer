@@ -1,6 +1,6 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, nativeImage, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import electronDl from 'electron-dl';
@@ -84,7 +84,9 @@ const createWindow = async () => {
     show: false,
     width: 1500,
     height: 900,
-    icon: getAssetPath('icon.png'),
+    icon: nativeImage
+      .createFromPath(getAssetPath('icon.png'))
+      .resize({ width: 24, height: 24 }),
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true,
