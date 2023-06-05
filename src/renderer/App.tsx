@@ -8,7 +8,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { ipcLink } from 'electron-trpc/renderer';
 import { useState } from 'react';
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  Navigate,
+} from 'react-router-dom';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Header from './components/Header';
 import UpdateModal from './components/UpdateModal';
 import Index from './pages/Index';
@@ -21,6 +28,8 @@ import TvShows from './pages/TvShows';
 import './styles/globals.css';
 import extendedTheme from './styles/theme';
 import { client } from './api/trpc';
+import Downloads from './pages/Downloads';
+import useConnectionStatus from './hooks/useConnectionStatus';
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -32,6 +41,7 @@ const App = () => {
       new QueryClient({
         defaultOptions: {
           queries: {
+            networkMode: 'online',
             retry: false,
             staleTime: twentyFourHoursInMs,
 
@@ -74,6 +84,9 @@ const App = () => {
       links: [ipcLink()],
     })
   );
+
+  const isOnline = useConnectionStatus();
+
   return (
     <>
       <ToastContainer />
@@ -89,18 +102,29 @@ const App = () => {
       >
         <client.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
             <Container maxW="7xl" h="full">
               <Router>
                 <Header />
                 <UpdateModal />
                 <Box py={4} h="full">
                   <Routes>
-                    <Route path="/" element={<Index />} />
+                    <Route
+                      path="/"
+                      element={
+                        isOnline ? (
+                          <Index />
+                        ) : (
+                          <Navigate replace to="/downloads" />
+                        )
+                      }
+                    />
                     <Route path="/search/:query" element={<Search />} />
                     <Route path="/details/:id" element={<MovieDetails />} />
                     <Route path="/movies" element={<Movies />} />
                     <Route path="/tvshows" element={<TvShows />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/downloads" element={<Downloads />} />
                   </Routes>
                 </Box>
               </Router>
