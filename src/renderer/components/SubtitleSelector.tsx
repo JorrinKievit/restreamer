@@ -1,13 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import {
   Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
+  ButtonGroup,
+  Popover,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverFooter,
+  PopoverHeader,
   Select,
   Skeleton,
   useDisclosure,
@@ -18,6 +18,7 @@ import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
 import { OpenSubtitlesUser } from 'main/api/opensubtitles/user-information.types';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { client } from 'renderer/api/trpc';
+import { useMediaPlayer, useMediaStore } from '@vidstack/react';
 
 interface SubtitleSelectorProps {
   tmdbId: string;
@@ -50,48 +51,61 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   const { mutate, isLoading: downloadIsLoading } =
     client.opensubtitles.download.useMutation();
 
+  const player = useMediaPlayer();
+  const store = useMediaStore();
+
   useEffect(() => {
-    document.addEventListener('open-subtitles-modal', () => {
+    document.addEventListener('open-subtitles-popover', () => {
       if (!isOpen) onOpen();
     });
     return () => {
-      document.removeEventListener('open-subtitles-modal', () => {
+      document.removeEventListener('open-subtitles-popover', () => {
         if (isOpen) onClose();
       });
     };
-  }, [isOpen, onClose, onOpen]);
+  }, [isOpen, onClose, onOpen, player?.user]);
 
   useEffect(() => {
     setFileId('');
   }, [language]);
+
+  useEffect(() => {
+    if (isOpen) player?.user.pauseIdleTracking(true);
+    else player?.user.pauseIdleTracking(false);
+  }, [isOpen, player?.user]);
 
   const handleSubtitleChange = () => {
     mutate(
       { fileId: Number(fileId), token: opensubtitlesData!.token },
       {
         onSuccess: (res) => {
-          const video = document.querySelector('video');
-          const tracks = document.querySelectorAll('track');
-          tracks.forEach((track) => {
-            if (track.srclang === language) track.remove();
-            track.removeAttribute('default');
-          });
-          const track = document.createElement('track');
-          if (!track) return;
-          Object.assign(track, {
-            kind: 'subtitles',
-            label: OPENSUBTITLES_LANGUAGES.find(
-              (l) => l.language_code === language
-            )?.language_name,
-            srclang: language,
-            default: true,
+          if (!player || !store) return;
+
+          const existingTextTracks = player.textTracks;
+          const languageTracksCount = Array.from(existingTextTracks).filter(
+            (track) => track?.language === language
+          ).length;
+
+          let label = `Uploaded | ${
+            OPENSUBTITLES_LANGUAGES.find((l) => l.language_code === language)
+              ?.language_name
+          }`;
+
+          if (languageTracksCount > 0) label += ` ${languageTracksCount + 1}`;
+
+          player.textTracks.add({
             src: res.link,
+            kind: 'subtitles',
+            label,
+            language,
+            default: true,
           });
-          video?.appendChild(track);
+          player.textTracks[player.textTracks.length - 1]!.mode = 'showing';
 
           setOpensubtitlesData({
             ...opensubtitlesData!,
             user: {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
               ...opensubtitlesData?.user!,
               remaining_downloads: res.remaining,
             },
@@ -103,12 +117,16 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Subtitle selector</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
+    <Popover isOpen={isOpen} onClose={onClose}>
+      <PopoverContent
+        sx={{
+          marginTop: '10px',
+          left: player?.state.fullscreen ? '450%' : '240%',
+        }}
+      >
+        <PopoverHeader>Subtitle selector</PopoverHeader>
+        <PopoverCloseButton />
+        <PopoverBody>
           <Skeleton isLoaded={!searchIsLoading}>
             <VStack spacing={4}>
               <Select
@@ -122,7 +140,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
                       ?.filter(
                         (subtitle) => subtitle.attributes.language !== null
                       )
-                      .map((subtitle) =>
+                      .map((subtitle: { attributes: { language: string } }) =>
                         OPENSUBTITLES_LANGUAGES.find(
                           (l) =>
                             subtitle.attributes.language.toLowerCase() ===
@@ -171,22 +189,24 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({
               </Select>
             </VStack>
           </Skeleton>
-        </ModalBody>
-        <ModalFooter gap={4}>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            colorScheme="blue"
-            mr={3}
-            onClick={handleSubtitleChange}
-            isDisabled={fileId === ''}
-            isLoading={downloadIsLoading}
-          >
-            Select
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </PopoverBody>
+        <PopoverFooter alignItems="right">
+          <ButtonGroup w="full" justifyContent="end">
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={handleSubtitleChange}
+              isDisabled={fileId === ''}
+              isLoading={downloadIsLoading}
+            >
+              Select
+            </Button>
+          </ButtonGroup>
+        </PopoverFooter>
+      </PopoverContent>
+    </Popover>
   );
 };

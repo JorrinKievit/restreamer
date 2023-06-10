@@ -2,23 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@import '~plyr/dist/plyr.css';
-
-.plyr__captions {
-  font-size: 1.8rem;
-}
-
-.plyr:fullscreen .plyr__captions {
-  font-size: 1.8rem;
-}
-
-.plyr__menu__container::-webkit-scrollbar {
-  display: none;
-}
-.plyr__menu__container {
-  max-height: 40vh;
-  overflow-y: auto;
-}
+@import '~vidstack/styles/defaults.css';
+@import '~vidstack/styles/community-skin/video.css';
 
 html,
 body {

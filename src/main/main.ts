@@ -1,10 +1,10 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
 import path from 'path';
 import { app, BrowserWindow, nativeImage, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import electronDl from 'electron-dl';
 import { createIPCHandler } from 'electron-trpc/main';
+import installer from 'electron-devtools-installer';
 import { resolveHtmlPath } from './util';
 import { router } from './api';
 
@@ -42,29 +42,36 @@ class AppUpdater {
   }
 }
 
+async function getSourceMapSupport() {
+  const mod = await import('source-map-support');
+  return mod.default;
+}
+
 if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support');
-  sourceMapSupport.install();
+  getSourceMapSupport().then((sourceMap) => {
+    sourceMap.install();
+  });
 }
 
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
-  require('electron-debug')();
+  import('electron-debug').then((mod) => mod.default());
 }
 
 const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
+  try {
+    await installer(
+      extensions.map((name) => installer[name as keyof typeof installer]),
       forceDownload
-    )
-    .catch(console.log);
+    );
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const createWindow = async () => {

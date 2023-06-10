@@ -5,6 +5,7 @@ import { ContentType } from 'types/tmbd';
 import vm, { Context, runInContext } from 'vm';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
+import { getResolutionName } from './utils';
 
 export class GoMoviesExtractor implements IExtractor {
   url = 'https://gomovies-online.com';
@@ -18,28 +19,10 @@ export class GoMoviesExtractor implements IExtractor {
   private decryptXORCypher(data: string, key: string) {
     let decrypted = '';
     for (let i = 0; i < data.length; i += 1) {
-      // eslint-disable-next-line no-bitwise
       const charCode = data.charCodeAt(i) ^ key.charCodeAt(i % key.length);
       decrypted += String.fromCharCode(charCode);
     }
     return decrypted;
-  }
-
-  private mapQualityNumberToName(quality: number): Source['quality'] {
-    switch (quality) {
-      case 2160:
-        return '4K';
-      case 1080:
-        return '1080p';
-      case 720:
-        return '720p';
-      case 480:
-        return '480p';
-      case 360:
-        return '360p';
-      default:
-        return 'Unknown';
-    }
   }
 
   private async getWorkingLink(links: string[]): Promise<{
@@ -61,10 +44,9 @@ export class GoMoviesExtractor implements IExtractor {
     const results = await Promise.all(promises);
     const workingLink = results.find((link) => link !== null) || null;
     if (!workingLink) throw new Error('No links found');
-    console.log(results.indexOf(workingLink));
     return {
       url: workingLink,
-      quality: this.mapQualityNumberToName(
+      quality: getResolutionName(
         parseInt(workingLink.match(/\/(\d+)\?/)?.[1] || '0', 10)
       ),
     };

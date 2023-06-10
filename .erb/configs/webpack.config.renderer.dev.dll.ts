@@ -9,6 +9,7 @@ import baseConfig from './webpack.config.base';
 import webpackPaths from './webpack.paths';
 import { dependencies } from '../../package.json';
 import checkNodeEnv from '../scripts/check-node-env';
+import webpackConfigRendererDev from './webpack.config.renderer.dev';
 
 checkNodeEnv('development');
 
@@ -28,7 +29,7 @@ const configuration: webpack.Configuration = {
   /**
    * Use `module` from `webpack.config.renderer.dev.js`
    */
-  module: require('./webpack.config.renderer.dev').default.module,
+  module: webpackConfigRendererDev.module,
 
   entry: {
     renderer: Object.keys(dependencies || {}).filter(

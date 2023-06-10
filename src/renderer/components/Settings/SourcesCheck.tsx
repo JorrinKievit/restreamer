@@ -21,6 +21,9 @@ import { Sources } from 'types/sources';
 
 const AVAILABLE_SOURCES = [
   {
+    name: 'GoMovies',
+  },
+  {
     name: 'SuperStream',
   },
   {
@@ -47,8 +50,6 @@ const AVAILABLE_SOURCES = [
   },
 ];
 
-interface SourcesCheckProps {}
-
 const SourceInfo: FC<{
   data: Sources | undefined;
   name: string;
@@ -72,7 +73,7 @@ const SourceInfo: FC<{
   );
 };
 
-const SourcesCheck: FC<SourcesCheckProps> = () => {
+const SourcesCheck: FC = () => {
   const [isDisabled, setIsDisabled] = useBoolean(false);
 
   const { data, isLoading, refetch, isRefetching } =

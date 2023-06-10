@@ -1,7 +1,6 @@
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Source } from 'types/sources';
-import VideoPlayer from 'renderer/components/VideoPlayer';
+import { Source, Sources } from 'types/sources';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import EpisodeList from 'renderer/components/EpisodeList';
@@ -11,6 +10,7 @@ import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import SourceSelector from 'renderer/components/SourceSelector';
 import ShowDetails from 'renderer/components/ShowDetails';
 import { client } from 'renderer/api/trpc';
+import VidstackPlayer from 'renderer/components/VidstackPlayer';
 
 const MovieDetails: FC = () => {
   const { id } = useParams();
@@ -21,6 +21,7 @@ const MovieDetails: FC = () => {
   const mediaType = query.get('media_type')! as ContentType;
 
   const [playingData] = useLocalStorage<PlayingData>('playingData', {});
+
   const [activeEpisode, setActiveEpisode] = useState<{
     season: number;
     episode: number;
@@ -49,7 +50,7 @@ const MovieDetails: FC = () => {
       }
     );
 
-  const { data: sources, isLoading: sourcesLoading } =
+  const { data: sourcesData, isLoading: sourcesLoading } =
     client.app.getSources.useQuery(
       {
         imdbId:
@@ -65,6 +66,17 @@ const MovieDetails: FC = () => {
         enabled: !!tvData || !!movieData,
       }
     );
+  const [sources, setSources] = useState<Sources>(sourcesData ?? []);
+  client.app.getSourcesSubscription.useSubscription(undefined, {
+    onData: (data: Sources) => {
+      // Filter out duplicates before updating the state
+      const uniqueSources = data.filter(
+        (source) => !sources.some((s) => s.server === source.server)
+      );
+      setSources((prev) => [...prev, ...uniqueSources]);
+    },
+  });
+
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
   const isLastEpisode =
@@ -85,8 +97,8 @@ const MovieDetails: FC = () => {
       !tvInitialLoading &&
       !movieIsInitialLoading &&
       !sourcesLoading &&
-      sources &&
-      sources.length === 0
+      sourcesData &&
+      sourcesData.length === 0
     ) {
       toast({
         title: 'No sources found',
@@ -97,7 +109,7 @@ const MovieDetails: FC = () => {
       if (mediaType === 'movie') navigate(-1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourcesLoading, sources]);
+  }, [sourcesLoading, sourcesData]);
 
   useEffect(() => {
     const handleNextEpisode = () => {
@@ -128,7 +140,7 @@ const MovieDetails: FC = () => {
 
   return (
     <Flex flexDirection="column" gap={4}>
-      {sourcesLoading && (
+      {sourcesLoading && sources.length === 0 && (
         <>
           <Skeleton height="700px" w="full" />
           <Flex
@@ -147,8 +159,13 @@ const MovieDetails: FC = () => {
       )}
       {sources && sources[0] && selectedSource && (
         <Flex gap={4} flexDirection="column">
-          <VideoPlayer
+          <VidstackPlayer
             selectedSource={selectedSource}
+            title={
+              mediaType === 'tv'
+                ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}`
+                : movieData?.title
+            }
             tmdbId={id!}
             season={mediaType === 'tv' ? activeEpisode.season : undefined}
             episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
