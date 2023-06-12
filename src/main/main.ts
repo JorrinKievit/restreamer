@@ -4,7 +4,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import electronDl from 'electron-dl';
 import { createIPCHandler } from 'electron-trpc/main';
-import installer from 'electron-devtools-installer';
+import installer, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { resolveHtmlPath } from './util';
 import { router } from './api';
 
@@ -61,14 +61,11 @@ if (isDebug) {
 }
 
 const installExtensions = async () => {
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
-
   try {
-    await installer(
-      extensions.map((name) => installer[name as keyof typeof installer]),
-      forceDownload
-    );
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+    const extensions = [REACT_DEVELOPER_TOOLS];
+
+    await installer(extensions, forceDownload);
   } catch (error) {
     console.log(error);
   }
@@ -89,6 +86,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
+    minWidth: 1360,
+    minHeight: 900,
     width: 1500,
     height: 900,
     icon: nativeImage

@@ -38,9 +38,15 @@ export const SyncSubtitlesPopover = () => {
   }, [isOpen, onClose, onOpen]);
 
   const handleSyncSubtitleChange = () => {
-    if (!player) return;
+    if (!player) {
+      onClose();
+      return;
+    }
     const track = store.textTrack;
-    if (!track || !track.src) return;
+    if (!track || !track.src) {
+      onClose();
+      return;
+    }
 
     track.cues.forEach((cue) => {
       cue.startTime += value / 1000;

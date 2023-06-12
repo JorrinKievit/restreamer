@@ -9,6 +9,7 @@ import { isAxiosError } from 'axios';
 import { ipcLink } from 'electron-trpc/renderer';
 import { useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Header from './components/Header';
 import UpdateModal from './components/UpdateModal';
 import Index from './pages/Index';
@@ -89,6 +90,7 @@ const App = () => {
       >
         <client.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
             <Container maxW="7xl" h="full">
               <Router>
                 <Header />

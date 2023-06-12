@@ -10,7 +10,7 @@ import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import SourceSelector from 'renderer/components/SourceSelector';
 import ShowDetails from 'renderer/components/ShowDetails';
 import { client } from 'renderer/api/trpc';
-import VidstackPlayer from 'renderer/components/VidstackPlayer';
+import VidstackPlayer from 'renderer/components/VidstackPlayer/VidstackPlayer';
 
 const MovieDetails: FC = () => {
   const { id } = useParams();
@@ -69,11 +69,8 @@ const MovieDetails: FC = () => {
   const [sources, setSources] = useState<Sources>(sourcesData ?? []);
   client.app.getSourcesSubscription.useSubscription(undefined, {
     onData: (data: Sources) => {
-      // Filter out duplicates before updating the state
-      const uniqueSources = data.filter(
-        (source) => !sources.some((s) => s.server === source.server)
-      );
-      setSources((prev) => [...prev, ...uniqueSources]);
+      console.log(data);
+      setSources((prev) => [...prev, ...data]);
     },
   });
 
@@ -87,10 +84,14 @@ const MovieDetails: FC = () => {
       : false;
 
   useEffect(() => {
-    if (sources && sources.length > 0) {
+    if (sourcesData && sources && sources.length === 0) {
+      setSources(sourcesData);
+    }
+
+    if (sources && sources.length > 0 && !selectedSource) {
       setSelectedSource(sources[0]);
     }
-  }, [sources]);
+  }, [sourcesData, sources, selectedSource]);
 
   useEffect(() => {
     if (
@@ -115,7 +116,8 @@ const MovieDetails: FC = () => {
     const handleNextEpisode = () => {
       if (!tvData) return;
       const currentSeason = tvData.seasons.find(
-        (s) => s.season_number === activeEpisode.season
+        (s: { season_number: number }) =>
+          s.season_number === activeEpisode.season
       );
 
       if (activeEpisode.episode < currentSeason!.episode_count) {
@@ -131,6 +133,9 @@ const MovieDetails: FC = () => {
       }
     };
 
+    setSources([]);
+    setSelectedSource(null);
+
     document.addEventListener('next-episode', handleNextEpisode);
 
     return () => {
@@ -140,7 +145,7 @@ const MovieDetails: FC = () => {
 
   return (
     <Flex flexDirection="column" gap={4}>
-      {sourcesLoading && sources.length === 0 && (
+      {sources && sources.length === 0 && (
         <>
           <Skeleton height="700px" w="full" />
           <Flex

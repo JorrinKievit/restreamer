@@ -16,6 +16,9 @@ dependencies:
   '@tanstack/react-query':
     specifier: ^4.22.0
     version: 4.22.0(react-dom@18.2.0)(react@18.2.0)
+  '@tanstack/react-query-devtools':
+    specifier: ^4.29.12
+    version: 4.29.12(@tanstack/react-query@4.22.0)(react-dom@18.2.0)(react@18.2.0)
   '@trpc/client':
     specifier: ^10.23.0
     version: 10.23.0(@trpc/server@10.23.0)
@@ -26,8 +29,8 @@ dependencies:
     specifier: ^10.23.0
     version: 10.23.0
   '@vidstack/react':
-    specifier: ^0.6.9
-    version: 0.6.9(@types/react@18.2.8)(maverick.js@0.37.0)(react@18.2.0)(vidstack@0.6.9)
+    specifier: ^0.6.10
+    version: 0.6.10(@types/react@18.2.8)(maverick.js@0.37.0)(react@18.2.0)(vidstack@0.6.10)
   axios:
     specifier: ^1.4.0
     version: 1.4.0
@@ -77,8 +80,8 @@ dependencies:
     specifier: ^2.9.1
     version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
   vidstack:
-    specifier: ^0.6.9
-    version: 0.6.9
+    specifier: ^0.6.10
+    version: 0.6.10
   zod:
     specifier: ^3.21.4
     version: 3.21.4
@@ -105,6 +108,9 @@ devDependencies:
   '@testing-library/react':
     specifier: ^13.3.0
     version: 13.3.0(react-dom@18.2.0)(react@18.2.0)
+  '@types/chromecast-caf-sender':
+    specifier: ^1.0.5
+    version: 1.0.5
   '@types/jest':
     specifier: ^29.5.2
     version: 29.5.2
@@ -3918,8 +3924,30 @@ packages:
       defer-to-connect: 2.0.1
     dev: true
 
+  /@tanstack/match-sorter-utils@8.8.4:
+    resolution: {integrity: sha512-rKH8LjZiszWEvmi01NR72QWZ8m4xmXre0OOwlRGnjU01Eqz/QnN+cqpty2PJ0efHblq09+KilvyR7lsbzmXVEw==}
+    engines: {node: '>=12'}
+    dependencies:
+      remove-accents: 0.4.2
+    dev: false
+
   /@tanstack/query-core@4.22.0:
     resolution: {integrity: sha512-OeLyBKBQoT265f5G9biReijeP8mBxNFwY7ZUu1dKL+YzqpG5q5z7J/N1eT8aWyKuhyDTiUHuKm5l+oIVzbtrjw==}
+    dev: false
+
+  /@tanstack/react-query-devtools@4.29.12(@tanstack/react-query@4.22.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-ug4YGQhMhh6QI8/sWJhjXxuvdeehxf1cyxpTifGMH5qreQ5ECHT6vzqG/aKvADQDzqLBGrF0q4wTDnRRYvvtrA==}
+    peerDependencies:
+      '@tanstack/react-query': 4.29.12
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      '@tanstack/match-sorter-utils': 8.8.4
+      '@tanstack/react-query': 4.22.0(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      superjson: 1.12.3
+      use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
 
   /@tanstack/react-query@4.22.0(react-dom@18.2.0)(react@18.2.0):
@@ -4102,6 +4130,19 @@ packages:
       '@types/responselike': 1.0.0
     dev: true
 
+  /@types/chrome@0.0.237:
+    resolution: {integrity: sha512-krsRmyfMlck5r+H1EapsrrucDRq6iRm0NAi5fapr93CgnpVMDdK+h2+z4x79GegdW7BNH9Vb//gkptORwwwVIQ==}
+    dependencies:
+      '@types/filesystem': 0.0.32
+      '@types/har-format': 1.2.11
+    dev: true
+
+  /@types/chromecast-caf-sender@1.0.5:
+    resolution: {integrity: sha512-8d6RRCOYYiKzDyFJKAYKOp7Eo0kUfj9imnLQj0uuh/QGSz8euL9OOeKmh8XizqTcKW5tXva6li0mRYtnvzVIcA==}
+    dependencies:
+      '@types/chrome': 0.0.237
+    dev: true
+
   /@types/connect-history-api-fallback@1.5.0:
     resolution: {integrity: sha512-4x5FkPpLipqwthjPsF7ZRbOv3uoLUFkTA9G9v583qi4pACvq0uTELrB8OLUzPWUI4IJIyvM85vzkV1nyiI2Lig==}
     dependencies:
@@ -4157,6 +4198,16 @@ packages:
       '@types/serve-static': 1.15.1
     dev: true
 
+  /@types/filesystem@0.0.32:
+    resolution: {integrity: sha512-Yuf4jR5YYMR2DVgwuCiP11s0xuVRyPKmz8vo6HBY3CGdeMj8af93CFZX+T82+VD1+UqHOxTq31lO7MI7lepBtQ==}
+    dependencies:
+      '@types/filewriter': 0.0.29
+    dev: true
+
+  /@types/filewriter@0.0.29:
+    resolution: {integrity: sha512-BsPXH/irW0ht0Ji6iw/jJaK8Lj3FJemon2gvEqHKpCdDCeemHa+rI3WBGq5z7cDMZgoLjY40oninGxqk+8NzNQ==}
+    dev: true
+
   /@types/fs-extra@9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
     dependencies:
@@ -4176,6 +4227,10 @@ packages:
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
     dependencies:
       '@types/node': 20.2.5
+    dev: true
+
+  /@types/har-format@1.2.11:
+    resolution: {integrity: sha512-T232/TneofqK30AD1LRrrf8KnjLvzrjWDp7eWST5KoiSzrBfRsLrWDPk4STQPW4NZG6v2MltnduBVmakbZOBIQ==}
     dev: true
 
   /@types/html-minifier-terser@6.1.0:
@@ -4745,19 +4800,19 @@ packages:
       url-toolkit: 2.2.5
     dev: false
 
-  /@vidstack/react@0.6.9(@types/react@18.2.8)(maverick.js@0.37.0)(react@18.2.0)(vidstack@0.6.9):
-    resolution: {integrity: sha512-41HGq1nttH/OSW2BWne+hMijU+bRoy8G+rUrc2bqGLNkeHzcGA3TUGTFyMutYkQKClG6llie7ssVENrVjaULCA==}
+  /@vidstack/react@0.6.10(@types/react@18.2.8)(maverick.js@0.37.0)(react@18.2.0)(vidstack@0.6.10):
+    resolution: {integrity: sha512-iHn9MPlKEW+kD3Bpu+BN2LsQQlPV2VhMHWF/8jhuiVGa0yrCnLd6wayauWEL/wPDYdh9Zn8fYuLZpTtzSGOLBQ==}
     engines: {node: '>=16'}
     peerDependencies:
       '@types/react': ^18.0.0
       maverick.js: 0.37.0
       react: ^18.0.0
-      vidstack: 0.6.9
+      vidstack: 0.6.10
     dependencies:
       '@types/react': 18.2.8
       maverick.js: 0.37.0
       react: 18.2.0
-      vidstack: 0.6.9
+      vidstack: 0.6.10
     dev: false
 
   /@webassemblyjs/ast@1.11.6:
@@ -6158,6 +6213,13 @@ packages:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
     dev: true
+
+  /copy-anything@3.0.5:
+    resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
+    engines: {node: '>=12.13'}
+    dependencies:
+      is-what: 4.1.15
+    dev: false
 
   /copy-to-clipboard@3.3.1:
     resolution: {integrity: sha512-i13qo6kIHTTpCm8/Wup+0b1mVWETvu2kIMzKoK8FpkLkFxlt0znUAHcMzox+T8sPlqtZXq3CulEjQHsYiGFJUw==}
@@ -9147,6 +9209,11 @@ packages:
       get-intrinsic: 1.2.1
     dev: true
 
+  /is-what@4.1.15:
+    resolution: {integrity: sha512-uKua1wfy3Yt+YqsD6mTUEa2zSi3G1oPlqTflgaPJ7z63vUGN5pxFpnQfeSLMFnJDEsdvOtkp1rUWkYjB4YfhgA==}
+    engines: {node: '>=12.13'}
+    dev: false
+
   /is-wsl@2.2.0:
     resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
     engines: {node: '>=8'}
@@ -11759,6 +11826,10 @@ packages:
     engines: {node: '>= 0.10'}
     dev: true
 
+  /remove-accents@0.4.2:
+    resolution: {integrity: sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==}
+    dev: false
+
   /remove-trailing-separator@1.1.0:
     resolution: {integrity: sha512-/hS+Y0u3aOfIETiaiirUFwDBDzmXPvO+jAfKTitUngIPzdKc6Z0LoFjM/CK5PL4C+eKwHohlHAb6H0VFfmmUsw==}
     dev: true
@@ -12572,6 +12643,13 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
+  /superjson@1.12.3:
+    resolution: {integrity: sha512-0j+U70KUtP8+roVPbwfqkyQI7lBt7ETnuA7KXbTDX3mCKiD/4fXs2ldKSMdt0MCfpTwiMxo20yFU3vu6ewETpQ==}
+    engines: {node: '>=10'}
+    dependencies:
+      copy-anything: 3.0.5
+    dev: false
+
   /supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
     engines: {node: '>=4'}
@@ -13249,8 +13327,8 @@ packages:
     dev: true
     optional: true
 
-  /vidstack@0.6.9:
-    resolution: {integrity: sha512-8ey2ypUOp6ynaxwMvzFaut9jL/3WmHZZbRlQRzCIwS+MUvB/Vt6hhlSIOXa8IyiTICHFeQLOOX05D9yrhuab2A==}
+  /vidstack@0.6.10:
+    resolution: {integrity: sha512-t9IJPc1+dvHqWoB8ylmwQmA/6+xuYhR1APQJFj+t/uk0h2GYN44lKuRNDq4N4pXG2icjDYKFGAcbzqsyYtVWhw==}
     engines: {node: '>=16'}
     dependencies:
       maverick.js: 0.37.0

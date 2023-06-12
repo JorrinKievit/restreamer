@@ -1,18 +1,16 @@
 import { FC, useEffect, useRef } from 'react';
-
 import { MediaCommunitySkin, MediaOutlet, MediaPlayer } from '@vidstack/react';
 import { Source } from 'types/sources';
 import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { client } from 'renderer/api/trpc';
 import { PlayingData } from 'types/localstorage';
-import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
-import { randomString } from 'renderer/utils/string';
 import { MediaPlayerElement } from 'vidstack';
 import { insertPlayerButtons } from 'renderer/utils/player';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { getProxyUrl } from 'renderer/lib/proxy';
-import { SyncSubtitlesPopover } from './SyncSubtitlesPopover';
-import { SubtitleSelector } from './SubtitleSelector';
+import { SubtitleSelector } from '../SubtitleSelector';
+import { SyncSubtitlesPopover } from '../SyncSubtitlesPopover';
+import { getSubtitlePlayerLanguage, setPlayingDataOnTimeChange } from './utils';
 
 interface VidstackPlayerProps {
   selectedSource: Source;
@@ -49,12 +47,13 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({
   );
 
   const latestPlayingData = useRef<PlayingData>(playingData);
+  const currentVolume = useRef<number>(playerVolume);
 
   const { mutate: startProxy } = client.proxy.start.useMutation();
   const { mutate: stopProxy } = client.proxy.stop.useMutation();
   const { data: proxyData } = client.proxy.validate.useQuery(
     {
-      url: selectedSource!.extractorData!,
+      url: selectedSource.extractorData!,
     },
     {
       enabled: !!(
@@ -63,42 +62,6 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({
       refetchInterval: 1000 * 60,
     }
   );
-
-  const setPlayingDataOnTimeChange = () => {
-    if (!player.current || !latestPlayingData.current) return;
-
-    const progress = Math.floor(
-      (player.current.state.currentTime / player.current.state.duration) * 100
-    );
-
-    let updatedData = {};
-
-    if (!latestPlayingData.current[tmdbId] || progress <= 95) {
-      updatedData = {
-        ...latestPlayingData.current,
-        [tmdbId]: {
-          season,
-          episode,
-          playingTime: player.current.state.currentTime,
-        },
-      };
-    } else if ((!season && !episode) || (season && episode && isLastEpisode)) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { [tmdbId]: _, ...data } = latestPlayingData.current;
-      updatedData = data;
-    } else {
-      updatedData = {
-        ...latestPlayingData.current,
-        [tmdbId]: {
-          season,
-          episode,
-          playingTime: player.current.state.currentTime,
-        },
-      };
-    }
-
-    latestPlayingData.current = updatedData;
-  };
 
   const setupPlayer = () => {
     insertPlayerButtons(
@@ -136,25 +99,27 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({
     return () => {
       stopProxy();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSource]);
+  }, [selectedSource, startProxy, stopProxy]);
 
   useEffect(() => {
     if (!player.current) return;
+
     window.addEventListener('beforeunload', () => {
       setPlayingData(latestPlayingData.current);
+      setPlayerVolume(currentVolume.current);
     });
 
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setPlayingData(latestPlayingData.current);
+      setPlayerVolume(currentVolume.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setPlayerVolume, setPlayingData]);
 
   useEffect(() => {
     setPlayingData(latestPlayingData.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSource]);
+    setPlayerVolume(currentVolume.current);
+  }, [selectedSource, setPlayerVolume, setPlayingData]);
 
   return (
     <MediaPlayer
@@ -169,7 +134,16 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({
       crossorigin="anonymous"
       autoplay
       onCanPlay={setupPlayer}
-      onTimeUpdate={setPlayingDataOnTimeChange}
+      onTimeUpdate={() =>
+        setPlayingDataOnTimeChange(
+          player,
+          latestPlayingData,
+          tmdbId,
+          season,
+          episode,
+          isLastEpisode
+        )
+      }
       onFullscreenChange={() => {
         setTimeout(() => {
           insertPlayerButtons(
@@ -179,35 +153,24 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({
         }, 100);
       }}
       onVolumeChange={(data) => {
-        setPlayerVolume(data.detail.volume);
+        currentVolume.current = data.detail.volume;
       }}
     >
       <MediaOutlet>
         {selectedSource.subtitles?.map((subtitle) => {
-          let language = OPENSUBTITLES_LANGUAGES.find((lang) =>
-            lang.language_name.includes(subtitle.label.split(' ')[0].trim())
+          const subtitleLanguage = getSubtitlePlayerLanguage(
+            subtitle,
+            languageCounts
           );
-
-          if (!language) {
-            language = {
-              language_name: subtitle.label,
-              language_code: randomString(2),
-            };
-          }
-
-          if (!languageCounts[language.language_name]) {
-            languageCounts[language.language_name] = 0;
-          }
-          const count = languageCounts[language.language_name] + 1;
-          languageCounts[language.language_name] = count;
-
           return (
             <track
               src={subtitle.file}
-              label={`${language.language_name} ${count}`}
-              srcLang={`${language.language_code}-${count}`}
+              label={`${subtitleLanguage.name} ${subtitleLanguage.count}`}
+              srcLang={`${subtitleLanguage.code}-${subtitleLanguage.count}`}
               kind="subtitles"
-              default={subtitle.label === 'English' && count === 1}
+              default={
+                subtitle.label === 'English' && subtitleLanguage.count === 1
+              }
               key={subtitle.file}
               data-type={subtitle.file.endsWith('.vtt') ? 'vtt' : 'srt'}
             />
