@@ -1,14 +1,5 @@
 import { SearchIcon, SettingsIcon } from '@chakra-ui/icons';
-import {
-  Button,
-  chakra,
-  Flex,
-  HStack,
-  IconButton,
-  Input,
-  InputGroup,
-  InputRightAddon,
-} from '@chakra-ui/react';
+import { Button, chakra, Flex, HStack, IconButton, Input, InputGroup, InputRightAddon } from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { client } from 'renderer/api/trpc';
@@ -59,21 +50,10 @@ const Header: FC = () => {
 
           <form onSubmit={handleSubmit}>
             <InputGroup>
-              <Input
-                type="text"
-                placeholder="Search..."
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
+              <Input type="text" placeholder="Search..." onChange={(e) => setSearchInput(e.target.value)} />
               <InputRightAddon
                 // eslint-disable-next-line react/no-children-prop
-                children={
-                  <IconButton
-                    icon={<SearchIcon />}
-                    bg="none"
-                    type="submit"
-                    aria-label="search shows"
-                  />
-                }
+                children={<IconButton icon={<SearchIcon />} bg="none" type="submit" aria-label="search shows" />}
               />
             </InputGroup>
           </form>

@@ -11,34 +11,19 @@ import { DownloadResponse, SearchResponse, SubtitleResponse } from './types';
 // Complies with the LGPL-3.0 License see: ./LICENSE and https://github.com/recloudstream/cloudstream-extensions/blob/master/LICENSE
 
 export class SuperStreamExtractor implements IExtractor {
-  url: string = Buffer.from(
-    'aHR0cHM6Ly9zaG93Ym94LnNoZWd1Lm5ldC9hcGkvYXBpX2NsaWVudC9pbmRleC8=',
-    'base64'
-  ).toString();
+  url: string = Buffer.from('aHR0cHM6Ly9zaG93Ym94LnNoZWd1Lm5ldC9hcGkvYXBpX2NsaWVudC9pbmRleC8=', 'base64').toString();
 
-  private secondUrl: string = Buffer.from(
-    'aHR0cHM6Ly9tYnBhcGkuc2hlZ3UubmV0L2FwaS9hcGlfY2xpZW50L2luZGV4Lw==',
-    'base64'
-  ).toString();
+  private secondUrl: string = Buffer.from('aHR0cHM6Ly9tYnBhcGkuc2hlZ3UubmV0L2FwaS9hcGlfY2xpZW50L2luZGV4Lw==', 'base64').toString();
 
   private iv: string = Buffer.from('d0VpcGhUbiE=', 'base64').toString();
 
-  private key: string = Buffer.from(
-    'MTIzZDZjZWRmNjI2ZHk1NDIzM2FhMXc2',
-    'base64'
-  ).toString();
+  private key: string = Buffer.from('MTIzZDZjZWRmNjI2ZHk1NDIzM2FhMXc2', 'base64').toString();
 
   private appKey: string = Buffer.from('bW92aWVib3g=', 'base64').toString();
 
-  private appid: string = Buffer.from(
-    'Y29tLnRkby5zaG93Ym94',
-    'base64'
-  ).toString();
+  private appid: string = Buffer.from('Y29tLnRkby5zaG93Ym94', 'base64').toString();
 
-  private secondAppid: string = Buffer.from(
-    'Y29tLm1vdmllYm94cHJvLmFuZHJvaWQ=',
-    'base64'
-  ).toString();
+  private secondAppid: string = Buffer.from('Y29tLm1vdmllYm94cHJvLmFuZHJvaWQ=', 'base64').toString();
 
   private version: string = '14.7';
 
@@ -73,8 +58,7 @@ export class SuperStreamExtractor implements IExtractor {
   private encryptQuery(query: string) {
     const cipher = crypto.createCipheriv('des-ede3-cbc', this.key, this.iv);
     cipher.setAutoPadding(true);
-    const encrypted =
-      cipher.update(query, 'utf-8', 'base64') + cipher.final('base64');
+    const encrypted = cipher.update(query, 'utf-8', 'base64') + cipher.final('base64');
 
     return encrypted;
   }
@@ -89,10 +73,7 @@ export class SuperStreamExtractor implements IExtractor {
     return hash2.digest('hex');
   }
 
-  private async executeApiCall<T>(
-    queryData: object,
-    useSecondaryApi: boolean
-  ): Promise<T> {
+  private async executeApiCall<T>(queryData: object, useSecondaryApi: boolean): Promise<T> {
     let apiUrl = this.url;
     if (useSecondaryApi) apiUrl = this.secondUrl;
 
@@ -124,12 +105,7 @@ export class SuperStreamExtractor implements IExtractor {
     return response.data;
   }
 
-  async extractUrls(
-    searchQuery: string,
-    type: ContentType,
-    season?: number,
-    episode?: number
-  ): Promise<Sources> {
+  async extractUrls(searchQuery: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
     try {
       const searchData = {
         ...this.baseData,
@@ -141,10 +117,7 @@ export class SuperStreamExtractor implements IExtractor {
         expired_date: this.getExpireDate(),
         type: 'all',
       };
-      const searchDataResponse = await this.executeApiCall<SearchResponse>(
-        searchData,
-        false
-      );
+      const searchDataResponse = await this.executeApiCall<SearchResponse>(searchData, false);
       const superStreamId = searchDataResponse.data[0].id;
 
       const linkData = {
@@ -161,10 +134,7 @@ export class SuperStreamExtractor implements IExtractor {
         type: 'all',
       };
 
-      const linkDataResponse = await this.executeApiCall<DownloadResponse>(
-        linkData,
-        false
-      );
+      const linkDataResponse = await this.executeApiCall<DownloadResponse>(linkData, false);
 
       const link = linkDataResponse.data.list.find((item) => item.path !== '');
 
@@ -181,10 +151,7 @@ export class SuperStreamExtractor implements IExtractor {
         fid: link.fid,
         expired_date: this.getExpireDate(),
       };
-      const subtitleDataResponse = await this.executeApiCall<SubtitleResponse>(
-        subtitleData,
-        false
-      );
+      const subtitleDataResponse = await this.executeApiCall<SubtitleResponse>(subtitleData, false);
 
       return [
         {
@@ -204,8 +171,7 @@ export class SuperStreamExtractor implements IExtractor {
         },
       ];
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error)
-        console.error('SuperStream: ', error.message);
+      if (isAxiosError(error) || error instanceof Error) console.error('SuperStream: ', error.message);
       return [];
     }
   }

@@ -62,12 +62,7 @@ export const SyncSubtitlesPopover = () => {
   }, [isOpen, player?.user]);
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onClose={onClose}
-      placement="bottom"
-      id="sync-subtitles-popover"
-    >
+    <Popover isOpen={isOpen} onClose={onClose} placement="bottom" id="sync-subtitles-popover">
       <PopoverContent
         sx={{
           marginTop: '10px',
@@ -85,20 +80,9 @@ export const SyncSubtitlesPopover = () => {
                 ? 'No subtitle delay'
                 : value > 0
                 ? `Use this if the subtitles are shown ${value}ms too early`
-                : `Use this if the subtitles are shown ${value
-                    .toString()
-                    .replace('-', '')}ms too late`}
+                : `Use this if the subtitles are shown ${value.toString().replace('-', '')}ms too late`}
             </FormLabel>
-            <NumberInput
-              onChange={(v) =>
-                Number.isNaN(parseInt(v, 10))
-                  ? setValue(0)
-                  : setValue(parseInt(v, 10))
-              }
-              value={value}
-              placeholder="-100 or 100"
-              step={100}
-            >
+            <NumberInput onChange={(v) => (Number.isNaN(parseInt(v, 10)) ? setValue(0) : setValue(parseInt(v, 10)))} value={value} placeholder="-100 or 100" step={100}>
               <NumberInputField />
               <NumberInputStepper>
                 <NumberIncrementStepper />
@@ -112,11 +96,7 @@ export const SyncSubtitlesPopover = () => {
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={handleSyncSubtitleChange}
-            >
+            <Button colorScheme="blue" mr={3} onClick={handleSyncSubtitleChange}>
               Sync
             </Button>
           </ButtonGroup>

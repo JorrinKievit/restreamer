@@ -33,40 +33,27 @@ export const appRouter = t.router({
 
       const { imdbId, showName, type, season, episode } = req.input;
 
-      const goMoviesPromise = goMoviesExtractor
-        .extractUrls(showName, type, season, episode)
-        .then((sources) => {
-          ee.emit('sources', sources);
-          return sources;
-        });
+      const goMoviesPromise = goMoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
 
-      const superStreamPromise = superStreamExtractor
-        .extractUrls(showName, type, season, episode)
-        .then((sources) => {
-          ee.emit('sources', sources);
-          return sources;
-        });
+      const superStreamPromise = superStreamExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
 
-      const twoEmbedPromise = twoEmbedExtractor
-        .extractUrls(imdbId, type, season, episode)
-        .then((sources) => {
-          ee.emit('sources', sources);
-          return sources;
-        });
+      const twoEmbedPromise = twoEmbedExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
 
-      const vidSrcPromise = vidSrcExtractor
-        .extractUrls(imdbId, type, season, episode)
-        .then((sources) => {
-          ee.emit('sources', sources);
-          return sources;
-        });
+      const vidSrcPromise = vidSrcExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
 
-      const allPromises = [
-        goMoviesPromise,
-        superStreamPromise,
-        twoEmbedPromise,
-        vidSrcPromise,
-      ];
+      const allPromises = [goMoviesPromise, superStreamPromise, twoEmbedPromise, vidSrcPromise];
 
       const allSources = await Promise.all(allPromises);
 

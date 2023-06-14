@@ -11,8 +11,7 @@ export class RabbitStreamExtractor implements IExtractor {
 
   referer: string = 'https://rabbitstream.net/';
 
-  private decryptionKeyUrl =
-    'https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt';
+  private decryptionKeyUrl = 'https://raw.githubusercontent.com/enimax-anime/key/e4/key.txt';
 
   private md5(input: Buffer): Buffer {
     return crypto.createHash('md5').update(input).digest();
@@ -34,23 +33,13 @@ export class RabbitStreamExtractor implements IExtractor {
     const algorithm = 'aes-256-cbc';
     const iv = decryptionKey.slice(32);
     const decryptionKeyWithoutIv = decryptionKey.slice(0, 32);
-    const decipher = crypto.createDecipheriv(
-      algorithm,
-      decryptionKeyWithoutIv,
-      iv
-    );
-    const decryptedData = Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]);
+    const decipher = crypto.createDecipheriv(algorithm, decryptionKeyWithoutIv, iv);
+    const decryptedData = Buffer.concat([decipher.update(encrypted), decipher.final()]);
     return decryptedData.toString('utf8');
   }
 
   private decrypt(input: string, key: string): string {
-    const decryptionKey = this.generateKey(
-      Buffer.from(input, 'base64').slice(8, 16),
-      Buffer.from(key, 'utf8')
-    );
+    const decryptionKey = this.generateKey(Buffer.from(input, 'base64').slice(8, 16), Buffer.from(key, 'utf8'));
     return this.decryptSourceUrl(decryptionKey, input);
   }
 
@@ -97,13 +86,9 @@ export class RabbitStreamExtractor implements IExtractor {
       parser.end();
 
       const parsedManifest = parser.manifest;
-      const highestQuality = parsedManifest.playlists.reduce(
-        (prev: any, current: any) => {
-          return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH
-            ? prev
-            : current;
-        }
-      );
+      const highestQuality = parsedManifest.playlists.reduce((prev: any, current: any) => {
+        return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH ? prev : current;
+      });
 
       return {
         server: 'VidCloud',

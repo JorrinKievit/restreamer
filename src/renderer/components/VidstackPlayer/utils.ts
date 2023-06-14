@@ -15,9 +15,7 @@ export const setPlayingDataOnTimeChange = (
 ) => {
   if (!player.current || !latestPlayingData.current) return;
 
-  const progress = Math.floor(
-    (player.current.state.currentTime / player.current.state.duration) * 100
-  );
+  const progress = Math.floor((player.current.state.currentTime / player.current.state.duration) * 100);
 
   let updatedData = {};
 
@@ -48,13 +46,8 @@ export const setPlayingDataOnTimeChange = (
   latestPlayingData.current = updatedData;
 };
 
-export const getSubtitlePlayerLanguage = (
-  subtitle: Subtitle,
-  languageCounts: { [key: string]: number }
-) => {
-  let language = OPENSUBTITLES_LANGUAGES.find((lang) =>
-    lang.language_name.includes(subtitle.label.split(' ')[0].trim())
-  );
+export const getSubtitlePlayerLanguage = (subtitle: Subtitle, languageCounts: { [key: string]: number }) => {
+  let language = OPENSUBTITLES_LANGUAGES.find((lang) => lang.language_name.includes(subtitle.label.split(' ')[0].trim()));
 
   if (!language) {
     language = {

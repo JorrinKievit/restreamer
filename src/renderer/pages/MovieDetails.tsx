@@ -30,58 +30,46 @@ const MovieDetails: FC = () => {
     episode: playingData[id!]?.episode ?? 1,
   });
 
-  const { data: tvData, isInitialLoading: tvInitialLoading } =
-    client.tmdb.tvShowDetails.useQuery(
-      {
-        tvShowId: mediaType === 'tv' ? id : '',
-      },
-      {
-        enabled: mediaType === 'tv' && !!id,
-      }
-    );
+  const { data: tvData, isInitialLoading: tvInitialLoading } = client.tmdb.tvShowDetails.useQuery(
+    {
+      tvShowId: mediaType === 'tv' ? id : '',
+    },
+    {
+      enabled: mediaType === 'tv' && !!id,
+    }
+  );
 
-  const { data: movieData, isInitialLoading: movieIsInitialLoading } =
-    client.tmdb.movieDetails.useQuery(
-      {
-        movieId: mediaType === 'movie' ? id : '',
-      },
-      {
-        enabled: mediaType === 'movie' && !!id,
-      }
-    );
+  const { data: movieData, isInitialLoading: movieIsInitialLoading } = client.tmdb.movieDetails.useQuery(
+    {
+      movieId: mediaType === 'movie' ? id : '',
+    },
+    {
+      enabled: mediaType === 'movie' && !!id,
+    }
+  );
 
-  const { data: sourcesData, isLoading: sourcesLoading } =
-    client.app.getSources.useQuery(
-      {
-        imdbId:
-          (mediaType === 'tv'
-            ? tvData?.external_ids.imdb_id
-            : movieData?.imdb_id) || '',
-        showName: (mediaType === 'tv' ? tvData?.name : movieData?.title) || '',
-        type: mediaType,
-        season: mediaType === 'tv' ? activeEpisode.season : undefined,
-        episode: mediaType === 'tv' ? activeEpisode.episode : undefined,
-      },
-      {
-        enabled: !!tvData || !!movieData,
-      }
-    );
+  const { data: sourcesData, isLoading: sourcesLoading } = client.app.getSources.useQuery(
+    {
+      imdbId: (mediaType === 'tv' ? tvData?.external_ids.imdb_id : movieData?.imdb_id) || '',
+      showName: (mediaType === 'tv' ? tvData?.name : movieData?.title) || '',
+      type: mediaType,
+      season: mediaType === 'tv' ? activeEpisode.season : undefined,
+      episode: mediaType === 'tv' ? activeEpisode.episode : undefined,
+    },
+    {
+      enabled: !!tvData || !!movieData,
+    }
+  );
   const [sources, setSources] = useState<Sources>(sourcesData ?? []);
   client.app.getSourcesSubscription.useSubscription(undefined, {
     onData: (data: Sources) => {
-      console.log(data);
       setSources((prev) => [...prev, ...data]);
     },
   });
 
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
-  const isLastEpisode =
-    mediaType === 'tv'
-      ? tvData?.seasons.find(
-          (s) => s.season_number === tvData.number_of_seasons
-        )?.episode_count === activeEpisode.episode
-      : false;
+  const isLastEpisode = mediaType === 'tv' ? tvData?.seasons.find((s) => s.season_number === tvData.number_of_seasons)?.episode_count === activeEpisode.episode : false;
 
   useEffect(() => {
     if (sourcesData && sources && sources.length === 0) {
@@ -94,13 +82,7 @@ const MovieDetails: FC = () => {
   }, [sourcesData, sources, selectedSource]);
 
   useEffect(() => {
-    if (
-      !tvInitialLoading &&
-      !movieIsInitialLoading &&
-      !sourcesLoading &&
-      sourcesData &&
-      sourcesData.length === 0
-    ) {
+    if (!tvInitialLoading && !movieIsInitialLoading && !sourcesLoading && sourcesData && sourcesData.length === 0) {
       toast({
         title: 'No sources found',
         description: 'No sources found for this video',
@@ -115,10 +97,7 @@ const MovieDetails: FC = () => {
   useEffect(() => {
     const handleNextEpisode = () => {
       if (!tvData) return;
-      const currentSeason = tvData.seasons.find(
-        (s: { season_number: number }) =>
-          s.season_number === activeEpisode.season
-      );
+      const currentSeason = tvData.seasons.find((s: { season_number: number }) => s.season_number === activeEpisode.season);
 
       if (activeEpisode.episode < currentSeason!.episode_count) {
         setActiveEpisode({
@@ -148,13 +127,7 @@ const MovieDetails: FC = () => {
       {sources && sources.length === 0 && (
         <>
           <Skeleton height="700px" w="full" />
-          <Flex
-            height="50px"
-            w="full"
-            alignItems="center"
-            justifyContent="center"
-            gap={4}
-          >
+          <Flex height="50px" w="full" alignItems="center" justifyContent="center" gap={4}>
             {Array.from({ length: 4 }).map((_, i) => (
               // eslint-disable-next-line react/no-array-index-key
               <Skeleton key={i} h="full" w="200px" borderRadius="0.375rem" />
@@ -166,21 +139,13 @@ const MovieDetails: FC = () => {
         <Flex gap={4} flexDirection="column">
           <VidstackPlayer
             selectedSource={selectedSource}
-            title={
-              mediaType === 'tv'
-                ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}`
-                : movieData?.title
-            }
+            title={mediaType === 'tv' ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}` : movieData?.title}
             tmdbId={id!}
             season={mediaType === 'tv' ? activeEpisode.season : undefined}
             episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
             isLastEpisode={isLastEpisode}
           />
-          <SourceSelector
-            sources={sources}
-            activeSource={selectedSource}
-            selectSource={setSelectedSource}
-          />
+          <SourceSelector sources={sources} activeSource={selectedSource} selectSource={setSelectedSource} />
         </Flex>
       )}
       {(tvInitialLoading || movieIsInitialLoading) && (
@@ -189,13 +154,7 @@ const MovieDetails: FC = () => {
           <Skeleton height="200px" w="full" />
         </VStack>
       )}
-      {mediaType === 'tv' && tvData && (
-        <EpisodeList
-          tvData={tvData}
-          setActiveEpisode={setActiveEpisode}
-          activeEpisode={activeEpisode}
-        />
-      )}
+      {mediaType === 'tv' && tvData && <EpisodeList tvData={tvData} setActiveEpisode={setActiveEpisode} activeEpisode={activeEpisode} />}
       {mediaType === 'movie' && movieData && (
         <ShowDetails
           posterPath={movieData.poster_path}

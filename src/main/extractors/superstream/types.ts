@@ -42,7 +42,7 @@ export interface List {
   real_quality: string;
   format: string;
   size: string;
-  size_bytes: any;
+  size_bytes: unknown;
   count: number;
   dateline: number;
   fid: number;
@@ -141,7 +141,7 @@ export interface SuperStreamSubtitle {
   lang: string;
   language: string;
   delay: number;
-  point: any;
+  point: unknown;
   order: number;
   admin_order: number;
   myselect: number;
@@ -155,7 +155,7 @@ export interface SubtitleList {
 }
 
 export interface SubtitleData {
-  select: any[];
+  select: unknown[];
   list: SubtitleList[];
 }
 

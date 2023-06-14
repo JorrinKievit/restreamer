@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  FormControl,
-  FormLabel,
-  NumberInput,
-  NumberInputField,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, FormControl, FormLabel, NumberInput, NumberInputField } from '@chakra-ui/react';
 import { MultiValue, Select } from 'chakra-react-select';
 import { TMDB_MOVIE_GENRES, TMDB_TV_GENRES } from 'main/api/tmdb/genres';
 import { TMBD_SORT_BY } from 'main/api/tmdb/sort-by';
@@ -28,17 +20,12 @@ interface ShowFilterProps {
 }
 
 const ShowFilter: FC<ShowFilterProps> = ({ defaultShowType, callback }) => {
-  const [genres, setGenres] = useState<
-    MultiValue<{ label: string; value: number }>
-  >([]);
+  const [genres, setGenres] = useState<MultiValue<{ label: string; value: number }>>([]);
   const [year, setYear] = useState('');
   const [type, setType] = useState<ShowType>(defaultShowType);
-  const [sortBy, setSortBy] = useState(
-    TMBD_SORT_BY.find((sort) => sort.value === 'popularity.desc')
-  );
+  const [sortBy, setSortBy] = useState(TMBD_SORT_BY.find((sort) => sort.value === 'popularity.desc'));
 
-  const DEFAULT_GENRES =
-    defaultShowType === 'movie' ? TMDB_MOVIE_GENRES : TMDB_TV_GENRES;
+  const DEFAULT_GENRES = defaultShowType === 'movie' ? TMDB_MOVIE_GENRES : TMDB_TV_GENRES;
 
   const handleSubmit = () => {
     callback({

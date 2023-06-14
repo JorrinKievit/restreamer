@@ -53,8 +53,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
   import('electron-debug').then((mod) => mod.default());
@@ -76,9 +75,7 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
+  const RESOURCES_PATH = app.isPackaged ? path.join(process.resourcesPath, 'assets') : path.join(__dirname, '../../assets');
 
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
@@ -90,15 +87,11 @@ const createWindow = async () => {
     minHeight: 900,
     width: 1500,
     height: 900,
-    icon: nativeImage
-      .createFromPath(getAssetPath('icon.png'))
-      .resize({ width: 24, height: 24 }),
+    icon: nativeImage.createFromPath(getAssetPath('icon.png')).resize({ width: 24, height: 24 }),
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true,
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
+      preload: app.isPackaged ? path.join(__dirname, 'preload.js') : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
   mainWindow.webContents.setUserAgent(app.userAgentFallback);

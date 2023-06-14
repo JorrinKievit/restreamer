@@ -1,15 +1,4 @@
-import {
-  VStack,
-  Heading,
-  AspectRatio,
-  Flex,
-  Grid,
-  GridItem,
-  Tag,
-  Tooltip,
-  Image,
-  Text,
-} from '@chakra-ui/react';
+import { VStack, Heading, AspectRatio, Flex, Grid, GridItem, Tag, Tooltip, Image, Text } from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
 import ShowFilter, { FilterOptions } from 'renderer/components/ShowFilter';
 import { Link } from 'react-router-dom';
@@ -69,10 +58,7 @@ const TvShows: FC = () => {
                   <GridItem key={show.id}>
                     <Link to={`/details/${show.id}?media_type=tv`}>
                       <AspectRatio ratio={2 / 3}>
-                        <Image
-                          src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`}
-                          alt={show.name}
-                        />
+                        <Image src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`} alt={show.name} />
                       </AspectRatio>
                       <VStack mt={1}>
                         <Tooltip label={show.name}>
@@ -81,10 +67,7 @@ const TvShows: FC = () => {
                           </Text>
                         </Tooltip>
                         <Flex w="full">
-                          <Text flex="1">
-                            {new Date(show.first_air_date).getFullYear() ||
-                              'N/A'}
-                          </Text>
+                          <Text flex="1">{new Date(show.first_air_date).getFullYear() || 'N/A'}</Text>
                           <Tag colorScheme="blue">TV</Tag>
                         </Flex>
                       </VStack>
@@ -94,11 +77,7 @@ const TvShows: FC = () => {
               );
             })}
           </Grid>
-          <Pagination
-            currentPage={data.page}
-            totalPages={data.total_pages > 500 ? 500 : data.total_pages}
-            onPageChange={onPageChange}
-          />
+          <Pagination currentPage={data.page} totalPages={data.total_pages > 500 ? 500 : data.total_pages} onPageChange={onPageChange} />
         </>
       )}
     </VStack>
