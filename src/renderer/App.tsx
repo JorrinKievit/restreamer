@@ -1,14 +1,10 @@
-import {
-  Box,
-  ChakraProvider,
-  Container,
-  createStandaloneToast,
-} from '@chakra-ui/react';
+import { Box, ChakraProvider, Container, createStandaloneToast } from '@chakra-ui/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { ipcLink } from 'electron-trpc/renderer';
 import { useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Header from './components/Header';
 import UpdateModal from './components/UpdateModal';
 import Index from './pages/Index';
@@ -17,10 +13,10 @@ import Movies from './pages/Movies';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import TvShows from './pages/TvShows';
-
-import './styles/globals.css';
 import extendedTheme from './styles/theme';
 import { client } from './api/trpc';
+
+import './styles/globals.css';
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -40,10 +36,8 @@ const App = () => {
                 let message = '';
                 if (error.request.status === 401) message = 'Unauthorized';
                 if (error.request.status === 404) message = 'Not found';
-                if (error.request.status === 500)
-                  message = 'Internal server error';
-                if (error.response?.data.status_message)
-                  message = error.response.data.status_message;
+                if (error.request.status === 500) message = 'Internal server error';
+                if (error.response?.data.status_message) message = error.response.data.status_message;
 
                 toast({
                   title: 'An error occurred, please try again later',
@@ -89,6 +83,7 @@ const App = () => {
       >
         <client.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools initialIsOpen={false} />
             <Container maxW="7xl" h="full">
               <Router>
                 <Header />

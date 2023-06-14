@@ -17,20 +17,11 @@ export class VidSrcExtractor implements IExtractor {
 
   private embedsitoExtractor = new EmbedsitoExtractor();
 
-  async extractUrls(
-    imdbId: string,
-    type: ContentType,
-    season?: number,
-    episode?: number
-  ): Promise<Sources> {
+  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
-        type === 'movie'
-          ? `${this.embedUrl}${imdbId}/`
-          : type === 'tv'
-          ? `${this.embedUrl}${imdbId}/${season}-${episode}/`
-          : '';
+        type === 'movie' ? `${this.embedUrl}${imdbId}/` : type === 'tv' ? `${this.embedUrl}${imdbId}/${season}-${episode}/` : '';
       let res = await axiosInstance.get(url);
 
       const $ = load(res.data);
@@ -66,10 +57,7 @@ export class VidSrcExtractor implements IExtractor {
         serverlist
           .filter((x) => x !== undefined)
           .map(async (server) => {
-            const linkfixed = server.replace(
-              'https://vidsrc.xyz/',
-              'https://embedsito.com/'
-            );
+            const linkfixed = server.replace('https://vidsrc.xyz/', 'https://embedsito.com/');
             if (linkfixed.includes('/pro')) {
               res = await axiosInstance.get(server, {
                 headers: {
@@ -79,9 +67,7 @@ export class VidSrcExtractor implements IExtractor {
               const m3u8Regex = /((https:|http:)\/\/.*\.m3u8)/g;
               const srcm3u8 = m3u8Regex.exec(res.data)![0];
               const extractorDataRegex = /['"](.*set_pass[^"']*)/;
-              const extractorData = extractorDataRegex
-                .exec(res.data)![1]
-                .replace('//', 'https://');
+              const extractorData = extractorDataRegex.exec(res.data)![1].replace('//', 'https://');
 
               return {
                 server: 'pro',
@@ -125,9 +111,7 @@ export class VidSrcExtractor implements IExtractor {
             }
           }
           if (server.server === 'embedsito') {
-            const source = await this.embedsitoExtractor.extractUrl(
-              server.url.split('/').pop()!
-            );
+            const source = await this.embedsitoExtractor.extractUrl(server.url.split('/').pop()!);
 
             return source;
           }

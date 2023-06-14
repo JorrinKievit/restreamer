@@ -17,20 +17,11 @@ export class TwoEmbedExtractor implements IExtractor {
 
   private rabbitStreamExtractor = new RabbitStreamExtractor();
 
-  async extractUrls(
-    imdbId: string,
-    type: ContentType,
-    season?: number,
-    episode?: number
-  ): Promise<Sources> {
+  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
-        type === 'movie'
-          ? `${this.url}embed/imdb/movie?id=${imdbId}`
-          : type === 'tv'
-          ? `${this.url}embed/imdb/tv?id=${imdbId}&s=${season}&e=${episode}/`
-          : '';
+        type === 'movie' ? `${this.url}embed/imdb/movie?id=${imdbId}` : type === 'tv' ? `${this.url}embed/imdb/tv?id=${imdbId}&s=${season}&e=${episode}/` : '';
 
       let res = await axiosInstance.get(url);
       const $ = load(res.data);
@@ -46,14 +37,11 @@ export class TwoEmbedExtractor implements IExtractor {
         serverIds.map(async (serverId) => {
           try {
             const captchaToken = await getCaptchaToken(captchaKey, url);
-            res = await axiosInstance.get(
-              `${this.url}ajax/embed/play?id=${serverId}&_token=${captchaToken}`,
-              {
-                headers: {
-                  referer: url,
-                },
-              }
-            );
+            res = await axiosInstance.get(`${this.url}ajax/embed/play?id=${serverId}&_token=${captchaToken}`, {
+              headers: {
+                referer: url,
+              },
+            });
             return res.data.link;
           } catch (error) {
             return Promise.resolve();
@@ -72,9 +60,7 @@ export class TwoEmbedExtractor implements IExtractor {
           return undefined;
         })
       );
-      return finalServerlist.filter(
-        (server) => server !== undefined
-      ) as Sources;
+      return finalServerlist.filter((server) => server !== undefined) as Sources;
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {
         console.log('2Embed: ', error.message);

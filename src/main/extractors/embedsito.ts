@@ -8,9 +8,7 @@ export class EmbedsitoExtractor implements IExtractor {
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
-      const res = await axiosInstance.post(
-        `https://embedsito.com/api/source/${url}`
-      );
+      const res = await axiosInstance.post(`https://embedsito.com/api/source/${url}`);
 
       const file = res.data.data[res.data.data.length - 1];
       const redirectUrl = file.file;

@@ -1,17 +1,6 @@
 import { FC } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import {
-  AspectRatio,
-  Flex,
-  Grid,
-  GridItem,
-  Tag,
-  Tooltip,
-  VStack,
-  Image,
-  Text,
-  Skeleton,
-} from '@chakra-ui/react';
+import { AspectRatio, Flex, Grid, GridItem, Tag, Tooltip, VStack, Image, Text, Skeleton } from '@chakra-ui/react';
 import SkeletonGrid from 'renderer/components/SkeletonGrid';
 import { client } from 'renderer/api/trpc';
 import { TMDB_IMAGE_BASE_URL } from 'renderer/constants';
@@ -43,10 +32,7 @@ const SearchResultsPage: FC = () => {
               <Link to={`/details/${show.id}?media_type=${show.media_type}`}>
                 <AspectRatio ratio={2 / 3}>
                   <Skeleton isLoaded={!isLoading}>
-                    <Image
-                      src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`}
-                      alt={show.name}
-                    />
+                    <Image src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`} alt={show.name} />
                   </Skeleton>
                 </AspectRatio>
                 <VStack mt={1}>
@@ -56,16 +42,8 @@ const SearchResultsPage: FC = () => {
                     </Text>
                   </Tooltip>
                   <Flex w="full">
-                    <Text flex="1">
-                      {new Date(
-                        show.release_date
-                          ? show.release_date
-                          : show.first_air_date
-                      ).getFullYear() || 'N/A'}
-                    </Text>
-                    <Tag colorScheme="blue">
-                      {show.media_type === 'tv' ? 'TV' : 'Movie'}
-                    </Tag>
+                    <Text flex="1">{new Date(show.release_date ? show.release_date : show.first_air_date).getFullYear() || 'N/A'}</Text>
+                    <Tag colorScheme="blue">{show.media_type === 'tv' ? 'TV' : 'Movie'}</Tag>
                   </Flex>
                 </VStack>
               </Link>

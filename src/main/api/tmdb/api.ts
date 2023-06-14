@@ -9,10 +9,7 @@ import { MovieOrTvShowDetailsResults } from './details.types';
 import { t } from '../trpc-client';
 
 const TMBD_API_ENDPOINT = 'https://api.themoviedb.org/3';
-const API_KEY =
-  process.env.NODE_ENV === 'development'
-    ? process.env.TMDB_API_KEY
-    : TMDB_API_KEY;
+const API_KEY = process.env.NODE_ENV === 'development' ? process.env.TMDB_API_KEY : TMDB_API_KEY;
 
 export const tmdbRouter = t.router({
   movieDetails: t.procedure
@@ -22,9 +19,7 @@ export const tmdbRouter = t.router({
       })
     )
     .query<MovieDetailsResults>(async ({ input }) => {
-      const res = await axios.get(
-        `${TMBD_API_ENDPOINT}/movie/${input.movieId}?api_key=${API_KEY}&append_to_response=credits`
-      );
+      const res = await axios.get(`${TMBD_API_ENDPOINT}/movie/${input.movieId}?api_key=${API_KEY}&append_to_response=credits`);
       return res.data;
     }),
   tvShowDetails: t.procedure
@@ -33,40 +28,30 @@ export const tmdbRouter = t.router({
         tvShowId: z.string().nullish(),
       })
     )
-    .query<TvShowDetailsResults & { episodeNames: string[][] }>(
-      async ({ input }) => {
-        const res = (await axios.get(
-          `${TMBD_API_ENDPOINT}/tv/${input.tvShowId}?api_key=${API_KEY}&append_to_response=external_ids,credits`
-        )) as AxiosResponse<TvShowDetailsResults>;
+    .query<TvShowDetailsResults & { episodeNames: string[][] }>(async ({ input }) => {
+      const res = (await axios.get(`${TMBD_API_ENDPOINT}/tv/${input.tvShowId}?api_key=${API_KEY}&append_to_response=external_ids,credits`)) as AxiosResponse<TvShowDetailsResults>;
 
-        const episodeNames = await Promise.all(
-          res.data.seasons.map(async (season) => {
-            await Promise.resolve(1000);
-            return Promise.all(
-              Array.from({ length: season.episode_count }).map(
-                async (_, index) => {
-                  try {
-                    const episodeDetails = await axios.get(
-                      `${TMBD_API_ENDPOINT}/tv/${input.tvShowId}/season/${
-                        season.season_number
-                      }/episode/${index + 1}?api_key=${API_KEY}`
-                    );
-                    return episodeDetails.data.name;
-                  } catch (e) {
-                    return '';
-                  }
-                }
-              )
-            );
-          })
-        );
+      const episodeNames = await Promise.all(
+        res.data.seasons.map(async (season) => {
+          await Promise.resolve(1000);
+          return Promise.all(
+            Array.from({ length: season.episode_count }).map(async (_, index) => {
+              try {
+                const episodeDetails = await axios.get(`${TMBD_API_ENDPOINT}/tv/${input.tvShowId}/season/${season.season_number}/episode/${index + 1}?api_key=${API_KEY}`);
+                return episodeDetails.data.name;
+              } catch (e) {
+                return '';
+              }
+            })
+          );
+        })
+      );
 
-        return {
-          ...res.data,
-          episodeNames,
-        };
-      }
-    ),
+      return {
+        ...res.data,
+        episodeNames,
+      };
+    }),
   search: t.procedure
     .input(
       z.object({
@@ -74,9 +59,7 @@ export const tmdbRouter = t.router({
       })
     )
     .query<SearchResponse>(async ({ input }) => {
-      const res = await axios.get(
-        `${TMBD_API_ENDPOINT}/search/multi?api_key=${API_KEY}&query=${input.query}`
-      );
+      const res = await axios.get(`${TMBD_API_ENDPOINT}/search/multi?api_key=${API_KEY}&query=${input.query}`);
       return res.data;
     }),
   discover: t.procedure
@@ -92,20 +75,14 @@ export const tmdbRouter = t.router({
       })
     )
     .query<DiscoverMovieResults | DiscoverTvShowsResults>(async ({ input }) => {
-      const res = await axios.get(
-        `${TMBD_API_ENDPOINT}/discover/${input.type}?api_key=${API_KEY}`,
-        {
-          params: {
-            with_genres:
-              input.options.genres.length > 0
-                ? input.options.genres.join(',')
-                : undefined,
-            primary_release_year: input.options.year,
-            sort_by: input.options.sortBy,
-            page: input.options.page,
-          },
-        }
-      );
+      const res = await axios.get(`${TMBD_API_ENDPOINT}/discover/${input.type}?api_key=${API_KEY}`, {
+        params: {
+          with_genres: input.options.genres.length > 0 ? input.options.genres.join(',') : undefined,
+          primary_release_year: input.options.year,
+          sort_by: input.options.sortBy,
+          page: input.options.page,
+        },
+      });
       return res.data;
     }),
   getShowsById: t.procedure
@@ -121,18 +98,14 @@ export const tmdbRouter = t.router({
       })
     )
     .query<MovieOrTvShowDetailsResults>(async ({ input }) => {
-      const playingDataWithTypes = Object.entries(input.playingData).map(
-        ([key, value]) => {
-          return {
-            id: key,
-            showType: value.episode ? ('tv' as const) : ('movie' as const),
-          };
-        }
-      );
+      const playingDataWithTypes = Object.entries(input.playingData).map(([key, value]) => {
+        return {
+          id: key,
+          showType: value.episode ? ('tv' as const) : ('movie' as const),
+        };
+      });
       const promises = playingDataWithTypes.map(async (show) => {
-        const res = (await axios.get(
-          `${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${API_KEY}`
-        )) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
+        const res = (await axios.get(`${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${API_KEY}`)) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
 
         return {
           ...res.data,

@@ -1,18 +1,4 @@
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  useDisclosure,
-  Text,
-  List,
-  ListItem,
-  UnorderedList,
-} from '@chakra-ui/react';
+import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, Text, List, ListItem, UnorderedList } from '@chakra-ui/react';
 import { UpdateInfo } from 'electron-updater';
 import { FC, useState } from 'react';
 import { client } from 'renderer/api/trpc';
@@ -20,8 +6,7 @@ import { client } from 'renderer/api/trpc';
 const UpdateModal: FC = () => {
   const { mutate } = client.updater.quitAndInstall.useMutation();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [releaseNotes, setReleaseNotes] =
-    useState<UpdateInfo['releaseNotes']>(null);
+  const [releaseNotes, setReleaseNotes] = useState<UpdateInfo['releaseNotes']>(null);
 
   const handleUpdate = () => {
     mutate();
@@ -45,21 +30,13 @@ const UpdateModal: FC = () => {
   });
 
   return (
-    <Modal
-      closeOnOverlayClick={false}
-      isCentered
-      scrollBehavior="inside"
-      isOpen={isOpen}
-      onClose={onClose}
-    >
+    <Modal closeOnOverlayClick={false} isCentered scrollBehavior="inside" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Update available</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text mb={2}>
-            There is a new update available. Do you want to restart and update?
-          </Text>
+          <Text mb={2}>There is a new update available. Do you want to restart and update?</Text>
           {releaseNotes && typeof releaseNotes !== 'string' && (
             <List spacing={2}>
               {releaseNotes.map((release) => (
@@ -67,9 +44,7 @@ const UpdateModal: FC = () => {
                   <Text size="lg" as="b">
                     v{release.version}
                   </Text>
-                  <UnorderedList spacing={2}>
-                    {parseHTML(release.note as string)}
-                  </UnorderedList>
+                  {release.note && <UnorderedList spacing={2}>{parseHTML(release.note)}</UnorderedList>}
                 </ListItem>
               ))}
             </List>

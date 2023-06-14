@@ -24,6 +24,8 @@ module.exports = {
     'promise/always-return': 'off',
     'consistent-return': 'off',
     'prefer-destructuring': 'off',
+    'no-bitwise': 'off',
+    printWidth: 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

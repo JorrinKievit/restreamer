@@ -1,21 +1,4 @@
-import {
-  Card,
-  CardHeader,
-  Heading,
-  CardBody,
-  VStack,
-  FormControl,
-  FormLabel,
-  Input,
-  CardFooter,
-  Button,
-  TableContainer,
-  Table,
-  Tbody,
-  Tr,
-  Td,
-  Text,
-} from '@chakra-ui/react';
+import { Card, CardHeader, Heading, CardBody, VStack, FormControl, FormLabel, Input, CardFooter, Button, TableContainer, Table, Tbody, Tr, Td, Text } from '@chakra-ui/react';
 import React, { FC, useState } from 'react';
 import { OpenSubtitlesUser } from 'main/api/opensubtitles/user-information.types';
 import { useLocalStorage } from 'usehooks-ts';
@@ -40,23 +23,11 @@ const OpenSubtitlesSettings: FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const [opensubtitlesData, setOpensubtitlesData] =
-    useLocalStorage<OpenSubtitlesUser>(
-      'opensubtitles',
-      initialOpenSubtitlesData
-    );
+  const [opensubtitlesData, setOpensubtitlesData] = useLocalStorage<OpenSubtitlesUser>('opensubtitles', initialOpenSubtitlesData);
 
-  const {
-    mutate: login,
-    error: errorLogin,
-    isLoading: isLoadingLogin,
-  } = client.opensubtitles.login.useMutation();
+  const { mutate: login, error: errorLogin, isLoading: isLoadingLogin } = client.opensubtitles.login.useMutation();
 
-  const {
-    mutate: logout,
-    isLoading: isLoadingLogout,
-    error: errorLogout,
-  } = client.opensubtitles.logout.useMutation();
+  const { mutate: logout, isLoading: isLoadingLogout, error: errorLogout } = client.opensubtitles.logout.useMutation();
 
   const handleLogout = async () => {
     logout(
@@ -97,19 +68,11 @@ const OpenSubtitlesSettings: FC = () => {
             <VStack spacing={4}>
               <FormControl isRequired>
                 <FormLabel>Username</FormLabel>
-                <Input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
+                <Input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
               </FormControl>
               <FormControl isRequired>
                 <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </FormControl>
               {errorLogin && <Text color="tomato">{errorLogin.message}</Text>}
             </VStack>
@@ -147,11 +110,7 @@ const OpenSubtitlesSettings: FC = () => {
             </TableContainer>
           </CardBody>
           <CardFooter justifyContent="flex-end">
-            <Button
-              colorScheme="blue"
-              isLoading={isLoadingLogout}
-              onClick={handleLogout}
-            >
+            <Button colorScheme="blue" isLoading={isLoadingLogout} onClick={handleLogout}>
               Logout
             </Button>
           </CardFooter>

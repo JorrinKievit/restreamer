@@ -1,31 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@import '~plyr/dist/plyr.css';
-
-.plyr__captions {
-  font-size: 1.8rem;
-}
-
-.plyr:fullscreen .plyr__captions {
-  font-size: 1.8rem;
-}
-
-.plyr__menu__container::-webkit-scrollbar {
-  display: none;
-}
-.plyr__menu__container {
-  max-height: 40vh;
-  overflow-y: auto;
-}
+@import '~vidstack/styles/defaults.css';
+@import '~vidstack/styles/community-skin/video.css';
 
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
 html {

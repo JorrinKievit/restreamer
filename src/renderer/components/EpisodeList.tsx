@@ -1,26 +1,7 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import {
-  Box,
-  Button,
-  Card,
-  Flex,
-  Grid,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuOptionGroup,
-  MenuItemOption,
-  Text,
-  Tooltip,
-} from '@chakra-ui/react';
+import { Box, Button, Card, Flex, Grid, Menu, MenuButton, MenuList, MenuOptionGroup, MenuItemOption, Text, Tooltip } from '@chakra-ui/react';
 import { TvShowDetailsResults } from 'main/api/tmdb/tvshow-details.types';
-import React, {
-  Dispatch,
-  FC,
-  SetStateAction,
-  useEffect,
-  useState,
-} from 'react';
+import React, { Dispatch, FC, SetStateAction, useEffect, useState } from 'react';
 
 interface EpisodeListProps {
   tvData: TvShowDetailsResults & { episodeNames: string[][] };
@@ -36,17 +17,10 @@ interface EpisodeListProps {
   >;
 }
 
-const EpisodeList: FC<EpisodeListProps> = ({
-  tvData,
-  activeEpisode,
-  setActiveEpisode,
-}) => {
+const EpisodeList: FC<EpisodeListProps> = ({ tvData, activeEpisode, setActiveEpisode }) => {
   const [selectedSeason, setSelectedSeason] = useState(activeEpisode.season);
 
-  const currentSeason =
-    tvData.seasons[0].season_number === 0
-      ? tvData.seasons[selectedSeason]
-      : tvData.seasons[selectedSeason - 1];
+  const currentSeason = tvData.seasons[0].season_number === 0 ? tvData.seasons[selectedSeason] : tvData.seasons[selectedSeason - 1];
 
   useEffect(() => {
     setSelectedSeason(activeEpisode.season);
@@ -66,11 +40,7 @@ const EpisodeList: FC<EpisodeListProps> = ({
                   value={season.season_number.toString()}
                   key={season.id}
                   onClick={() => setSelectedSeason(season.season_number)}
-                  color={
-                    activeEpisode.season === season.season_number
-                      ? 'teal.500'
-                      : ''
-                  }
+                  color={activeEpisode.season === season.season_number ? 'teal.500' : ''}
                 >
                   {season.name}
                 </MenuItemOption>
@@ -85,19 +55,11 @@ const EpisodeList: FC<EpisodeListProps> = ({
           }}
           gap={6}
         >
-          {Array.from(
-            { length: currentSeason.episode_count },
-            (_, i) => i + 1
-          ).map((episodeNumber) => (
+          {Array.from({ length: currentSeason.episode_count }, (_, i) => i + 1).map((episodeNumber) => (
             <Box
               as="button"
               key={`${selectedSeason}-${episodeNumber}}`}
-              color={
-                activeEpisode.season === currentSeason.season_number &&
-                activeEpisode.episode === episodeNumber
-                  ? 'teal.500'
-                  : ''
-              }
+              color={activeEpisode.season === currentSeason.season_number && activeEpisode.episode === episodeNumber ? 'teal.500' : ''}
               onClick={() =>
                 setActiveEpisode({
                   season: currentSeason.season_number,
@@ -110,19 +72,9 @@ const EpisodeList: FC<EpisodeListProps> = ({
                 padding: '0.5rem',
               }}
             >
-              <Tooltip
-                label={
-                  tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1]
-                    ? tvData.episodeNames[selectedSeason][episodeNumber - 1]
-                    : ''
-                }
-              >
+              <Tooltip label={tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1] ? tvData.episodeNames[selectedSeason][episodeNumber - 1] : ''}>
                 <Text noOfLines={1}>
-                  {tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1]
-                    ? `Episode ${episodeNumber}: ${
-                        tvData.episodeNames[selectedSeason][episodeNumber - 1]
-                      }`
-                    : `Episode ${episodeNumber}`}
+                  {tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1] ? `Episode ${episodeNumber}: ${tvData.episodeNames[selectedSeason][episodeNumber - 1]}` : `Episode ${episodeNumber}`}
                 </Text>
               </Tooltip>
             </Box>

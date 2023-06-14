@@ -9,8 +9,6 @@ type TvShowDetailsResultWithMediaType = TvShowDetailsResults & {
   media_type: 'tv';
 };
 
-export type MovieOrTvShowDetailsResult =
-  | MovieDetailsResultWithMediaType
-  | TvShowDetailsResultWithMediaType;
+export type MovieOrTvShowDetailsResult = MovieDetailsResultWithMediaType | TvShowDetailsResultWithMediaType;
 
 export type MovieOrTvShowDetailsResults = MovieOrTvShowDetailsResult[];

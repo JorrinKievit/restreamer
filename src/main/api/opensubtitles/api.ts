@@ -6,17 +6,11 @@ import { t } from '../trpc-client';
 import { DownloadResponse } from './download.types';
 import { LoginResponse } from './login.types';
 import { SearchResponse } from './search.types';
-import {
-  OpenSubtitlesUser,
-  UserInformationResponse,
-} from './user-information.types';
+import { OpenSubtitlesUser, UserInformationResponse } from './user-information.types';
 
 const OPENSUBTITLES_API_URL = 'https://api.opensubtitles.com/api/v1/';
 
-const API_KEY =
-  process.env.NODE_ENV === 'development'
-    ? process.env.OPENSUBTITLES_API_KEY
-    : OPENSUBTITLES_API_KEY;
+const API_KEY = process.env.NODE_ENV === 'development' ? process.env.OPENSUBTITLES_API_KEY : OPENSUBTITLES_API_KEY;
 
 const baseApi = axios.create({
   baseURL: OPENSUBTITLES_API_URL,
@@ -41,12 +35,11 @@ export const openSubtitlesRouter = t.router({
           password: input.password,
         });
 
-        const userInformationResponse =
-          await baseApi.get<UserInformationResponse>('infos/user', {
-            headers: {
-              Authorization: `Bearer ${loginResponse.data.token}`,
-            },
-          });
+        const userInformationResponse = await baseApi.get<UserInformationResponse>('infos/user', {
+          headers: {
+            Authorization: `Bearer ${loginResponse.data.token}`,
+          },
+        });
 
         const user: OpenSubtitlesUser = {
           user: {
@@ -130,9 +123,7 @@ export const openSubtitlesRouter = t.router({
           },
         });
       });
-      const responseData = (await Promise.all(
-        promises
-      )) as AxiosResponse<SearchResponse>[];
+      const responseData = (await Promise.all(promises)) as AxiosResponse<SearchResponse>[];
 
       const finalData = responseData
         .filter((x) => x !== null)

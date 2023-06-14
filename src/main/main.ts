@@ -1,10 +1,10 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
 import path from 'path';
 import { app, BrowserWindow, nativeImage, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import electronDl from 'electron-dl';
 import { createIPCHandler } from 'electron-trpc/main';
+import installer, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { resolveHtmlPath } from './util';
 import { router } from './api';
 
@@ -42,29 +42,32 @@ class AppUpdater {
   }
 }
 
-if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support');
-  sourceMapSupport.install();
+async function getSourceMapSupport() {
+  const mod = await import('source-map-support');
+  return mod.default;
 }
 
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+if (process.env.NODE_ENV === 'production') {
+  getSourceMapSupport().then((sourceMap) => {
+    sourceMap.install();
+  });
+}
+
+const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
-  require('electron-debug')();
+  import('electron-debug').then((mod) => mod.default());
 }
 
 const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+  try {
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+    const extensions = [REACT_DEVELOPER_TOOLS];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
+    await installer(extensions, forceDownload);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const createWindow = async () => {
@@ -72,9 +75,7 @@ const createWindow = async () => {
     await installExtensions();
   }
 
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
+  const RESOURCES_PATH = app.isPackaged ? path.join(process.resourcesPath, 'assets') : path.join(__dirname, '../../assets');
 
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
@@ -82,17 +83,15 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
+    minWidth: 1360,
+    minHeight: 900,
     width: 1500,
     height: 900,
-    icon: nativeImage
-      .createFromPath(getAssetPath('icon.png'))
-      .resize({ width: 24, height: 24 }),
+    icon: nativeImage.createFromPath(getAssetPath('icon.png')).resize({ width: 24, height: 24 }),
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true,
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
+      preload: app.isPackaged ? path.join(__dirname, 'preload.js') : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
   mainWindow.webContents.setUserAgent(app.userAgentFallback);

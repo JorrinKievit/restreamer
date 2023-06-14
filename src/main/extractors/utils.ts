@@ -4,23 +4,13 @@ import { Source } from 'types/sources';
 
 export const getCaptchaToken = async (siteKey: string, url: string) => {
   const uri = new URL(url);
-  const domain = new TextEncoder().encode(
-    `${uri.protocol}//${uri.hostname}:443`
-  );
-  const domainEncoded = Buffer.from(domain)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  const domain = new TextEncoder().encode(`${uri.protocol}//${uri.hostname}:443`);
+  const domainEncoded = Buffer.from(domain).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-  let res = await axios.get(
-    `https://www.google.com/recaptcha/api.js?render=${siteKey}`
-  );
+  let res = await axios.get(`https://www.google.com/recaptcha/api.js?render=${siteKey}`);
   const vToken = res.data.split('releases/')[1].split('/')[0];
 
-  res = await axios.get(
-    `https://www.google.com/recaptcha/api2/anchor?ar=1&hl=en&size=invisible&cb=cs3&k=${siteKey}&co=${domainEncoded}&v=${vToken}`
-  );
+  res = await axios.get(`https://www.google.com/recaptcha/api2/anchor?ar=1&hl=en&size=invisible&cb=cs3&k=${siteKey}&co=${domainEncoded}&v=${vToken}`);
 
   const $ = load(res.data);
   const recapToken = $('#recaptcha-token').attr('value');
@@ -47,8 +37,7 @@ export const getCaptchaToken = async (siteKey: string, url: string) => {
 export const randomString = (length: number) => {
   const chars = '0123456789abcdef';
   let result = '';
-  for (let i = length; i > 0; i -= 1)
-    result += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = length; i > 0; i -= 1) result += chars[Math.floor(Math.random() * chars.length)];
   return result;
 };
 
@@ -67,6 +56,6 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
     case 360:
       return '360p';
     default:
-      return `Unknown`;
+      return 'Unknown';
   }
 };

@@ -37,7 +37,7 @@ export interface Result {
   gender?: number;
   known_for: KnownFor[];
   known_for_department: string;
-  profile_path?: any;
+  profile_path?: unknown;
 }
 
 export interface SearchResponse {

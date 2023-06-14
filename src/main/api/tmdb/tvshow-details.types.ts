@@ -3,7 +3,7 @@ export interface CreatedBy {
   credit_id: string;
   name: string;
   gender: number;
-  profile_path?: any;
+  profile_path?: unknown;
 }
 
 export interface Genre {
@@ -35,7 +35,7 @@ export interface Network {
 
 export interface ProductionCompany {
   id: number;
-  logo_path?: any;
+  logo_path?: unknown;
   name: string;
   origin_country: string;
 }
@@ -116,7 +116,7 @@ export interface TvShowDetailsResults {
   last_air_date: string;
   last_episode_to_air: LastEpisodeToAir;
   name: string;
-  next_episode_to_air?: any;
+  next_episode_to_air?: unknown;
   networks: Network[];
   number_of_episodes: number;
   number_of_seasons: number;
@@ -127,7 +127,7 @@ export interface TvShowDetailsResults {
   popularity: number;
   poster_path: string;
   production_companies: ProductionCompany[];
-  production_countries: any[];
+  production_countries: unknown[];
   seasons: Season[];
   spoken_languages: SpokenLanguage[];
   status: string;

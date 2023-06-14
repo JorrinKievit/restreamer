@@ -1,21 +1,6 @@
 /* eslint-disable no-undef */
 import { FC } from 'react';
-import {
-  AspectRatio,
-  Flex,
-  Grid,
-  GridItem,
-  Heading,
-  Tag,
-  Tooltip,
-  VStack,
-  Image,
-  Text,
-  Progress,
-  Box,
-  IconButton,
-  Link,
-} from '@chakra-ui/react';
+import { AspectRatio, Flex, Grid, GridItem, Heading, Tag, Tooltip, VStack, Image, Text, Progress, Box, IconButton, Link } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { Link as RouterLink } from 'react-router-dom';
 import { DeleteIcon, ViewIcon } from '@chakra-ui/icons';
@@ -26,10 +11,7 @@ import { client } from 'renderer/api/trpc';
 import { TMDB_IMAGE_BASE_URL } from 'renderer/constants';
 
 const Index: FC = () => {
-  const [playingData, setPlayingData] = useLocalStorage<PlayingData>(
-    'playingData',
-    {}
-  );
+  const [playingData, setPlayingData] = useLocalStorage<PlayingData>('playingData', {});
 
   const { data, isInitialLoading } = client.tmdb.getShowsById.useQuery({
     playingData,
@@ -54,19 +36,12 @@ const Index: FC = () => {
             w="full"
           >
             {data.map((show) => {
-              const runtime =
-                show.media_type === 'tv'
-                  ? show.episode_run_time[0]
-                  : show.runtime;
-              const progress = Math.floor(
-                (playingData![show.id].playingTime / 60 / runtime) * 100
-              );
+              const runtime = show.media_type === 'tv' ? show.episode_run_time[0] : show.runtime;
+              const progress = Math.floor((playingData![show.id].playingTime / 60 / runtime) * 100);
               return (
                 show.poster_path && (
                   <GridItem key={show.id} position="relative">
-                    <RouterLink
-                      to={`/details/${show.id}?media_type=${show.media_type}`}
-                    >
+                    <RouterLink to={`/details/${show.id}?media_type=${show.media_type}`}>
                       <AspectRatio
                         ratio={2 / 3}
                         _hover={{
@@ -75,19 +50,8 @@ const Index: FC = () => {
                         }}
                       >
                         <>
-                          <Image
-                            src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`}
-                            alt={
-                              show.media_type === 'tv' ? show.name : show.title
-                            }
-                          />
-                          <Box
-                            position="absolute"
-                            background="rgba(0, 0, 0, 0.5)"
-                            opacity={0}
-                            transition="opacity 0.2s"
-                            _hover={{ opacity: 1 }}
-                          >
+                          <Image src={`${TMDB_IMAGE_BASE_URL}${show.poster_path}`} alt={show.media_type === 'tv' ? show.name : show.title} />
+                          <Box position="absolute" background="rgba(0, 0, 0, 0.5)" opacity={0} transition="opacity 0.2s" _hover={{ opacity: 1 }}>
                             <IconButton
                               icon={<DeleteIcon />}
                               position="absolute"
@@ -107,33 +71,15 @@ const Index: FC = () => {
                                 setPlayingData(newPlayingData);
                               }}
                             />
-                            <Flex
-                              flexDirection="column"
-                              w="100%"
-                              h="100%"
-                              alignItems="center"
-                              justifyContent="center"
-                            >
-                              <IconButton
-                                icon={<ViewIcon />}
-                                colorScheme="blue"
-                                aria-label="View show details"
-                                size="sm"
-                                marginTop={
-                                  show.media_type === 'tv' ? '20px' : 0
-                                }
-                              />
+                            <Flex flexDirection="column" w="100%" h="100%" alignItems="center" justifyContent="center">
+                              <IconButton icon={<ViewIcon />} colorScheme="blue" aria-label="View show details" size="sm" marginTop={show.media_type === 'tv' ? '20px' : 0} />
                               {show.media_type === 'tv' && (
                                 <Text>
-                                  Season {playingData![show.id].season} Episode{' '}
-                                  {playingData![show.id].episode}
+                                  Season {playingData![show.id].season} Episode {playingData![show.id].episode}
                                 </Text>
                               )}
                               <Text>
-                                {(
-                                  playingData![show.id].playingTime / 60
-                                ).toFixed(0)}{' '}
-                                / {runtime ?? 'NaN'} min
+                                {(playingData![show.id].playingTime / 60).toFixed(0)} / {runtime ?? 'NaN'} min
                               </Text>
                             </Flex>
                           </Box>
@@ -141,26 +87,14 @@ const Index: FC = () => {
                       </AspectRatio>
                       <VStack mt={1}>
                         <Progress value={progress} w="full" />
-                        <Tooltip
-                          label={
-                            show.media_type === 'tv' ? show.name : show.title
-                          }
-                        >
+                        <Tooltip label={show.media_type === 'tv' ? show.name : show.title}>
                           <Text w="full" textAlign="left" noOfLines={1}>
                             {show.media_type === 'tv' ? show.name : show.title}
                           </Text>
                         </Tooltip>
                         <Flex w="full">
-                          <Text flex="1">
-                            {new Date(
-                              show.media_type === 'tv'
-                                ? show.first_air_date
-                                : show.release_date
-                            ).getFullYear() || 'N/A'}
-                          </Text>
-                          <Tag colorScheme="blue">
-                            {show.media_type === 'tv' ? 'TV' : 'Movie'}
-                          </Tag>
+                          <Text flex="1">{new Date(show.media_type === 'tv' ? show.first_air_date : show.release_date).getFullYear() || 'N/A'}</Text>
+                          <Tag colorScheme="blue">{show.media_type === 'tv' ? 'TV' : 'Movie'}</Tag>
                         </Flex>
                       </VStack>
                     </RouterLink>
