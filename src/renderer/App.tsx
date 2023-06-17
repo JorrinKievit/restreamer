@@ -13,6 +13,7 @@ import Movies from './pages/Movies';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import TvShows from './pages/TvShows';
+import Testing from './pages/Testing';
 import extendedTheme from './styles/theme';
 import { client } from './api/trpc';
 
@@ -96,6 +97,7 @@ const App = () => {
                     <Route path="/movies" element={<Movies />} />
                     <Route path="/tvshows" element={<TvShows />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/testing" element={<Testing />} />
                   </Routes>
                 </Box>
               </Router>

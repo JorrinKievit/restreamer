@@ -47,6 +47,17 @@ const Header: FC = () => {
           >
             TV Shows
           </Button>
+          <Button
+            variant="ghost"
+            as={NavLink}
+            to="/testing"
+            _activeLink={{
+              bgColor: 'blue.200',
+              color: 'gray.800',
+            }}
+          >
+            Testing
+          </Button>
 
           <form onSubmit={handleSubmit}>
             <InputGroup>
