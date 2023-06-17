@@ -56,7 +56,7 @@ export class GoMoviesExtractor implements IExtractor {
       const searchDocument = await axiosInstance.get(`${this.url}/search/${encodeURIComponent(contentTitle)}`);
       const $ = load(searchDocument.data);
       const contentName = type === 'movie' ? contentTitle : `${contentTitle} - Season ${season}`;
-      let contentPageUrl = $(`[data-filmname="${contentName}"] a`).attr('href');
+      let contentPageUrl = $(`[data-filmname*="${contentName}"] a`).attr('href');
       if (!contentPageUrl) throw new Error('ContentPage not found');
       let contentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`);
       let contentPage$ = load(contentPageDocument.data);
