@@ -72,17 +72,13 @@ const MovieDetails: FC = () => {
   const isLastEpisode = mediaType === 'tv' ? tvData?.seasons.find((s) => s.season_number === tvData.number_of_seasons)?.episode_count === activeEpisode.episode : false;
 
   useEffect(() => {
-    if (sourcesData && sources && sources.length === 0) {
-      setSources(sourcesData);
-    }
-
     if (sources && sources.length > 0 && !selectedSource) {
       setSelectedSource(sources[0]);
     }
   }, [sourcesData, sources, selectedSource]);
 
   useEffect(() => {
-    if (!tvInitialLoading && !movieIsInitialLoading && !sourcesLoading && sourcesData && sourcesData.length === 0) {
+    if (!sourcesLoading && sourcesData && sourcesData.length === 0) {
       toast({
         title: 'No sources found',
         description: 'No sources found for this video',
@@ -124,7 +120,7 @@ const MovieDetails: FC = () => {
 
   return (
     <Flex flexDirection="column" gap={4}>
-      {sources && sources.length === 0 && (
+      {sourcesLoading && sources.length === 0 && (
         <>
           <Skeleton height="700px" w="full" />
           <Flex height="50px" w="full" alignItems="center" justifyContent="center" gap={4}>
@@ -135,7 +131,7 @@ const MovieDetails: FC = () => {
           </Flex>
         </>
       )}
-      {sources && sources[0] && selectedSource && (
+      {selectedSource && (
         <Flex gap={4} flexDirection="column">
           <VidstackPlayer
             selectedSource={selectedSource}

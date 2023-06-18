@@ -1,5 +1,5 @@
 import { Card, CardBody, CardHeader, Spinner, Heading, UnorderedList, ListItem, Flex, Tag, CardFooter, ButtonGroup, Button, useBoolean, Tooltip, Box } from '@chakra-ui/react';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { client } from 'renderer/api/trpc';
 import { Sources } from 'types/sources';
 
@@ -52,19 +52,60 @@ const SourceInfo: FC<{
 const SourcesCheck: FC = () => {
   const [isDisabled, setIsDisabled] = useBoolean(false);
 
-  const { data, isLoading, refetch, isRefetching } = client.app.getSources.useQuery({
+  const {
+    data: sourcesData,
+    isLoading,
+    refetch,
+  } = client.app.getSources.useQuery({
     imdbId: 'tt0068646',
     showName: 'The Godfather',
     type: 'movie',
   });
+  const [sources, setSources] = useState<Sources>(sourcesData ?? []);
+  const [sourcesLoading, setSourcesLoading] = useState<Record<string, boolean>>(() => {
+    const initialLoading: Record<string, boolean> = {};
+    AVAILABLE_SOURCES.forEach((source) => {
+      if (!source.children) {
+        initialLoading[source.name] = true;
+      }
+    });
+    return initialLoading;
+  });
+  client.app.getSourcesSubscription.useSubscription(undefined, {
+    onData: (data: Sources) => {
+      if (data.length === 0) return;
+      setSources((prev) => [...prev, ...data]);
+      setSourcesLoading((prev) => ({ ...prev, [data[0].server]: false }));
+    },
+  });
 
   const handleRefetch = () => {
+    setSourcesLoading((prev) => {
+      const newState: Record<string, boolean> = {};
+      Object.keys(prev).forEach((key) => {
+        newState[key] = true;
+      });
+      return newState;
+    });
     refetch();
     setIsDisabled.on();
     setTimeout(() => {
       setIsDisabled.off();
     }, 2 * 60 * 1000);
   };
+
+  useEffect(() => {
+    if (!isLoading) {
+      setSourcesLoading((prev) => {
+        const newState: Record<string, boolean> = {};
+        Object.keys(prev).forEach((key) => {
+          newState[key] = false;
+        });
+        return newState;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   return (
     <Card h="full">
@@ -75,11 +116,11 @@ const SourcesCheck: FC = () => {
         <UnorderedList spacing={2}>
           {AVAILABLE_SOURCES.map((source) => (
             <Box key={source.name}>
-              <SourceInfo data={data} name={source.name} isLoading={isLoading || isRefetching} showBadge={!source.children} />
+              <SourceInfo data={sources} name={source.name} isLoading={sourcesLoading[source.name]} showBadge={!source.children} />
               {source.children && (
                 <UnorderedList spacing={2}>
                   {source.children.map((child) => (
-                    <SourceInfo key={child.name} data={data} name={child.name} isLoading={isLoading || isRefetching} />
+                    <SourceInfo key={child.name} data={sources} name={child.name} isLoading={sourcesLoading[child.name]} />
                   ))}
                 </UnorderedList>
               )}
