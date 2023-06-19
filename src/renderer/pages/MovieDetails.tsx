@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Source, Sources } from 'types/sources';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
@@ -11,14 +11,14 @@ import SourceSelector from 'renderer/components/SourceSelector';
 import ShowDetails from 'renderer/components/ShowDetails';
 import { client } from 'renderer/api/trpc';
 import VidstackPlayer from 'renderer/components/VidstackPlayer/VidstackPlayer';
+import { useRequiredParams } from 'renderer/hooks/useRequiredParams';
 
 const MovieDetails: FC = () => {
-  const { id } = useParams();
-  const toast = useToast();
   const navigate = useNavigate();
-
+  const toast = useToast();
+  const { id } = useRequiredParams<{ id: string }>();
   const query = useQuery();
-  const mediaType = query.get('media_type')! as ContentType;
+  const mediaType = query.get<ContentType>('media_type');
 
   const [playingData] = useLocalStorage<PlayingData>('playingData', {});
 
@@ -26,8 +26,8 @@ const MovieDetails: FC = () => {
     season: number;
     episode: number;
   }>({
-    season: playingData[id!]?.season ?? 1,
-    episode: playingData[id!]?.episode ?? 1,
+    season: playingData[id]?.season ?? 1,
+    episode: playingData[id]?.episode ?? 1,
   });
 
   const { data: tvData, isInitialLoading: tvInitialLoading } = client.tmdb.tvShowDetails.useQuery(
@@ -63,6 +63,7 @@ const MovieDetails: FC = () => {
   const [sources, setSources] = useState<Sources>(sourcesData ?? []);
   client.app.getSourcesSubscription.useSubscription(undefined, {
     onData: (data: Sources) => {
+      if (!data || data.length === 0) return;
       setSources((prev) => [...prev, ...data]);
     },
   });
@@ -72,6 +73,8 @@ const MovieDetails: FC = () => {
   const isLastEpisode = mediaType === 'tv' ? tvData?.seasons.find((s) => s.season_number === tvData.number_of_seasons)?.episode_count === activeEpisode.episode : false;
 
   useEffect(() => {
+    if (sourcesData && (!sources || sources.length === 0)) setSources(sourcesData);
+
     if (sources && sources.length > 0 && !selectedSource) {
       setSelectedSource(sources[0]);
     }
@@ -94,8 +97,9 @@ const MovieDetails: FC = () => {
     const handleNextEpisode = () => {
       if (!tvData) return;
       const currentSeason = tvData.seasons.find((s: { season_number: number }) => s.season_number === activeEpisode.season);
+      if (!currentSeason) return;
 
-      if (activeEpisode.episode < currentSeason!.episode_count) {
+      if (activeEpisode.episode < currentSeason.episode_count) {
         setActiveEpisode({
           season: activeEpisode.season,
           episode: activeEpisode.episode + 1,
@@ -136,7 +140,7 @@ const MovieDetails: FC = () => {
           <VidstackPlayer
             selectedSource={selectedSource}
             title={mediaType === 'tv' ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}` : movieData?.title}
-            tmdbId={id!}
+            tmdbId={id}
             season={mediaType === 'tv' ? activeEpisode.season : undefined}
             episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
             isLastEpisode={isLastEpisode}

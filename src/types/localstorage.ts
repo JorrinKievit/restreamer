@@ -3,5 +3,6 @@ export interface PlayingData {
     season?: number;
     episode?: number;
     playingTime: number;
+    duration: number;
   };
 }

@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { MediaCommunitySkin, MediaOutlet, MediaPlayer } from '@vidstack/react';
 import { Source } from 'types/sources';
 import { LoginResponse } from 'main/api/opensubtitles/login.types';
@@ -36,9 +36,9 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
 
   const { mutate: startProxy } = client.proxy.start.useMutation();
   const { mutate: stopProxy } = client.proxy.stop.useMutation();
-  const { data: proxyData } = client.proxy.validate.useQuery(
+  client.proxy.validate.useQuery(
     {
-      url: selectedSource.extractorData!,
+      url: selectedSource.extractorData ?? '',
     },
     {
       enabled: !!(selectedSource.extractorData && selectedSource.server === 'VidSrc Pro'),
@@ -50,7 +50,6 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     insertPlayerButtons(opensubtitlesData?.token !== undefined, !!season && !!episode && !isLastEpisode);
     if (!player.current) return;
     player.current.volume = playerVolume;
-    durationRef.current = player.current.state.duration;
 
     if (playingData[tmdbId]) {
       if (player.current.state.currentTime !== 0) {
@@ -73,6 +72,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
           season,
           episode,
           playingTime: currentTimeRef.current,
+          duration: Math.round(durationRef.current / 60),
         },
       };
     } else if ((!season && !episode) || (season && episode && isLastEpisode)) {
@@ -86,6 +86,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
           season,
           episode,
           playingTime: currentTimeRef.current,
+          duration: Math.round(durationRef.current / 60),
         },
       };
     }
@@ -141,6 +142,9 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       }}
       onTimeUpdate={(e) => {
         currentTimeRef.current = e.target.currentTime;
+      }}
+      onLoadedMetadata={(e) => {
+        durationRef.current = e.target.state.duration;
       }}
     >
       <MediaOutlet>

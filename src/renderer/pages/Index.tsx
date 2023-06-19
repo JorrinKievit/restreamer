@@ -36,8 +36,9 @@ const Index: FC = () => {
             w="full"
           >
             {data.map((show) => {
-              const runtime = show.media_type === 'tv' ? show.episode_run_time[0] : show.runtime;
-              const progress = Math.floor((playingData![show.id].playingTime / 60 / runtime) * 100);
+              let runtime = playingData[show.id].duration;
+              if (!runtime) runtime = show.media_type === 'tv' ? show.episode_run_time[0] : show.runtime;
+              const progress = Math.floor((playingData[show.id].playingTime / 60 / runtime) * 100);
               return (
                 show.poster_path && (
                   <GridItem key={show.id} position="relative">
@@ -75,11 +76,11 @@ const Index: FC = () => {
                               <IconButton icon={<ViewIcon />} colorScheme="blue" aria-label="View show details" size="sm" marginTop={show.media_type === 'tv' ? '20px' : 0} />
                               {show.media_type === 'tv' && (
                                 <Text>
-                                  Season {playingData![show.id].season} Episode {playingData![show.id].episode}
+                                  Season {playingData[show.id].season} Episode {playingData[show.id].episode}
                                 </Text>
                               )}
                               <Text>
-                                {(playingData![show.id].playingTime / 60).toFixed(0)} / {runtime ?? 'NaN'} min
+                                {(playingData[show.id].playingTime / 60).toFixed(0)} / {runtime ?? 'NaN'} min
                               </Text>
                             </Flex>
                           </Box>
