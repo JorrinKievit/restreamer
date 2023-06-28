@@ -1,10 +1,13 @@
 import { isAxiosError } from 'axios';
 import { app } from 'electron';
 import { Source } from 'types/sources';
+import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 
 export class StreamlareExtractor implements IExtractor {
+  logger = log.scope('Streamlare');
+
   url: string = 'https://streamlare.com/';
 
   referer: string = 'https://sltube.org/';
@@ -39,7 +42,7 @@ export class StreamlareExtractor implements IExtractor {
       return undefined;
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {
-        console.log('Streamlare: ', error.message);
+        this.logger.error(error.message);
       }
       return undefined;
     }

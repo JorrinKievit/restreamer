@@ -8,6 +8,12 @@ import installer, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { resolveHtmlPath } from './util';
 import { router } from './api';
 
+log.scope('main');
+log.initialize({
+  spyRendererConsole: true,
+});
+log.transports.file.level = 'info';
+
 electronDl({
   saveAs: true,
   openFolderWhenDone: true,
@@ -17,7 +23,6 @@ let mainWindow: BrowserWindow | null = null;
 
 class AppUpdater {
   constructor() {
-    log.transports.file.level = 'debug';
     autoUpdater.logger = log;
     autoUpdater.fullChangelog = true;
     autoUpdater.autoInstallOnAppQuit = false;
@@ -25,11 +30,11 @@ class AppUpdater {
     autoUpdater.checkForUpdates();
 
     autoUpdater.on('checking-for-update', () => {
-      console.log('checking-for-update');
+      log.info('checking-for-update');
     });
 
     autoUpdater.on('error', (err) => {
-      console.log('error', err);
+      log.error('error', err);
     });
 
     autoUpdater.on('update-available', () => {
@@ -66,7 +71,7 @@ const installExtensions = async () => {
 
     await installer(extensions, forceDownload);
   } catch (error) {
-    console.log(error);
+    log.error(error);
   }
 };
 

@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Source, Sources } from 'types/sources';
+import { Source } from 'types/sources';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import EpisodeList from 'renderer/components/EpisodeList';
@@ -60,9 +60,9 @@ const MovieDetails: FC = () => {
       enabled: !!tvData || !!movieData,
     }
   );
-  const [sources, setSources] = useState<Sources>(sourcesData ?? []);
+  const [sources, setSources] = useState<Source[]>(sourcesData ?? []);
   client.app.getSourcesSubscription.useSubscription(undefined, {
-    onData: (data: Sources) => {
+    onData: (data: Source[]) => {
       if (!data || data.length === 0) return;
       setSources((prev) => [...prev, ...data]);
     },
@@ -124,7 +124,7 @@ const MovieDetails: FC = () => {
 
   return (
     <Flex flexDirection="column" gap={4}>
-      {sourcesLoading && sources.length === 0 && (
+      {/* {sourcesLoading && sources.length === 0 && (
         <>
           <Skeleton height="700px" w="full" />
           <Flex height="50px" w="full" alignItems="center" justifyContent="center" gap={4}>
@@ -134,20 +134,18 @@ const MovieDetails: FC = () => {
             ))}
           </Flex>
         </>
-      )}
-      {selectedSource && (
-        <Flex gap={4} flexDirection="column">
-          <VidstackPlayer
-            selectedSource={selectedSource}
-            title={mediaType === 'tv' ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}` : movieData?.title}
-            tmdbId={id}
-            season={mediaType === 'tv' ? activeEpisode.season : undefined}
-            episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
-            isLastEpisode={isLastEpisode}
-          />
-          <SourceSelector sources={sources} activeSource={selectedSource} selectSource={setSelectedSource} />
-        </Flex>
-      )}
+      )} */}
+      <Flex gap={4} flexDirection="column">
+        <VidstackPlayer
+          selectedSource={selectedSource}
+          title={mediaType === 'tv' ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}` : movieData?.title}
+          tmdbId={id}
+          season={mediaType === 'tv' ? activeEpisode.season : undefined}
+          episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
+          isLastEpisode={isLastEpisode}
+        />
+        {selectedSource && <SourceSelector sources={sources} activeSource={selectedSource} selectSource={setSelectedSource} />}
+      </Flex>
       {(tvInitialLoading || movieIsInitialLoading) && (
         <VStack gap={4} w="full">
           <Skeleton height="200px" w="full" />

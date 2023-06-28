@@ -8,7 +8,7 @@ export const proxyRouter = t.router({
     .input(
       z.object({
         referer: z.string(),
-        origin: z.string(),
+        origin: z.string().optional(),
       })
     )
     .mutation(({ input }) => {

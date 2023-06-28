@@ -2,11 +2,14 @@ import { isAxiosError } from 'axios';
 import * as m3u8Parser from 'm3u8-parser';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
+import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { getResolutionName } from './utils';
 import { IExtractor } from './IExtractor';
 
 export class RabbitStreamExtractor implements IExtractor {
+  logger = log.scope('VidCloud');
+
   url: string = 'https://rabbitstream.net/';
 
   referer: string = 'https://rabbitstream.net/';
@@ -100,7 +103,7 @@ export class RabbitStreamExtractor implements IExtractor {
       };
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {
-        console.log('VidCloud: ', error.message);
+        this.logger.error(error.message);
       }
       return undefined;
     }

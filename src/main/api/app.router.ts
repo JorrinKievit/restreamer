@@ -1,12 +1,14 @@
 import { app } from 'electron';
 import z from 'zod';
-import { Sources } from 'types/sources';
 import { observable } from '@trpc/server/observable';
 import { EventEmitter } from 'events';
+import { Source } from 'types/sources';
+import { RemoteStreamExtractor } from '../extractors/remotestream';
 import { GoMoviesExtractor } from '../extractors/gomovies';
 import { TwoEmbedExtractor } from '../extractors/2embed';
 import { SuperStreamExtractor } from '../extractors/superstream/superstream';
 import { VidSrcExtractor } from '../extractors/vidsrc';
+import { SmashyStreamExtractor } from '../extractors/smashystream.ts/smashystream';
 import { t } from './trpc-client';
 
 const ee = new EventEmitter();
@@ -30,6 +32,8 @@ export const appRouter = t.router({
       const superStreamExtractor = new SuperStreamExtractor();
       const twoEmbedExtractor = new TwoEmbedExtractor();
       const vidSrcExtractor = new VidSrcExtractor();
+      const remoteStreamExtractor = new RemoteStreamExtractor();
+      const smashyStreamExtractor = new SmashyStreamExtractor();
 
       const { imdbId, showName, type, season, episode } = req.input;
 
@@ -53,7 +57,17 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const allPromises = [goMoviesPromise, superStreamPromise, twoEmbedPromise, vidSrcPromise];
+      const remoteStreamPromise = remoteStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
+      const smashyStreamPromise = smashyStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
+      const allPromises = [goMoviesPromise, superStreamPromise, twoEmbedPromise, vidSrcPromise, remoteStreamPromise, smashyStreamPromise];
 
       const allSources = await Promise.all(allPromises);
 
@@ -64,7 +78,7 @@ export const appRouter = t.router({
 
   getSourcesSubscription: t.procedure.subscription(() => {
     return observable((emit) => {
-      function onSources(sources: Sources) {
+      function onSources(sources: Source[]) {
         emit.next(sources);
       }
 

@@ -47,8 +47,8 @@ dependencies:
     specifier: ^3.5.0
     version: 3.5.0
   electron-log:
-    specifier: ^4.4.8
-    version: 4.4.8
+    specifier: 5.0.0-beta.24
+    version: 5.0.0-beta.24
   electron-trpc:
     specifier: ^0.5.0
     version: 0.5.0(@trpc/client@10.23.0)(@trpc/server@10.23.0)(electron@20.0.2)
@@ -6901,8 +6901,9 @@ packages:
       - supports-color
     dev: false
 
-  /electron-log@4.4.8:
-    resolution: {integrity: sha512-QQ4GvrXO+HkgqqEOYbi+DHL7hj5JM+nHi/j+qrN9zeeXVKy8ZABgbu4CnG+BBqDZ2+tbeq9tUC4DZfIWFU5AZA==}
+  /electron-log@5.0.0-beta.24:
+    resolution: {integrity: sha512-wDrxfCtRJLWL/xKXkRHtSTGoMaJPGbfIuwoo7ssDlgd8TTEBhRncjejzluswCewXJJqZph5PPNn8Y2McwUP29g==}
+    engines: {electron: '>= 13', node: '>= 14'}
     dev: false
 
   /electron-osx-sign@0.6.0:

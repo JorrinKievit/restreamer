@@ -1,9 +1,12 @@
 import { isAxiosError } from 'axios';
 import { Source } from 'types/sources';
+import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 
 export class EmbedsitoExtractor implements IExtractor {
+  logger = log.scope('Embedsito');
+
   url: string = 'https://embedsito.com/api/source/';
 
   async extractUrl(url: string): Promise<Source | undefined> {
@@ -30,7 +33,7 @@ export class EmbedsitoExtractor implements IExtractor {
       };
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {
-        console.log('Embedsito: ', error.message);
+        this.logger.error(error.message);
       }
       return undefined;
     }

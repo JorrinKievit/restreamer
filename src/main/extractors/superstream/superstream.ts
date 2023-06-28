@@ -1,7 +1,8 @@
 import { isAxiosError } from 'axios';
 import crypto from 'crypto';
-import { Source, Sources } from 'types/sources';
+import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
+import log from 'electron-log';
 import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../IExtractor';
 import { randomString } from '../utils';
@@ -11,6 +12,8 @@ import { DownloadResponse, SearchResponse, SubtitleResponse } from './types';
 // Complies with the LGPL-3.0 License see: ./LICENSE and https://github.com/recloudstream/cloudstream-extensions/blob/master/LICENSE
 
 export class SuperStreamExtractor implements IExtractor {
+  logger = log.scope('SuperStream');
+
   url: string = Buffer.from('aHR0cHM6Ly9zaG93Ym94LnNoZWd1Lm5ldC9hcGkvYXBpX2NsaWVudC9pbmRleC8=', 'base64').toString();
 
   private secondUrl: string = Buffer.from('aHR0cHM6Ly9tYnBhcGkuc2hlZ3UubmV0L2FwaS9hcGlfY2xpZW50L2luZGV4Lw==', 'base64').toString();
@@ -105,7 +108,7 @@ export class SuperStreamExtractor implements IExtractor {
     return response.data;
   }
 
-  async extractUrls(searchQuery: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
+  async extractUrls(searchQuery: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       const searchData = {
         ...this.baseData,
@@ -171,7 +174,7 @@ export class SuperStreamExtractor implements IExtractor {
         },
       ];
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) console.error('SuperStream: ', error.message);
+      if (isAxiosError(error) || error instanceof Error) this.logger.error(error.message);
       return [];
     }
   }

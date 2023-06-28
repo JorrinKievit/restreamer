@@ -1,7 +1,7 @@
 import { Card, CardBody, CardHeader, Spinner, Heading, UnorderedList, ListItem, Flex, Tag, CardFooter, ButtonGroup, Button, useBoolean, Tooltip, Box } from '@chakra-ui/react';
 import React, { FC, useEffect, useState } from 'react';
 import { client } from 'renderer/api/trpc';
-import { Sources } from 'types/sources';
+import { Source } from 'types/sources';
 
 const AVAILABLE_SOURCES = [
   {
@@ -35,7 +35,7 @@ const AVAILABLE_SOURCES = [
 ];
 
 const SourceInfo: FC<{
-  data: Sources | undefined;
+  data: Source[] | undefined;
   name: string;
   isLoading: boolean;
   showBadge?: boolean;
@@ -61,7 +61,7 @@ const SourcesCheck: FC = () => {
     showName: 'The Godfather',
     type: 'movie',
   });
-  const [sources, setSources] = useState<Sources>(sourcesData ?? []);
+  const [sources, setSources] = useState<Source[]>(sourcesData ?? []);
   const [sourcesLoading, setSourcesLoading] = useState<Record<string, boolean>>(() => {
     const initialLoading: Record<string, boolean> = {};
     AVAILABLE_SOURCES.forEach((source) => {
@@ -72,7 +72,7 @@ const SourcesCheck: FC = () => {
     return initialLoading;
   });
   client.app.getSourcesSubscription.useSubscription(undefined, {
-    onData: (data: Sources) => {
+    onData: (data: Source[]) => {
       if (data.length === 0) return;
       setSources((prev) => [...prev, ...data]);
       setSourcesLoading((prev) => ({ ...prev, [data[0].server]: false }));

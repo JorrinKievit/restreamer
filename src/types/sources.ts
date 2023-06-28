@@ -14,6 +14,5 @@ export interface Source {
   referer?: string;
   extractorData?: string;
   subtitles?: Subtitle[];
+  thumbnails?: string;
 }
-
-export type Sources = Source[];

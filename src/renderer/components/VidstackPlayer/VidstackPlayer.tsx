@@ -5,15 +5,14 @@ import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { client } from 'renderer/api/trpc';
 import { PlayingData } from 'types/localstorage';
 import { MediaPlayerElement } from 'vidstack';
-import { insertPlayerButtons } from 'renderer/utils/player';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { getProxyUrl } from 'renderer/lib/proxy';
 import { SubtitleSelector } from '../SubtitleSelector';
 import { SyncSubtitlesPopover } from '../SyncSubtitlesPopover';
-import { getSubtitlePlayerLanguage } from './utils';
+import { getSubtitlePlayerLanguage, insertPlayerButtons } from './utils';
 
 interface VidstackPlayerProps {
-  selectedSource: Source;
+  selectedSource?: Source | null;
   title?: string;
   tmdbId: string;
   isLastEpisode: boolean;
@@ -38,10 +37,10 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   const { mutate: stopProxy } = client.proxy.stop.useMutation();
   client.proxy.validate.useQuery(
     {
-      url: selectedSource.extractorData ?? '',
+      url: selectedSource?.extractorData ?? '',
     },
     {
-      enabled: !!(selectedSource.extractorData && selectedSource.server === 'VidSrc Pro'),
+      enabled: !!(selectedSource?.extractorData && selectedSource.server === 'VidSrc Pro'),
       refetchInterval: 1000 * 60,
     }
   );
@@ -51,12 +50,10 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     if (!player.current) return;
     player.current.volume = playerVolume;
 
-    if (playingData[tmdbId]) {
-      if (player.current.state.currentTime !== 0) {
-        player.current.currentTime = player.current.state.currentTime;
-      } else if ((playingData[tmdbId].season === season && playingData[tmdbId].episode === episode) || (!playingData[tmdbId].season && !playingData[tmdbId].episode)) {
-        player.current.currentTime = playingData[tmdbId].playingTime;
-      }
+    if (playingData[tmdbId].season !== season || playingData[tmdbId].episode !== episode) {
+      player.current.currentTime = 0;
+    } else {
+      player.current.currentTime = playingData[tmdbId].playingTime ?? 0;
     }
   };
 
@@ -65,14 +62,17 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
 
     let updatedData = {};
 
+    const playingTime = currentTimeRef.current;
+    const duration = Math.round(durationRef.current / 60);
+
     if (!playingData[tmdbId] || progress <= 95) {
       updatedData = {
         ...playingData,
         [tmdbId]: {
           season,
           episode,
-          playingTime: currentTimeRef.current,
-          duration: Math.round(durationRef.current / 60),
+          playingTime,
+          duration,
         },
       };
     } else if ((!season && !episode) || (season && episode && isLastEpisode)) {
@@ -85,8 +85,8 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
         [tmdbId]: {
           season,
           episode,
-          playingTime: currentTimeRef.current,
-          duration: Math.round(durationRef.current / 60),
+          playingTime,
+          duration,
         },
       };
     }
@@ -94,23 +94,36 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   };
 
   useEffect(() => {
+    window.addEventListener('next-episode', () => {
+      if (!player.current) return;
+      player.current.currentTime = 0;
+    });
+
     window.addEventListener('beforeunload', () => {
       setPlayingDataOnUnmount();
       setPlayerVolume(playerVolumeRef.current);
     });
+
     return () => {
-      setPlayingDataOnUnmount();
-      setPlayerVolume(playerVolumeRef.current);
       window.removeEventListener('beforeunload', () => {
         setPlayingDataOnUnmount();
         setPlayerVolume(playerVolumeRef.current);
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (!selectedSource) return;
+      setPlayingDataOnUnmount();
+      setPlayerVolume(playerVolumeRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSource]);
 
   useEffect(() => {
-    if (selectedSource.requiresProxy && selectedSource.referer && selectedSource.origin) {
+    if (selectedSource?.requiresProxy && selectedSource.referer) {
       startProxy({
         referer: selectedSource.referer,
         origin: selectedSource.origin,
@@ -127,7 +140,8 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     <MediaPlayer
       ref={player}
       title={title}
-      src={selectedSource.requiresProxy ? getProxyUrl(selectedSource.url) : selectedSource.url}
+      src={selectedSource?.requiresProxy ? getProxyUrl(selectedSource.url, selectedSource.referer) : selectedSource?.url ?? ''}
+      thumbnails={selectedSource?.thumbnails}
       aspectRatio={16 / 9}
       crossorigin="anonymous"
       autoplay
@@ -148,7 +162,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       }}
     >
       <MediaOutlet>
-        {selectedSource.subtitles?.map((subtitle) => {
+        {selectedSource?.subtitles?.map((subtitle) => {
           const subtitleLanguage = getSubtitlePlayerLanguage(subtitle, languageCounts);
           return (
             <track
@@ -164,7 +178,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
         })}
       </MediaOutlet>
       <MediaCommunitySkin />
-      {(selectedSource.subtitles || opensubtitlesData?.token) && <SyncSubtitlesPopover />}
+      {(selectedSource?.subtitles || opensubtitlesData?.token) && <SyncSubtitlesPopover />}
       {opensubtitlesData?.token && <SubtitleSelector tmdbId={tmdbId} season={season} episode={episode} />}
     </MediaPlayer>
   );

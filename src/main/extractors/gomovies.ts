@@ -1,13 +1,16 @@
 import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
-import { Source, Sources } from 'types/sources';
+import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 import vm, { Context, runInContext } from 'vm';
+import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 import { getResolutionName } from './utils';
 
 export class GoMoviesExtractor implements IExtractor {
+  logger = log.scope('GoMovies');
+
   url = 'https://gomovies-online.com';
 
   private qualities = [2160, 1080, 720, 480, 360];
@@ -36,7 +39,7 @@ export class GoMoviesExtractor implements IExtractor {
           return link;
         }
       } catch (error) {
-        if (isAxiosError(error)) console.error('GoMovies: ', error.message);
+        if (isAxiosError(error)) this.logger.error(error.message);
       }
       return null;
     });
@@ -50,7 +53,7 @@ export class GoMoviesExtractor implements IExtractor {
     };
   }
 
-  async extractUrls(contentTitle: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
+  async extractUrls(contentTitle: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       let episodeID: number | string = 0;
       const searchDocument = await axiosInstance.get(`${this.url}/search/${encodeURIComponent(contentTitle)}`);
@@ -141,7 +144,7 @@ export class GoMoviesExtractor implements IExtractor {
         },
       ];
     } catch (e) {
-      if (isAxiosError(e) || e instanceof Error) console.error('GoMovies: ', e.message);
+      if (isAxiosError(e) || e instanceof Error) this.logger.error(e.message);
 
       return [];
     }

@@ -1,7 +1,8 @@
 import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
-import { Source, Sources } from 'types/sources';
+import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
+import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 import { RabbitStreamExtractor } from './rabbitstream';
@@ -9,6 +10,8 @@ import { StreamlareExtractor } from './streamlare';
 import { getCaptchaToken } from './utils';
 
 export class TwoEmbedExtractor implements IExtractor {
+  logger = log.scope('2Embed');
+
   url: string = 'https://www.2embed.to/';
 
   referer: string = 'https://www.2embed.to/';
@@ -17,7 +20,7 @@ export class TwoEmbedExtractor implements IExtractor {
 
   private rabbitStreamExtractor = new RabbitStreamExtractor();
 
-  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
+  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
@@ -60,10 +63,10 @@ export class TwoEmbedExtractor implements IExtractor {
           return undefined;
         })
       );
-      return finalServerlist.filter((server) => server !== undefined) as Sources;
+      return finalServerlist.filter((server) => server !== undefined) as Source[];
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {
-        console.log('2Embed: ', error.message);
+        this.logger.error(error.message);
       }
       return [];
     }

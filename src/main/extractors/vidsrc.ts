@@ -1,12 +1,15 @@
 import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
-import { Source, Sources } from 'types/sources';
+import { Source } from 'types/sources';
+import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
 import { EmbedsitoExtractor } from './embedsito';
 
 export class VidSrcExtractor implements IExtractor {
+  logger = log.scope('VidSrc');
+
   url: string = 'https://v2.vidsrc.me/';
 
   referer: string = 'https://vidsrc.stream/';
@@ -17,7 +20,7 @@ export class VidSrcExtractor implements IExtractor {
 
   private embedsitoExtractor = new EmbedsitoExtractor();
 
-  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Sources> {
+  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
@@ -47,7 +50,7 @@ export class VidSrcExtractor implements IExtractor {
             return res.request.res.responseUrl;
           } catch (error) {
             if (isAxiosError(error) || error instanceof Error) {
-              console.log('VidSrc rcp: ', error.message);
+              this.logger.error('RCP Error: ', error.message);
             }
             return Promise.resolve(undefined);
           }
@@ -105,7 +108,7 @@ export class VidSrcExtractor implements IExtractor {
               }
             } catch (error) {
               if (isAxiosError(error) || error instanceof Error) {
-                console.log('VidSrc Pro: ', error.message);
+                this.logger.error('Pro: ', error.message);
               }
               return undefined;
             }
@@ -143,11 +146,11 @@ export class VidSrcExtractor implements IExtractor {
           return undefined;
         })
       );
-      const sources = sourceURLS.filter((el) => el !== undefined) as Sources;
+      const sources = sourceURLS.filter((el) => el !== undefined) as Source[];
       return sources;
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {
-        console.log('VidSrc: ', error.message);
+        this.logger.error(error.message);
       }
       return [];
     }
