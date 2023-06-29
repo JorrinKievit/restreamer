@@ -94,30 +94,20 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   };
 
   useEffect(() => {
-    window.addEventListener('next-episode', () => {
-      if (!player.current) return;
-      player.current.currentTime = 0;
-    });
-
     window.addEventListener('beforeunload', () => {
       setPlayingDataOnUnmount();
       setPlayerVolume(playerVolumeRef.current);
     });
 
     return () => {
+      if (!selectedSource) return;
+      setPlayingDataOnUnmount();
+      setPlayerVolume(playerVolumeRef.current);
+
       window.removeEventListener('beforeunload', () => {
         setPlayingDataOnUnmount();
         setPlayerVolume(playerVolumeRef.current);
       });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (!selectedSource) return;
-      setPlayingDataOnUnmount();
-      setPlayerVolume(playerVolumeRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSource]);

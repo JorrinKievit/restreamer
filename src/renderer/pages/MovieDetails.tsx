@@ -124,17 +124,6 @@ const MovieDetails: FC = () => {
 
   return (
     <Flex flexDirection="column" gap={4}>
-      {/* {sourcesLoading && sources.length === 0 && (
-        <>
-          <Skeleton height="700px" w="full" />
-          <Flex height="50px" w="full" alignItems="center" justifyContent="center" gap={4}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <Skeleton key={i} h="full" w="200px" borderRadius="0.375rem" />
-            ))}
-          </Flex>
-        </>
-      )} */}
       <Flex gap={4} flexDirection="column">
         <VidstackPlayer
           selectedSource={selectedSource}
