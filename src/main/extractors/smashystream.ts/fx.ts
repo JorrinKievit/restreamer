@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
@@ -9,20 +10,25 @@ export class SmashyFxExtractor implements IExtractor {
   url = 'https://embed.smashystream.com/fx1.php';
 
   async extractUrl(url: string): Promise<Source | undefined> {
-    const res = await axiosInstance.get(url, {
-      headers: {
-        referer: url,
-      },
-    });
+    try {
+      const res = await axiosInstance.get(url, {
+        headers: {
+          referer: url,
+        },
+      });
 
-    const file = res.data.match(/file:\s*"([^"]+)"/)[1];
+      const file = res.data.match(/file:\s*"([^"]+)"/)[1];
 
-    return {
-      server: 'SmashyFx',
-      url: file,
-      type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
-      quality: 'Unknown',
-      requiresProxy: false,
-    };
+      return {
+        server: 'SmashyFx',
+        url: file,
+        type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
+        quality: 'Unknown',
+        requiresProxy: false,
+      };
+    } catch (err) {
+      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      return undefined;
+    }
   }
 }

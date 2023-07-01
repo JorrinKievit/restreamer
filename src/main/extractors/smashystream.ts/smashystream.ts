@@ -70,11 +70,11 @@ export class SmashyStreamExtractor implements IExtractor {
         return undefined;
       });
 
-      const sources = await Promise.all(sourcesPromise);
+      const sources = await Promise.all(sourcesPromise.filter((it) => it !== undefined));
 
       return sources.filter((it) => it !== undefined) as Source[];
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (isAxiosError(err) || err instanceof Error) this.logger.error(err);
       return [];
     }
   }

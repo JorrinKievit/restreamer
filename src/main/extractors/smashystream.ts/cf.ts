@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
@@ -9,24 +10,29 @@ export class SmashyCfExtractor implements IExtractor {
   url = 'https://embed.smashystream.com/cf.php';
 
   async extractUrl(url: string): Promise<Source | undefined> {
-    const res = await axiosInstance.get(url, {
-      headers: {
-        referer: url,
-      },
-    });
+    try {
+      const res = await axiosInstance.get(url, {
+        headers: {
+          referer: url,
+        },
+      });
 
-    const file = res.data.match(/file:\s*"([^"]+)"/)[1];
+      const file = res.data.match(/file:\s*"([^"]+)"/)[1];
 
-    const fileRes = await axiosInstance.head(file);
+      const fileRes = await axiosInstance.head(file);
 
-    if (fileRes.status !== 200 || fileRes.data.includes('404')) return undefined;
+      if (fileRes.status !== 200 || fileRes.data.includes('404')) return undefined;
 
-    return {
-      server: 'SmashyCf',
-      url: file,
-      type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
-      quality: 'Unknown',
-      requiresProxy: false,
-    };
+      return {
+        server: 'SmashyCf',
+        url: file,
+        type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
+        quality: 'Unknown',
+        requiresProxy: false,
+      };
+    } catch (err) {
+      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      return undefined;
+    }
   }
 }

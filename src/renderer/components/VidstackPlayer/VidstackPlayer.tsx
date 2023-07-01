@@ -50,6 +50,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     if (!player.current) return;
     player.current.volume = playerVolume;
 
+    if (playingData[tmdbId] === undefined) return;
     if (playingData[tmdbId].season !== season || playingData[tmdbId].episode !== episode) {
       player.current.currentTime = 0;
     } else {
