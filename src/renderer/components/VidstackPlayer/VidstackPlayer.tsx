@@ -131,7 +131,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     <MediaPlayer
       ref={player}
       title={title}
-      src={selectedSource?.requiresProxy ? getProxyUrl(selectedSource.url, selectedSource.referer) : selectedSource?.url ?? ''}
+      src={(selectedSource?.requiresProxy ? getProxyUrl(selectedSource.url, selectedSource.referer) : selectedSource?.url) ?? ''}
       thumbnails={selectedSource?.thumbnails}
       aspectRatio={16 / 9}
       crossorigin="anonymous"
