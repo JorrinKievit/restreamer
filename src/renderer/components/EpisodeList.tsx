@@ -21,6 +21,8 @@ const EpisodeList: FC<EpisodeListProps> = ({ tvData, activeEpisode, setActiveEpi
   const [selectedSeason, setSelectedSeason] = useState(activeEpisode.season);
 
   const currentSeason = tvData.seasons[0].season_number === 0 ? tvData.seasons[selectedSeason] : tvData.seasons[selectedSeason - 1];
+  const hasSpecial = tvData.seasons.some((season) => season.season_number === 0);
+  const selectedSeasonIndex = hasSpecial ? selectedSeason : selectedSeason - 1;
 
   useEffect(() => {
     setSelectedSeason(activeEpisode.season);
@@ -72,9 +74,11 @@ const EpisodeList: FC<EpisodeListProps> = ({ tvData, activeEpisode, setActiveEpi
                 padding: '0.5rem',
               }}
             >
-              <Tooltip label={tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1] ? tvData.episodeNames[selectedSeason][episodeNumber - 1] : ''}>
+              <Tooltip label={tvData.episodeNames?.[selectedSeasonIndex]?.[episodeNumber - 1] ? tvData.episodeNames[selectedSeasonIndex][episodeNumber - 1] : ''}>
                 <Text noOfLines={1}>
-                  {tvData.episodeNames?.[selectedSeason]?.[episodeNumber - 1] ? `Episode ${episodeNumber}: ${tvData.episodeNames[selectedSeason][episodeNumber - 1]}` : `Episode ${episodeNumber}`}
+                  {tvData.episodeNames?.[selectedSeasonIndex]?.[episodeNumber - 1]
+                    ? `Episode ${episodeNumber}: ${tvData.episodeNames[selectedSeasonIndex][episodeNumber - 1]}`
+                    : `Episode ${episodeNumber}`}
                 </Text>
               </Tooltip>
             </Box>
