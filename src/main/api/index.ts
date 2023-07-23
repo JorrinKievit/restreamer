@@ -4,11 +4,13 @@ import { proxyRouter } from './proxy.router';
 import { tmdbRouter } from './tmdb/api';
 import { t } from './trpc-client';
 import { updaterRouter } from './updater.router';
+import { vidSrcRouter } from './vidsrc.router';
 
 export const router = t.router({
   app: appRouter,
   updater: updaterRouter,
   proxy: proxyRouter,
+  vidsrc: vidSrcRouter,
   tmdb: tmdbRouter,
   opensubtitles: openSubtitlesRouter,
 });

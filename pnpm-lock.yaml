@@ -36,7 +36,7 @@ dependencies:
     version: 1.4.0
   chakra-react-select:
     specifier: ^4.4.3
-    version: 4.4.3(@babel/core@7.22.5)(@chakra-ui/form-control@2.0.18)(@chakra-ui/icon@3.0.15)(@chakra-ui/layout@2.2.0)(@chakra-ui/menu@2.1.15)(@chakra-ui/spinner@2.0.12)(@chakra-ui/system@2.5.8)(@emotion/react@11.10.5)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)
+    version: 4.4.3(@babel/core@7.22.5)(@chakra-ui/form-control@2.0.18)(@chakra-ui/icon@3.0.16)(@chakra-ui/layout@2.2.0)(@chakra-ui/menu@2.1.15)(@chakra-ui/spinner@2.0.13)(@chakra-ui/system@2.5.8)(@emotion/react@11.10.5)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)
   cheerio:
     specifier: ^1.0.0-rc.12
     version: 1.0.0-rc.12
@@ -55,6 +55,9 @@ dependencies:
   electron-updater:
     specifier: ^6.1.0
     version: 6.1.0
+  form-data:
+    specifier: ^4.0.0
+    version: 4.0.0
   framer-motion:
     specifier: ^8.5.2
     version: 8.5.2(react-dom@18.2.0)(react@18.2.0)
@@ -1923,17 +1926,6 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@chakra-ui/icon@3.0.15(@chakra-ui/system@2.5.8)(react@18.2.0):
-    resolution: {integrity: sha512-6RRppml4kW3hOMgMCtgeKc73nJhJEZXOvzDvmZKKW9WrLsDpWiI7WDQb5VIxUXqZlbrh88K5WVRY0YivIefCDA==}
-    peerDependencies:
-      '@chakra-ui/system': '>=2.0.0'
-      react: '>=18'
-    dependencies:
-      '@chakra-ui/shared-utils': 2.0.4
-      '@chakra-ui/system': 2.5.8(@emotion/react@11.10.5)(@emotion/styled@11.10.5)(react@18.2.0)
-      react: 18.2.0
-    dev: false
-
   /@chakra-ui/icon@3.0.16(@chakra-ui/system@2.4.0)(react@18.2.0):
     resolution: {integrity: sha512-RpA1X5Ptz8Mt39HSyEIW1wxAz2AXyf9H0JJ5HVx/dBdMZaGMDJ0HyyPBVci0m4RCoJuyG1HHG/DXJaVfUTVAeg==}
     peerDependencies:
@@ -2598,10 +2590,6 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@chakra-ui/shared-utils@2.0.4:
-    resolution: {integrity: sha512-JGWr+BBj3PXGZQ2gxbKSD1wYjESbYsZjkCeE2nevyVk4rN3amV1wQzCnBAhsuJktMaZD6KC/lteo9ou9QUDzpA==}
-    dev: false
-
   /@chakra-ui/shared-utils@2.0.5:
     resolution: {integrity: sha512-4/Wur0FqDov7Y0nCXl7HbHzCg4aq86h+SXdoUeuCMD3dSj7dpsVnStLYhng1vxvlbUnLpdF4oz5Myt3i/a7N3Q==}
     dev: false
@@ -2639,17 +2627,6 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@chakra-ui/spinner@2.0.12(@chakra-ui/system@2.5.8)(react@18.2.0):
-    resolution: {integrity: sha512-c9R0k7RUgff5g79Q5kX1mE4lsXqLKIskIbPksL7Qm3Zw/ZbDHyNILFFltPLt7350rC9mGzqzEZbizAFlksbdLw==}
-    peerDependencies:
-      '@chakra-ui/system': '>=2.0.0'
-      react: '>=18'
-    dependencies:
-      '@chakra-ui/shared-utils': 2.0.4
-      '@chakra-ui/system': 2.5.8(@emotion/react@11.10.5)(@emotion/styled@11.10.5)(react@18.2.0)
-      react: 18.2.0
-    dev: false
-
   /@chakra-ui/spinner@2.0.13(@chakra-ui/system@2.4.0)(react@18.2.0):
     resolution: {integrity: sha512-T1/aSkVpUIuiYyrjfn1+LsQEG7Onbi1UE9ccS/evgf61Dzy4GgTXQUnDuWFSgpV58owqirqOu6jn/9eCwDlzlg==}
     peerDependencies:
@@ -2658,6 +2635,17 @@ packages:
     dependencies:
       '@chakra-ui/shared-utils': 2.0.5
       '@chakra-ui/system': 2.4.0(@emotion/react@11.10.5)(@emotion/styled@11.10.5)(react@18.2.0)
+      react: 18.2.0
+    dev: false
+
+  /@chakra-ui/spinner@2.0.13(@chakra-ui/system@2.5.8)(react@18.2.0):
+    resolution: {integrity: sha512-T1/aSkVpUIuiYyrjfn1+LsQEG7Onbi1UE9ccS/evgf61Dzy4GgTXQUnDuWFSgpV58owqirqOu6jn/9eCwDlzlg==}
+    peerDependencies:
+      '@chakra-ui/system': '>=2.0.0'
+      react: '>=18'
+    dependencies:
+      '@chakra-ui/shared-utils': 2.0.5
+      '@chakra-ui/system': 2.5.8(@emotion/react@11.10.5)(@emotion/styled@11.10.5)(react@18.2.0)
       react: 18.2.0
     dev: false
 
@@ -5773,7 +5761,7 @@ packages:
   /caniuse-lite@1.0.30001503:
     resolution: {integrity: sha512-Sf9NiF+wZxPfzv8Z3iS0rXM1Do+iOy2Lxvib38glFX+08TCYYYGR5fRJXk4d77C4AYwhUjgYgMsMudbh2TqCKw==}
 
-  /chakra-react-select@4.4.3(@babel/core@7.22.5)(@chakra-ui/form-control@2.0.18)(@chakra-ui/icon@3.0.15)(@chakra-ui/layout@2.2.0)(@chakra-ui/menu@2.1.15)(@chakra-ui/spinner@2.0.12)(@chakra-ui/system@2.5.8)(@emotion/react@11.10.5)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0):
+  /chakra-react-select@4.4.3(@babel/core@7.22.5)(@chakra-ui/form-control@2.0.18)(@chakra-ui/icon@3.0.16)(@chakra-ui/layout@2.2.0)(@chakra-ui/menu@2.1.15)(@chakra-ui/spinner@2.0.13)(@chakra-ui/system@2.5.8)(@emotion/react@11.10.5)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-anDgJyYUpIapTmUbgXB+Iw5hJ90hOPvgoUPUaYdO5q9zY2VBFhQ1L0gBMqWAQxiKUmuHpwQypf8sPoVtd0b3KA==}
     peerDependencies:
       '@chakra-ui/form-control': ^2.0.0
@@ -5787,10 +5775,10 @@ packages:
       react-dom: ^18.0.0
     dependencies:
       '@chakra-ui/form-control': 2.0.18(@chakra-ui/system@2.5.8)(react@18.2.0)
-      '@chakra-ui/icon': 3.0.15(@chakra-ui/system@2.5.8)(react@18.2.0)
+      '@chakra-ui/icon': 3.0.16(@chakra-ui/system@2.5.8)(react@18.2.0)
       '@chakra-ui/layout': 2.2.0(@chakra-ui/system@2.5.8)(react@18.2.0)
       '@chakra-ui/menu': 2.1.15(@chakra-ui/system@2.5.8)(framer-motion@8.5.2)(react@18.2.0)
-      '@chakra-ui/spinner': 2.0.12(@chakra-ui/system@2.5.8)(react@18.2.0)
+      '@chakra-ui/spinner': 2.0.13(@chakra-ui/system@2.5.8)(react@18.2.0)
       '@chakra-ui/system': 2.5.8(@emotion/react@11.10.5)(@emotion/styled@11.10.5)(react@18.2.0)
       '@emotion/react': 11.10.5(@babel/core@7.22.5)(@types/react@18.2.8)(react@18.2.0)
       react: 18.2.0

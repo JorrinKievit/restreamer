@@ -12,7 +12,10 @@ export interface Source {
   requiresProxy: boolean;
   origin?: string;
   referer?: string;
-  extractorData?: string;
+  extractorData?: {
+    url: string;
+    hash?: string;
+  };
   subtitles?: Subtitle[];
   thumbnails?: string;
 }

@@ -19,6 +19,8 @@ export class SmashyEeMovieExtractor implements IExtractor {
 
       const file = res.data.match(/file:\s*"([^"]+)"/)[1];
 
+      if (file.includes('/404Found.mp4')) return undefined;
+
       return {
         server: 'SmashyEe',
         url: file,

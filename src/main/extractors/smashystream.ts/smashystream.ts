@@ -9,6 +9,7 @@ import { SmashyCfExtractor } from './cf';
 import { SmashyEeMovieExtractor } from './ee';
 import { SmashyFFixExtractor } from './ffix';
 import { SmashyFxExtractor } from './fx';
+import { SmashyImExtractor } from './im';
 import { SmashyNFlimExtractor } from './nflim';
 import { SmashyWatchXExtractor } from './watchx';
 
@@ -18,6 +19,8 @@ export class SmashyStreamExtractor implements IExtractor {
   url = 'https://embed.smashystream.com/playere.php';
 
   referer = 'https://smashystream.com/';
+
+  private imExtractor = new SmashyImExtractor();
 
   private ffixExtractor = new SmashyFFixExtractor();
 
@@ -47,25 +50,31 @@ export class SmashyStreamExtractor implements IExtractor {
         .get()
         .filter((it) => it !== '_default');
 
+      console.log(sourceUrls);
+
       const sourcesPromise = sourceUrls.map((sourceUrl) => {
-        if (sourceUrl.includes('ffix')) {
+        if (sourceUrl.includes('im.php')) {
+          return this.imExtractor.extractUrl(sourceUrl);
+        }
+        if (sourceUrl.includes('ffix1.php')) {
           return this.ffixExtractor.extractUrl(sourceUrl);
         }
-        if (sourceUrl.includes('watchx')) {
+        if (sourceUrl.includes('watchx.php')) {
           return this.watchXExtractor.extractUrl(sourceUrl);
         }
-        if (sourceUrl.includes('nflim')) {
+        if (sourceUrl.includes('nflim.php')) {
           return this.nflimExtractor.extractUrl(sourceUrl);
         }
-        if (sourceUrl.includes('fx')) {
+        if (sourceUrl.includes('fx1.php')) {
           return this.fxExtractor.extractUrl(sourceUrl);
         }
-        if (sourceUrl.includes('cf')) {
+        if (sourceUrl.includes('cf.php')) {
           return this.cfExtractor.extractUrl(sourceUrl);
         }
-        if (sourceUrl.includes('eemovie')) {
-          return this.eeMovieExtractor.extractUrl(sourceUrl);
-        }
+        // Almost never works or really slow
+        // if (sourceUrl.includes('eemovie.php')) {
+        //   return this.eeMovieExtractor.extractUrl(sourceUrl);
+        // }
 
         return undefined;
       });

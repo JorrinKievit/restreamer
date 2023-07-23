@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import { Source } from 'types/sources';
+import * as m3u8Parser from 'm3u8-parser';
 
 export const getCaptchaToken = async (siteKey: string, url: string) => {
   const uri = new URL(url);
@@ -58,4 +59,17 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
     default:
       return 'Unknown';
   }
+};
+
+export const getResolutionFromM3u8 = async (m3u8: string) => {
+  const m3u8Manifest = await axios.get(m3u8);
+  const parser = new m3u8Parser.Parser();
+  parser.push(m3u8Manifest.data);
+  parser.end();
+
+  const parsedManifest = parser.manifest;
+  const highestQuality = parsedManifest.playlists.reduce((prev: any, current: any) => {
+    return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH ? prev : current;
+  });
+  return getResolutionName(highestQuality.attributes.RESOLUTION.height);
 };

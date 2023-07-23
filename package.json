@@ -22,7 +22,7 @@
     "email": "jorrin@jorrinkievit.xyz"
   },
   "main": "./src/main/main.ts",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "scripts": {
     "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
     "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.prod.ts",
@@ -118,6 +118,7 @@
     "electron-log": "5.0.0-beta.24",
     "electron-trpc": "^0.5.0",
     "electron-updater": "^6.1.0",
+    "form-data": "^4.0.0",
     "framer-motion": "^8.5.2",
     "hls.js": "^1.4.5",
     "m3u8-parser": "^6.0.0",

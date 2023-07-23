@@ -1,28 +1,27 @@
 import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
-import { Source } from 'types/sources';
+import { Source, Subtitle } from 'types/sources';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './IExtractor';
-import { EmbedsitoExtractor } from './embedsito';
 
 export class VidSrcExtractor implements IExtractor {
   logger = log.scope('VidSrc');
 
-  url: string = 'https://vidsrc.me/';
+  url = 'https://vidsrc.me/';
 
-  referer: string = 'https://vidsrc.stream/';
+  referer = 'https://vidsrc.stream/';
 
-  origin: string = 'https://vidsrc.stream';
+  origin = 'https://vidsrc.stream';
 
-  private embedUrl: string = `${this.url}embed/`;
+  private embedUrl = `${this.url}embed/`;
 
   private rcpUrl = 'https://rcp.vidsrc.me/rcp/';
 
   private rcp2Url = 'https://v2.vidsrc.me/srcrcp/';
 
-  private embedsitoExtractor = new EmbedsitoExtractor();
+  private subtitleUrl = 'https://rest.opensubtitles.org/search/imdbid-';
 
   async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
@@ -57,6 +56,8 @@ export class VidSrcExtractor implements IExtractor {
       });
 
       const hlsUrl = /var hls_url = "(.*)"/g.exec(srcRcpPro.data)?.[1];
+      if (!hlsUrl) throw new Error('HLS URL not found');
+
       const regex = /var path\s+=\s+['"]([^'"]+)['"]/g;
 
       let match;
@@ -67,18 +68,45 @@ export class VidSrcExtractor implements IExtractor {
         paths.push(match[1]);
       }
 
-      const extractorData = paths[1].replace('//', 'https://');
+      const extractorDataUrl = paths[1].replace('//', 'https://');
+
+      const subtitleData = await axiosInstance.get(`${this.subtitleUrl}${imdbId}`, {
+        headers: {
+          'X-User-Agent': 'trailers.to-UA',
+        },
+      });
+
+      const reducedSubtitles = subtitleData.data.reduce((accumulator: any, subtitle: any) => {
+        const languageName = subtitle.LanguageName;
+        accumulator[languageName] = accumulator[languageName] || [];
+        if (accumulator[languageName].length < 5) {
+          accumulator[languageName].push({
+            file: subtitle.SubDownloadLink,
+            label: subtitle.LanguageName,
+            kind: 'captions',
+          });
+        }
+        return accumulator;
+      }, {});
+
+      const finalSubtitles = Object.values(reducedSubtitles).flat() as Subtitle[];
+
+      console.log(subtitleData.data.filter((subtitle: any) => !subtitle.LanguageName));
 
       return [
         {
           server: 'VidSrc Pro',
-          url: hlsUrl as string,
+          url: hlsUrl,
           type: 'm3u8',
           quality: 'Unknown',
           referer: this.referer,
           origin: this.origin,
-          extractorData,
+          extractorData: {
+            url: extractorDataUrl,
+            hash: hashes[0],
+          },
           requiresProxy: true,
+          subtitles: finalSubtitles,
         },
       ];
     } catch (error) {

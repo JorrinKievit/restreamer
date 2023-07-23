@@ -1,10 +1,10 @@
-import { FC, useEffect, useRef } from 'react';
-import { MediaCommunitySkin, MediaOutlet, MediaPlayer } from '@vidstack/react';
+import { FC, useEffect, useRef, useState } from 'react';
+import { MediaCommunitySkin, MediaOutlet, MediaPlayer, useMediaStore } from '@vidstack/react';
 import { Source } from 'types/sources';
 import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { client } from 'renderer/api/trpc';
 import { PlayingData } from 'types/localstorage';
-import { MediaPlayerElement } from 'vidstack';
+import { MediaPlayerElement, TextTrack } from 'vidstack';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { getProxyUrl } from 'renderer/lib/proxy';
 import { SubtitleSelector } from '../SubtitleSelector';
@@ -23,10 +23,13 @@ interface VidstackPlayerProps {
 const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId, isLastEpisode, season, episode }) => {
   const languageCounts: { [key: string]: number } = {};
 
+  const [subtitles, setSubtitles] = useState(selectedSource?.subtitles);
+
   const player = useRef<MediaPlayerElement>(null);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
   const playerVolumeRef = useRef<number>(0);
+  const selectedSubtitleLabel = useRef<string | null>(null);
 
   const [opensubtitlesData] = useLocalStorage<LoginResponse | null>('opensubtitles', null);
   const [playingData, setPlayingData] = useLocalStorage<PlayingData>('playingData', {});
@@ -35,9 +38,11 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
 
   const { mutate: startProxy } = client.proxy.start.useMutation();
   const { mutate: stopProxy } = client.proxy.stop.useMutation();
+  const { mutate: getSubUrl } = client.vidsrc.getSubUrl.useMutation();
+
   client.proxy.validate.useQuery(
     {
-      url: selectedSource?.extractorData ?? '',
+      url: selectedSource?.extractorData?.url ?? '',
     },
     {
       enabled: !!(selectedSource?.extractorData && selectedSource.server === 'VidSrc Pro'),
@@ -102,6 +107,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
 
     return () => {
       if (!selectedSource) return;
+
       setPlayingDataOnUnmount();
       setPlayerVolume(playerVolumeRef.current);
 
@@ -127,6 +133,11 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     };
   }, [selectedSource, startProxy, stopProxy]);
 
+  useEffect(() => {
+    selectedSubtitleLabel.current = 'English 1';
+    setSubtitles(selectedSource?.subtitles);
+  }, [selectedSource?.subtitles]);
+
   return (
     <MediaPlayer
       ref={player}
@@ -151,17 +162,56 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       onLoadedMetadata={(e) => {
         durationRef.current = e.target.state.duration;
       }}
+      onTextTrackChange={async (e) => {
+        if (!e.detail?.src) return;
+        if (selectedSource?.server !== 'VidSrc Pro') return;
+
+        const [language, count] = e.detail?.label.split(' ') ?? [];
+        const selectedCount = Number(count);
+        if (!language || Number.isNaN(selectedCount)) return;
+
+        const currentTrack = selectedSource.subtitles?.find((subtitle) => {
+          return subtitle.label === language;
+        });
+        if (!currentTrack) return;
+
+        getSubUrl(
+          {
+            url: currentTrack.file!,
+            hash: selectedSource.extractorData!.hash!,
+          },
+          {
+            onSuccess: (res) => {
+              const updatedTrack = { ...currentTrack, file: res };
+
+              selectedSubtitleLabel.current = `${language} ${count}`;
+              setSubtitles((prev) => {
+                if (!prev) return [];
+                const indexToUpdate = prev.findIndex((subtitle) => {
+                  return subtitle.label === language;
+                });
+                if (indexToUpdate === -1) return prev;
+
+                const updatedSubtitles = [...prev];
+                updatedSubtitles[indexToUpdate] = updatedTrack;
+                return updatedSubtitles;
+              });
+            },
+          }
+        );
+      }}
     >
       <MediaOutlet>
-        {selectedSource?.subtitles?.map((subtitle) => {
+        {subtitles?.map((subtitle) => {
           const subtitleLanguage = getSubtitlePlayerLanguage(subtitle, languageCounts);
+          const labelName = `${subtitleLanguage.name} ${subtitleLanguage.count}`;
           return (
             <track
               src={subtitle.file}
-              label={`${subtitleLanguage.name} ${subtitleLanguage.count}`}
+              label={labelName}
               srcLang={`${subtitleLanguage.code}-${subtitleLanguage.count}`}
               kind="subtitles"
-              default={subtitle.label === 'English' && subtitleLanguage.count === 1}
+              default={labelName === selectedSubtitleLabel.current}
               key={subtitle.file}
               data-type={subtitle.file.endsWith('.vtt') ? 'vtt' : 'srt'}
             />

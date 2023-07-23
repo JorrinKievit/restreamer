@@ -9,6 +9,8 @@ export class SmashyFxExtractor implements IExtractor {
 
   url = 'https://embed.smashystream.com/fx1.php';
 
+  referer = 'https://remotestre.am/';
+
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
       const res = await axiosInstance.get(url, {
@@ -21,10 +23,11 @@ export class SmashyFxExtractor implements IExtractor {
 
       return {
         server: 'SmashyFx',
+        referer: this.referer,
         url: file,
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: 'Unknown',
-        requiresProxy: false,
+        requiresProxy: true,
       };
     } catch (err) {
       if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
