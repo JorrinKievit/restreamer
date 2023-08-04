@@ -50,8 +50,6 @@ export class SmashyStreamExtractor implements IExtractor {
         .get()
         .filter((it) => it !== '_default');
 
-      console.log(sourceUrls);
-
       const sourcesPromise = sourceUrls.map((sourceUrl) => {
         if (sourceUrl.includes('im.php')) {
           return this.imExtractor.extractUrl(sourceUrl);

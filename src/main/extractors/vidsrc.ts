@@ -91,8 +91,6 @@ export class VidSrcExtractor implements IExtractor {
 
       const finalSubtitles = Object.values(reducedSubtitles).flat() as Subtitle[];
 
-      console.log(subtitleData.data.filter((subtitle: any) => !subtitle.LanguageName));
-
       return [
         {
           server: 'VidSrc Pro',

@@ -94,8 +94,9 @@ export class GoMoviesExtractor implements IExtractor {
       };
       runInContext(evalCode, vm.createContext(sandbox));
       const decryptedCode = sandbox.startPlayer.toString();
-      const keyRegex = /key=(\d+)/g;
-      const key = decryptedCode.match(keyRegex)?.[0].split('=')[1];
+      const keyRegex = /\^"\d+"/g;
+      const key = decryptedCode.match(keyRegex)[0].replace('^', '').replace(/"/g, '');
+      if (!key) throw new Error('Key not found');
 
       const servers: unknown[] = [];
       serversPage$('ul li').each((_, el) => {
@@ -113,7 +114,8 @@ export class GoMoviesExtractor implements IExtractor {
               'X-Requested-With': 'XMLHttpRequest',
             },
           });
-          return JSON.parse(this.decryptXORCypher(this.base64Decode(encryptedDataResponse.data), key));
+          const decrypted = this.decryptXORCypher(this.base64Decode(encryptedDataResponse.data), key);
+          return JSON.parse(decrypted);
         })
       );
 
