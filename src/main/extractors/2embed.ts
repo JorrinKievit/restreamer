@@ -12,9 +12,9 @@ import { getCaptchaToken } from './utils';
 export class TwoEmbedExtractor implements IExtractor {
   logger = log.scope('2Embed');
 
-  url: string = 'https://www.2embed.to/';
+  url: string = 'https://www.2embed.cc/';
 
-  referer: string = 'https://www.2embed.to/';
+  referer: string = 'https://www.2embed.cc/';
 
   private streamlareExtractor = new StreamlareExtractor();
 
@@ -24,7 +24,7 @@ export class TwoEmbedExtractor implements IExtractor {
     try {
       const url =
         // eslint-disable-next-line no-nested-ternary
-        type === 'movie' ? `${this.url}embed/imdb/movie?id=${imdbId}` : type === 'tv' ? `${this.url}embed/imdb/tv?id=${imdbId}&s=${season}&e=${episode}/` : '';
+        type === 'movie' ? `${this.url}embed/${imdbId}` : type === 'tv' ? `${this.url}embedtv${imdbId}&s=${season}&e=${episode}/` : '';
 
       let res = await axiosInstance.get(url);
       const $ = load(res.data);

@@ -3,6 +3,7 @@ import z from 'zod';
 import { observable } from '@trpc/server/observable';
 import { EventEmitter } from 'events';
 import { Source } from 'types/sources';
+import { MoviesApiExtractor } from '../extractors/moviesapi';
 import { RemoteStreamExtractor } from '../extractors/remotestream';
 import { GoMoviesExtractor } from '../extractors/gomovies';
 import { TwoEmbedExtractor } from '../extractors/2embed';
@@ -21,6 +22,7 @@ export const appRouter = t.router({
     .input(
       z.object({
         imdbId: z.string(),
+        tmdbId: z.string(),
         showName: z.string(),
         type: z.enum(['movie', 'tv']),
         season: z.number().optional(),
@@ -34,8 +36,9 @@ export const appRouter = t.router({
       const vidSrcExtractor = new VidSrcExtractor();
       const remoteStreamExtractor = new RemoteStreamExtractor();
       const smashyStreamExtractor = new SmashyStreamExtractor();
+      const moviesApiExtractor = new MoviesApiExtractor();
 
-      const { imdbId, showName, type, season, episode } = req.input;
+      const { imdbId, tmdbId, showName, type, season, episode } = req.input;
 
       const goMoviesPromise = goMoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
@@ -67,7 +70,12 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const allPromises = [goMoviesPromise, superStreamPromise, twoEmbedPromise, vidSrcPromise, remoteStreamPromise, smashyStreamPromise];
+      const moviesApipromise = moviesApiExtractor.extractUrls(tmdbId, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
+      const allPromises = [goMoviesPromise, superStreamPromise, twoEmbedPromise, vidSrcPromise, remoteStreamPromise, smashyStreamPromise, moviesApipromise];
 
       const allSources = await Promise.all(allPromises);
 

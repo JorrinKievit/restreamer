@@ -32,6 +32,38 @@ const AVAILABLE_SOURCES = [
       },
     ],
   },
+  {
+    name: 'SmashyStream',
+    children: [
+      {
+        name: 'SmashyCf',
+      },
+      {
+        name: 'SmashyEe',
+      },
+      {
+        name: 'SmashyFfix',
+      },
+      {
+        name: 'SmashyFx',
+      },
+      {
+        name: 'SmashyIm',
+      },
+      {
+        name: 'SmashyNflim',
+      },
+      {
+        name: 'SmashyWatchX',
+      },
+    ],
+  },
+  {
+    name: 'RemoteStr',
+  },
+  {
+    name: 'MoviesApi',
+  },
 ];
 
 const SourceInfo: FC<{
@@ -58,6 +90,7 @@ const SourcesCheck: FC = () => {
     refetch,
   } = client.app.getSources.useQuery({
     imdbId: 'tt0068646',
+    tmdbId: '238',
     showName: 'The Godfather',
     type: 'movie',
   });
@@ -108,7 +141,7 @@ const SourcesCheck: FC = () => {
   }, [isLoading]);
 
   return (
-    <Card h="full">
+    <Card>
       <CardHeader>
         <Heading>Available Sources</Heading>
       </CardHeader>

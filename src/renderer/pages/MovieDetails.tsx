@@ -51,6 +51,7 @@ const MovieDetails: FC = () => {
   const { data: sourcesData, isLoading: sourcesLoading } = client.app.getSources.useQuery(
     {
       imdbId: (mediaType === 'tv' ? tvData?.external_ids.imdb_id : movieData?.imdb_id) || '',
+      tmdbId: id,
       showName: (mediaType === 'tv' ? tvData?.name : movieData?.title) || '',
       type: mediaType,
       season: mediaType === 'tv' ? activeEpisode.season : undefined,

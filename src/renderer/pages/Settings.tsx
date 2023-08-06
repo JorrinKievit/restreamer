@@ -6,10 +6,10 @@ import SourcesCheck from 'renderer/components/Settings/SourcesCheck';
 const Settings: FC = () => {
   return (
     <Grid templateColumns="repeat(2, 1fr)" gap={6}>
-      <GridItem>
+      <GridItem maxH="60%">
         <OpenSubtitlesSettings />
       </GridItem>
-      <GridItem>
+      <GridItem maxH="60%" overflowY="auto">
         <SourcesCheck />
       </GridItem>
     </Grid>
