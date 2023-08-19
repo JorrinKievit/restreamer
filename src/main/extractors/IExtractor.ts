@@ -3,6 +3,7 @@ import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 
 export interface IExtractor {
+  name?: string;
   logger: LogFunctions;
   url: string;
   referer?: string;

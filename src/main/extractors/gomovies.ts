@@ -9,6 +9,8 @@ import { IExtractor } from './IExtractor';
 import { getResolutionName } from './utils';
 
 export class GoMoviesExtractor implements IExtractor {
+  name = 'GoMovies';
+
   logger = log.scope('GoMovies');
 
   url = 'https://gomovies-online.com';
@@ -94,8 +96,9 @@ export class GoMoviesExtractor implements IExtractor {
       };
       runInContext(evalCode, vm.createContext(sandbox));
       const decryptedCode = sandbox.startPlayer.toString();
-      const keyRegex = /\^"\d+"/g;
-      const key = decryptedCode.match(keyRegex)[0].replace('^', '').replace(/"/g, '');
+      const keyRegex = /key=(\d+)/;
+      const key = decryptedCode.match(keyRegex)[1];
+      this.logger.info(`Key: ${key}`);
       if (!key) throw new Error('Key not found');
 
       const servers: unknown[] = [];
@@ -134,7 +137,7 @@ export class GoMoviesExtractor implements IExtractor {
       return [
         {
           url: workingLink.url,
-          server: 'GoMovies',
+          server: this.name,
           type: firstServer.type,
           quality: workingLink.quality,
           subtitles: subtitlesJson.map((subtitle: any) => ({

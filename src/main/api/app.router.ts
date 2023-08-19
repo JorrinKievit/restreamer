@@ -3,13 +3,14 @@ import z from 'zod';
 import { observable } from '@trpc/server/observable';
 import { EventEmitter } from 'events';
 import { Source } from 'types/sources';
+import { PrimeWireExtractor } from '../extractors/primewire';
 import { MoviesApiExtractor } from '../extractors/moviesapi';
 import { RemoteStreamExtractor } from '../extractors/remotestream';
 import { GoMoviesExtractor } from '../extractors/gomovies';
 import { TwoEmbedExtractor } from '../extractors/2embed';
 import { SuperStreamExtractor } from '../extractors/superstream/superstream';
 import { VidSrcExtractor } from '../extractors/vidsrc';
-import { SmashyStreamExtractor } from '../extractors/smashystream.ts/smashystream';
+import { SmashyStreamExtractor } from '../extractors/smashystream/smashystream';
 import { t } from './trpc-client';
 
 const ee = new EventEmitter();
@@ -31,6 +32,7 @@ export const appRouter = t.router({
     )
     .query(async (req) => {
       const goMoviesExtractor = new GoMoviesExtractor();
+      const primeWireExtractor = new PrimeWireExtractor();
       const superStreamExtractor = new SuperStreamExtractor();
       const twoEmbedExtractor = new TwoEmbedExtractor();
       const vidSrcExtractor = new VidSrcExtractor();
@@ -41,6 +43,11 @@ export const appRouter = t.router({
       const { imdbId, tmdbId, showName, type, season, episode } = req.input;
 
       const goMoviesPromise = goMoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
+      const primeWirePromise = primeWireExtractor.extractUrls(showName, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
         return sources;
       });
@@ -75,7 +82,7 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const allPromises = [goMoviesPromise, superStreamPromise, twoEmbedPromise, vidSrcPromise, remoteStreamPromise, smashyStreamPromise, moviesApipromise];
+      const allPromises = [goMoviesPromise, primeWirePromise, superStreamPromise, twoEmbedPromise, vidSrcPromise, remoteStreamPromise, smashyStreamPromise, moviesApipromise];
 
       const allSources = await Promise.all(allPromises);
 
