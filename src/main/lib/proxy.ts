@@ -14,7 +14,7 @@ export const startProxy = (referer: string, origin?: string) => {
     if (proxy) {
       proxy.kill();
     }
-    proxy = fork(path.join(PROXY_PATH), ['--port', '7687', '--host', 'localhost', `--referer ${referer}`, '-v', '-1'], {
+    proxy = fork(path.join(PROXY_PATH), ['--port', '7687', '--host', 'localhost', `--referer ${referer}`, '-v', '-1', `--origin ${origin}`], {
       detached: true,
       env: {
         ELECTRON_RUN_AS_NODE: '1',

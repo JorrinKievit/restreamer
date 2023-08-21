@@ -50,6 +50,8 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
       return '1440p';
     case 1080:
       return '1080p';
+    case 808:
+      return '808p';
     case 720:
       return '720p';
     case 480:
@@ -61,10 +63,14 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
   }
 };
 
-export const getResolutionFromM3u8 = async (m3u8: string) => {
-  const m3u8Manifest = await axios.get(m3u8);
+export const getResolutionFromM3u8 = async (m3u8: string, shouldRequest: boolean) => {
+  let m3u8Manifest = m3u8;
+  if (shouldRequest) {
+    const res = await axios.get(m3u8);
+    m3u8Manifest = res.data;
+  }
   const parser = new m3u8Parser.Parser();
-  parser.push(m3u8Manifest.data);
+  parser.push(m3u8Manifest);
   parser.end();
 
   const parsedManifest = parser.manifest;
@@ -72,4 +78,31 @@ export const getResolutionFromM3u8 = async (m3u8: string) => {
     return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH ? prev : current;
   });
   return getResolutionName(highestQuality.attributes.RESOLUTION.height);
+};
+
+export const findHighestResolutionStream = (m3u8Content: string) => {
+  const streamEntries = m3u8Content.split('#EXT-X-STREAM-INF').slice(1);
+  let highestResolution = '';
+  let maxResolution = 0;
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const entry of streamEntries) {
+    const resolutionMatch = entry.match(/RESOLUTION=(\d+)x(\d+)/);
+    if (resolutionMatch) {
+      const width = parseInt(resolutionMatch[1], 10);
+      const height = parseInt(resolutionMatch[2], 10);
+      const resolution = width * height;
+
+      if (resolution > maxResolution) {
+        maxResolution = resolution;
+        highestResolution = entry.split('\n')[1].trim(); // Get the URL
+      }
+    }
+  }
+
+  return highestResolution;
+};
+
+export const resolveRelativePaths = (m3u8Content: string, baseUrl: string) => {
+  return m3u8Content.replace(/^(.*\.jpg)$/gm, `${baseUrl}$1`);
 };

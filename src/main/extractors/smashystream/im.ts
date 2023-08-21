@@ -37,7 +37,7 @@ export class SmashyImExtractor implements IExtractor {
         })
         .filter((subtitle: any) => subtitle.file !== null);
 
-      const quality = await getResolutionFromM3u8(fileUrl);
+      const quality = await getResolutionFromM3u8(fileUrl, true);
       return {
         server: 'SmashyIm',
         url: fileUrl,

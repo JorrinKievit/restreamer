@@ -1,10 +1,10 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import { MediaCommunitySkin, MediaOutlet, MediaPlayer, useMediaStore } from '@vidstack/react';
+import { MediaCommunitySkin, MediaOutlet, MediaPlayer } from '@vidstack/react';
 import { Source } from 'types/sources';
 import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { client } from 'renderer/api/trpc';
 import { PlayingData } from 'types/localstorage';
-import { MediaPlayerElement, TextTrack } from 'vidstack';
+import { MediaPlayerElement } from 'vidstack';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { getProxyUrl } from 'renderer/lib/proxy';
 import { SubtitleSelector } from '../SubtitleSelector';
@@ -138,11 +138,29 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     setSubtitles(selectedSource?.subtitles);
   }, [selectedSource?.subtitles]);
 
+  const isM3U8String = () => {
+    if (!selectedSource) return false;
+
+    return !selectedSource.url.includes('.mp4') && !selectedSource.url.includes('.m3u8');
+  };
+
+  const getSourceUrl = () => {
+    if (!selectedSource) return '';
+    let url = selectedSource.url;
+    if (isM3U8String()) {
+      url = URL.createObjectURL(new Blob([url]));
+    }
+    if (selectedSource.requiresProxy) {
+      return getProxyUrl(url, selectedSource.referer);
+    }
+    return url;
+  };
+
   return (
     <MediaPlayer
       ref={player}
       title={title}
-      src={(selectedSource?.requiresProxy ? getProxyUrl(selectedSource.url, selectedSource.referer) : selectedSource?.url) ?? ''}
+      src={{ src: getSourceUrl() ?? '', type: isM3U8String() ? 'application/x-mpegurl' : undefined }}
       thumbnails={selectedSource?.thumbnails}
       aspectRatio={16 / 9}
       crossorigin="anonymous"

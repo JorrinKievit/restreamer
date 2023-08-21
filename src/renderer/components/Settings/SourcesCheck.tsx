@@ -33,6 +33,17 @@ const AVAILABLE_SOURCES = [
     ],
   },
   {
+    name: 'VidSrcTo',
+    children: [
+      {
+        name: 'Vidstream',
+      },
+      {
+        name: 'FileMoon',
+      },
+    ],
+  },
+  {
     name: 'SmashyStream',
     children: [
       {

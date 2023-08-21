@@ -54,7 +54,7 @@ export class MoviesApiExtractor implements IExtractor {
       const subtitles = tracks.filter((it: any) => it.kind === 'captions');
       const thumbnails = tracks.filter((it: any) => it.kind === 'thumbnails');
 
-      const highestQuality = await getResolutionFromM3u8(sources[0].file);
+      const highestQuality = await getResolutionFromM3u8(sources[0].file, true);
 
       return [
         {
