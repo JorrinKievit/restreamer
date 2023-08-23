@@ -141,7 +141,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   const isM3U8String = () => {
     if (!selectedSource) return false;
 
-    return !selectedSource.url.includes('.mp4') && !selectedSource.url.includes('.m3u8');
+    return !selectedSource.url.includes('.mp4') && selectedSource.type === 'm3u8' && !selectedSource.url.includes('.m3u8');
   };
 
   const getSourceUrl = () => {
@@ -160,7 +160,8 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     <MediaPlayer
       ref={player}
       title={title}
-      src={{ src: getSourceUrl() ?? '', type: isM3U8String() ? 'application/x-mpegurl' : undefined }}
+      // eslint-disable-next-line no-nested-ternary
+      src={{ src: getSourceUrl() ?? '', type: isM3U8String() ? 'application/x-mpegurl' : selectedSource?.type === 'mp4' ? 'video/mp4' : 'application/x-mpegurl' }}
       thumbnails={selectedSource?.thumbnails}
       aspectRatio={16 / 9}
       crossorigin="anonymous"
