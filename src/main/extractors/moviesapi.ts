@@ -15,7 +15,7 @@ export class MoviesApiExtractor implements IExtractor {
   referer = 'https://moviesapi.club/';
 
   // Stolen from https://github.com/recloudstream/cloudstream/blob/bbbb7c4982d6f83f236883e2a9ed40d7a2b8eb61/app/src/main/java/com/lagradost/cloudstream3/extractors/Chillx.kt#L35C34-L35C51
-  private KEY = '11x&W5UBrcqn$9Yl';
+  private KEY = 'm4H6D9%0$N&F6rQ&';
 
   async extractUrls(tmdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
@@ -39,17 +39,17 @@ export class MoviesApiExtractor implements IExtractor {
 
       const regex = /MasterJS\s*=\s*'([^']*)'/;
       const base64EncryptedData = regex.exec(res2.data)![1];
-      const base64DecryptedData = JSON.parse(Buffer.from(base64EncryptedData, 'base64').toString('utf8'));
+      const base64DecryptedData = JSON.parse(base64EncryptedData);
 
-      const derivedKey = crypto.pbkdf2Sync(this.KEY, Buffer.from(base64DecryptedData.salt, 'hex'), base64DecryptedData.iterations, 32, 'sha512');
+      const derivedKey = crypto.pbkdf2Sync(this.KEY, Buffer.from(base64DecryptedData.s, 'hex'), 1, 32, 'md5');
       const decipher = crypto.createDecipheriv('aes-256-cbc', derivedKey, Buffer.from(base64DecryptedData.iv, 'hex'));
-      decipher.setEncoding('utf8');
 
-      let decrypted = decipher.update(base64DecryptedData.ciphertext, 'base64', 'utf8');
-      decrypted += decipher.final('utf8');
+      const decrypted = Buffer.concat([decipher.update(Buffer.from(base64DecryptedData.ct, 'base64')), decipher.final()]);
+      const decryptedString = decrypted.toString('utf8');
+      this.logger.debug(decryptedString);
 
-      const sources = JSON.parse(decrypted.match(/sources: ([^\]]*\])/)![1]);
-      const tracks = JSON.parse(decrypted.match(/tracks: ([^]*?\}\])/)![1]);
+      const sources = JSON.parse(decryptedString.match(/sources: ([^\]]*\])/)![1]);
+      const tracks = JSON.parse(decryptedString.match(/tracks: ([^]*?\}\])/)![1]);
 
       const subtitles = tracks.filter((it: any) => it.kind === 'captions');
       const thumbnails = tracks.filter((it: any) => it.kind === 'thumbnails');

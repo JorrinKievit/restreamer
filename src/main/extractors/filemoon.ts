@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
@@ -15,17 +16,15 @@ export class FileMoonExtractor implements IExtractor {
     try {
       const res = await axiosInstance.get(url);
       const regex = /eval\((.*)\)/g;
-      const evalCode = res.data.match(regex)?.[0];
+      const evalCode = regex.exec(res.data)?.[0];
       if (!evalCode) throw new Error('No eval code found');
 
       const extractSource = async (file: string): Promise<Source> => {
-        console.log('Callback called with file:', file);
         const quality = await getResolutionFromM3u8(file, true);
 
         return {
           server: 'FileMoon',
           url: file,
-
           type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
           quality,
           requiresProxy: false,
@@ -57,9 +56,9 @@ export class FileMoonExtractor implements IExtractor {
             pause: () => {},
           }),
           document: {
-            addEventListener: (event: string, cb: () => void) => {
+            addEventListener: (event: string, callback: () => void) => {
               if (event === 'DOMContentLoaded') {
-                cb();
+                callback();
               }
             },
           },
@@ -73,7 +72,21 @@ export class FileMoonExtractor implements IExtractor {
               insertAfter: () => {},
             }),
           }),
+          p2pml: {
+            hlsjs: {
+              Engine: class {
+                constructor() {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  this.on = () => {};
+                }
+
+                createLoaderClass() {}
+              },
+            },
+          },
         };
+
         vm.createContext(sandbox);
         vm.runInContext(evalCode, sandbox);
       });
