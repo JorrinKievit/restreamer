@@ -28,6 +28,17 @@ const Header: FC = () => {
           <Button
             variant="ghost"
             as={NavLink}
+            to="/live/list"
+            _activeLink={{
+              bgColor: 'blue.200',
+              color: 'gray.800',
+            }}
+          >
+            Live
+          </Button>
+          <Button
+            variant="ghost"
+            as={NavLink}
             to="/movies"
             _activeLink={{
               bgColor: 'blue.200',

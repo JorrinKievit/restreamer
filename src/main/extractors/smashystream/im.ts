@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../IExtractor';
+import { IExtractor } from '../types';
 import { getResolutionFromM3u8 } from '../utils';
 
 export class SmashyImExtractor implements IExtractor {

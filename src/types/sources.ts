@@ -19,3 +19,16 @@ export interface Source {
   subtitles?: Subtitle[];
   thumbnails?: string;
 }
+
+export interface LiveSource {
+  title: string;
+  imgSrc: string;
+  url: string;
+}
+
+export interface LiveSourceUrl {
+  name: string;
+  url: string;
+  requiresProxy: boolean;
+  referer?: string;
+}

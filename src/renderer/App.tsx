@@ -17,6 +17,8 @@ import extendedTheme from './styles/theme';
 import { client } from './api/trpc';
 
 import './styles/globals.css';
+import LiveListPage from './pages/live/list';
+import LiveViewPage from './pages/live/view';
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -96,6 +98,8 @@ const App = () => {
                     <Route path="/movies" element={<Movies />} />
                     <Route path="/tvshows" element={<TvShows />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/live/list" element={<LiveListPage />} />
+                    <Route path="/live/view" element={<LiveViewPage />} />
                   </Routes>
                 </Box>
               </Router>

@@ -5,7 +5,7 @@ import { Source, Subtitle } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 import { axiosInstance } from '../utils/axios';
 import { FileMoonExtractor } from './filemoon';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 import { VidstreamExtractor } from './vidstream';
 
 export class VidSrcToExtractor implements IExtractor {

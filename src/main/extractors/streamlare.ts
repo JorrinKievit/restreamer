@@ -3,7 +3,7 @@ import { app } from 'electron';
 import { Source } from 'types/sources';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 
 export class StreamlareExtractor implements IExtractor {
   logger = log.scope('Streamlare');

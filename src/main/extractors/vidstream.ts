@@ -1,7 +1,7 @@
 import { Source } from 'types/sources';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 import { findHighestResolutionStream, getResolutionFromM3u8, resolveRelativePaths } from './utils';
 
 export class VidstreamExtractor implements IExtractor {

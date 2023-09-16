@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../IExtractor';
+import { IExtractor } from '../types';
 
 export class SmashyCfExtractor implements IExtractor {
   logger = log.scope('SmashyCf');

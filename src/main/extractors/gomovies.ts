@@ -5,7 +5,7 @@ import { ContentType } from 'types/tmbd';
 import vm, { Context, runInContext } from 'vm';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 import { getResolutionName } from './utils';
 
 export class GoMoviesExtractor implements IExtractor {

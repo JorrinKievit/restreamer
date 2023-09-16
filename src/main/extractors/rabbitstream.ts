@@ -5,7 +5,7 @@ import { Source } from 'types/sources';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { getResolutionName } from './utils';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 
 export class RabbitStreamExtractor implements IExtractor {
   logger = log.scope('VidCloud');

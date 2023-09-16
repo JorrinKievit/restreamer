@@ -4,7 +4,7 @@ import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 import log from 'electron-log';
 import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../IExtractor';
+import { IExtractor } from '../types';
 import { randomString } from '../utils';
 import { DownloadResponse, SearchResponse, SubtitleResponse } from './types';
 

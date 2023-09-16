@@ -4,7 +4,7 @@ import log from 'electron-log';
 import { ContentType } from 'types/tmbd';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
 
 export class MoviesApiExtractor implements IExtractor {

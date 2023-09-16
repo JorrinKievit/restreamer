@@ -4,7 +4,7 @@ import log from 'electron-log';
 import { Source } from 'types/sources';
 import vm from 'vm';
 import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './IExtractor';
+import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
 
 export class FileMoonExtractor implements IExtractor {

@@ -3,7 +3,7 @@ import { Source } from 'types/sources';
 import crypto from 'crypto';
 import { isAxiosError } from 'axios';
 import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../IExtractor';
+import { IExtractor } from '../types';
 
 export class SmashyWatchXExtractor implements IExtractor {
   logger = log.scope('SmashyWatchX');
