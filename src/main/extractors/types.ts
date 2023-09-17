@@ -17,5 +17,5 @@ export interface ILiveExtractor {
   mainPageUrl: string;
   referer?: string;
   getMainPage: () => Promise<LiveSource[]>;
-  extractUrl: (url: string) => Promise<LiveSourceUrl>;
+  extractUrl: (url: string) => Promise<LiveSourceUrl | undefined>;
 }

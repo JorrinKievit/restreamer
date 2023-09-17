@@ -43,21 +43,14 @@ export class VidstreamExtractor implements IExtractor {
         },
       });
       const source = res.data.result.sources[0].file;
-      const mainM3U8Url = `${res.data.result.sources[0].file.split('br/')[0]}br/`;
 
-      const m3u8Content = await axiosInstance.get(source);
-      const highestResolutionStream = findHighestResolutionStream(m3u8Content.data);
-
-      const mainM3U8Content = await axiosInstance.get(mainM3U8Url + highestResolutionStream);
-      const resolvedM3U8Content = resolveRelativePaths(mainM3U8Content.data, `${mainM3U8Url + highestResolutionStream.split('/')[0]}/`);
-
-      const quality = await getResolutionFromM3u8(m3u8Content.data, false);
+      const quality = await getResolutionFromM3u8(source, true);
 
       const thumbnail = res.data.result?.tracks?.find((track: any) => track.kind === 'thumbnails');
 
       return {
         server: 'Vidstream',
-        url: resolvedM3U8Content,
+        url: source,
         type: 'm3u8',
         quality,
         thumbnails: thumbnail?.file,

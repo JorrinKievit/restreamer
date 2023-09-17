@@ -1,4 +1,4 @@
-import { VStack, Heading, Grid, GridItem, AspectRatio, Image, Tooltip, Text } from '@chakra-ui/react';
+import { VStack, Heading, Grid, GridItem, Image, Tooltip, Text } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import { client } from 'renderer/api/trpc';
 import SkeletonGrid from 'renderer/components/SkeletonGrid';

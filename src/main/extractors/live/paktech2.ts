@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
 import { LiveSourceUrl } from 'types/sources';
@@ -34,39 +35,81 @@ export class PakTech2Extractor implements ILiveExtractor {
     return items;
   }
 
-  async extractUrl(url: string): Promise<LiveSourceUrl> {
+  async extractUrl(url: string): Promise<LiveSourceUrl | undefined> {
+    try {
+      const res = await axiosInstance.get(url);
+      const $ = load(res.data);
+      const script = JSON.parse($("script[type='application/ld+json']").html()!);
+      const liveUrl = script.itemListElement.find((item: any) => item.item.name === 'Live').item['@id'];
+
+      const liveUrlRes = await axiosInstance.get(liveUrl);
+      const $1 = load(liveUrlRes.data);
+      const iframeUrl = $1('iframe').attr('src');
+
+      if (!iframeUrl) throw new Error('No iframe url found');
+
+      this.logger.info(iframeUrl);
+      let finalLiveUrl: LiveSourceUrl | undefined;
+      if (iframeUrl.includes('tvpclive.com')) {
+        finalLiveUrl = await this.extractTVpLiveUrl(iframeUrl);
+      }
+      if (iframeUrl.includes('crichd.vip')) {
+        finalLiveUrl = await this.extractCrichdUrl(iframeUrl);
+      }
+
+      if (!finalLiveUrl) throw new Error('No live url found');
+
+      this.logger.info(finalLiveUrl);
+      return finalLiveUrl;
+    } catch (err) {
+      if (err instanceof Error || isAxiosError(err)) this.logger.error(err.message);
+      return undefined;
+    }
+  }
+
+  private extractTVpLiveUrl = async (url: string) => {
     const res = await axiosInstance.get(url);
     const $ = load(res.data);
-    const script = JSON.parse($("script[type='application/ld+json']").html()!);
-    const liveUrl = script.itemListElement.find((item: any) => item.item.name === 'Live').item['@id'];
-
-    const liveUrlRes = await axiosInstance.get(liveUrl);
-    const $1 = load(liveUrlRes.data);
-    const iframeUrl = $1('iframe').attr('src');
+    const iframeUrl = $('iframe').attr('src');
 
     if (!iframeUrl) throw new Error('No iframe url found');
-
-    const iframeRes = await axiosInstance.get(iframeUrl);
-    const $2 = load(iframeRes.data);
-    const iframeUrl2 = $2('iframe').attr('src');
-
-    if (!iframeUrl2) throw new Error('No iframe url found');
-
-    const iframeRes2 = await axiosInstance.get(iframeUrl2, {
+    const iframeRes = await axiosInstance.get(iframeUrl, {
       headers: {
-        Referer: iframeUrl,
+        Referer: url,
       },
     });
-
     const regex = /source:'(.*?)'/g;
-    const matches = [...iframeRes2.data.matchAll(regex)];
+    const matches = [...iframeRes.data.matchAll(regex)];
     const finalLiveUrl = matches.map((match) => match[1])[1];
 
     return {
       name: 'PakTech2',
       url: finalLiveUrl,
       requiresProxy: true,
-      referer: this.referer,
+      referer: 'https://ddolahdplay.xyz/',
     };
-  }
+  };
+
+  private extractCrichdUrl = async (url: string): Promise<LiveSourceUrl | undefined> => {
+    const res = await axiosInstance.get(url);
+
+    const regex = /fid="([^"]+)"/;
+    const fid = res.data.match(regex)[1];
+    const res2 = await axiosInstance.get(`https://lovesomecommunity.com/crichd.php?player=desktop&live=${fid}`, {
+      headers: {
+        Referer: 'https://stream.crichd.vip/',
+      },
+    });
+    const finalUrlRegex = /return\s*\(\s*\[([^\]]*)\]/;
+    const finalUrl = JSON.parse(`[${res2.data.match(finalUrlRegex)[1]}]`)
+      .join('')
+      .replace('////', '//');
+
+    return {
+      name: 'PakTech2',
+      url: finalUrl,
+      requiresProxy: true,
+      referer: 'https://lovesomecommunity.com/',
+    };
+  };
 }
