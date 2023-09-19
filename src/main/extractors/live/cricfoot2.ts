@@ -5,14 +5,12 @@ import { LiveSourceUrl } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
 import { ILiveExtractor } from '../types';
 
-export class PakTech2Extractor implements ILiveExtractor {
-  name = 'PakTech2';
+export class CricFoot2Extractor implements ILiveExtractor {
+  name = 'CricFoot2';
 
-  logger = log.scope('PakTech2');
+  logger = log.scope(this.name);
 
-  mainPageUrl = 'https://paktech2.com/';
-
-  referer = 'https://ddolahdplay.xyz/';
+  mainPageUrl = 'https://cricfoot2.com/';
 
   async getMainPage() {
     const res = await axiosInstance.get(`${this.mainPageUrl}/sports_tv.php`);
@@ -40,7 +38,7 @@ export class PakTech2Extractor implements ILiveExtractor {
       const res = await axiosInstance.get(url);
       const $ = load(res.data);
       const script = JSON.parse($("script[type='application/ld+json']").html()!);
-      const liveUrl = script.itemListElement.find((item: any) => item.item.name === 'Live').item['@id'];
+      const liveUrl = script.itemListElement.find((item: any) => item.name === 'TV').item;
 
       const liveUrlRes = await axiosInstance.get(liveUrl);
       const $1 = load(liveUrlRes.data);
@@ -48,7 +46,6 @@ export class PakTech2Extractor implements ILiveExtractor {
 
       if (!iframeUrl) throw new Error('No iframe url found');
 
-      this.logger.info(iframeUrl);
       let finalLiveUrl: LiveSourceUrl | undefined;
       if (iframeUrl.includes('tvpclive.com')) {
         finalLiveUrl = await this.extractTVpLiveUrl(iframeUrl);
@@ -59,7 +56,6 @@ export class PakTech2Extractor implements ILiveExtractor {
 
       if (!finalLiveUrl) throw new Error('No live url found');
 
-      this.logger.info(finalLiveUrl);
       return finalLiveUrl;
     } catch (err) {
       if (err instanceof Error || isAxiosError(err)) this.logger.error(err.message);
@@ -67,7 +63,7 @@ export class PakTech2Extractor implements ILiveExtractor {
     }
   }
 
-  private extractTVpLiveUrl = async (url: string) => {
+  private extractTVpLiveUrl = async (url: string): Promise<LiveSourceUrl | undefined> => {
     const res = await axiosInstance.get(url);
     const $ = load(res.data);
     const iframeUrl = $('iframe').attr('src');
@@ -83,7 +79,7 @@ export class PakTech2Extractor implements ILiveExtractor {
     const finalLiveUrl = matches.map((match) => match[1])[1];
 
     return {
-      name: 'PakTech2',
+      name: this.name,
       url: finalLiveUrl,
       requiresProxy: true,
       referer: 'https://ddolahdplay.xyz/',
@@ -106,7 +102,7 @@ export class PakTech2Extractor implements ILiveExtractor {
       .replace('////', '//');
 
     return {
-      name: 'PakTech2',
+      name: this.name,
       url: finalUrl,
       requiresProxy: true,
       referer: 'https://lovesomecommunity.com/',
