@@ -21,6 +21,9 @@ export class SmashyEeMovieExtractor implements IExtractor {
 
       if (file.includes('/404Found.mp4')) return undefined;
 
+      const fileRes = await axiosInstance.head(file);
+      if (fileRes.status !== 200 || fileRes.data.includes('404')) return undefined;
+
       return {
         server: 'SmashyEe',
         url: file,

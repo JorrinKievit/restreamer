@@ -7,7 +7,7 @@ import { IExtractor } from '../types';
 export class SmashyFxExtractor implements IExtractor {
   logger = log.scope('SmashyFx');
 
-  url = 'https://embed.smashystream.com/fx1.php';
+  url = 'https://embed.smashystream.com/fx555.php';
 
   referer = 'https://remotestre.am/';
 
