@@ -32,3 +32,9 @@ export interface LiveSourceUrl {
   requiresProxy: boolean;
   referer?: string;
 }
+
+export interface LiveMainPage {
+  imgSrc: string;
+  title: string;
+  url: string;
+}

@@ -6,3 +6,5 @@ export interface PlayingData {
     duration: number;
   };
 }
+
+export type LiveFavorites = string[];

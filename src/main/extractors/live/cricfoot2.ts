@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
-import { LiveSourceUrl } from 'types/sources';
+import { LiveMainPage, LiveSourceUrl } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
 import { ILiveExtractor } from '../types';
 
@@ -12,7 +12,7 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
   mainPageUrl = 'https://cricfoot2.com/';
 
-  async getMainPage() {
+  async getMainPage(): Promise<LiveMainPage[]> {
     const res = await axiosInstance.get(`${this.mainPageUrl}/sports_tv.php`);
     const $ = load(res.data);
 

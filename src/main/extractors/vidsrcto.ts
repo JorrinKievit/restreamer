@@ -82,15 +82,13 @@ export class VidSrcToExtractor implements IExtractor {
       if (sources.data.status !== 200) throw new Error('No sources found');
 
       const sourceUrlsPromise = sources.data.result.map(async (source: any) => {
+        const encryptedUrl = await axiosInstance.get(`${this.mainUrl}ajax/embed/source/${source.id}`);
+        const decryptedUrl = this.decryptSourceUrl(encryptedUrl.data.result.url);
         if (source.title === 'Vidstream') {
-          const encryptedUrl = await axiosInstance.get(`${this.mainUrl}ajax/embed/source/${source.id}`);
-          const decryptedUrl = this.decryptSourceUrl(encryptedUrl.data.result.url);
           const vidStreamUrl = await this.vidStreamExtractor.extractUrl(decryptedUrl);
           return vidStreamUrl;
         }
         if (source.title === 'Filemoon') {
-          const encryptedUrl = await axiosInstance.get(`${this.mainUrl}ajax/embed/source/${source.id}`);
-          const decryptedUrl = this.decryptSourceUrl(encryptedUrl.data.result.url);
           const fileMoonUrl = await this.fileMoonExtractor.extractUrl(decryptedUrl);
           return fileMoonUrl;
         }
