@@ -6,7 +6,9 @@ import { IExtractor } from '../types';
 import { getResolutionFromM3u8 } from '../utils';
 
 export class SmashyImExtractor implements IExtractor {
-  logger = log.scope('SmashyIm');
+  name = 'Smashy (Im)';
+
+  logger = log.scope(this.name);
 
   url = 'https://embed.smashystream.com/im.php';
 
@@ -39,7 +41,7 @@ export class SmashyImExtractor implements IExtractor {
 
       const quality = await getResolutionFromM3u8(fileUrl, true);
       return {
-        server: 'SmashyIm',
+        server: this.name,
         url: fileUrl,
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality,

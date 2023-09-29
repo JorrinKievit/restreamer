@@ -6,7 +6,7 @@ import { IExtractor } from '../types';
 import { getResolutionFromM3u8 } from '../utils';
 
 export class SmashyDudMovieExtractor implements IExtractor {
-  name = 'SmashyDudMovie';
+  name = 'Smashy (DM)';
 
   logger = log.scope(this.name);
 

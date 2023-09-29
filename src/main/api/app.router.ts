@@ -12,6 +12,7 @@ import { TwoEmbedExtractor } from '../extractors/2embed';
 import { SuperStreamExtractor } from '../extractors/superstream/superstream';
 import { VidSrcExtractor } from '../extractors/vidsrc';
 import { SmashyStreamExtractor } from '../extractors/smashystream/smashystream';
+import { PutLockerExtractor } from '../extractors/putlocker';
 import { t } from './trpc-client';
 
 const ee = new EventEmitter();
@@ -34,6 +35,7 @@ export const appRouter = t.router({
     .query(async (req) => {
       const goMoviesExtractor = new GoMoviesExtractor();
       const primeWireExtractor = new PrimeWireExtractor();
+      const putLockerExtractor = new PutLockerExtractor();
       const superStreamExtractor = new SuperStreamExtractor();
       const twoEmbedExtractor = new TwoEmbedExtractor();
       const vidSrcExtractor = new VidSrcExtractor();
@@ -50,6 +52,11 @@ export const appRouter = t.router({
       });
 
       const primeWirePromise = primeWireExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
+      const putLockerPromise = putLockerExtractor.extractUrls(showName, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
         return sources;
       });
@@ -89,7 +96,18 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const allPromises = [goMoviesPromise, primeWirePromise, superStreamPromise, twoEmbedPromise, vidSrcPromise, remoteStreamPromise, smashyStreamPromise, moviesApipromise, vidSrcToPromise];
+      const allPromises = [
+        goMoviesPromise,
+        primeWirePromise,
+        putLockerPromise,
+        superStreamPromise,
+        twoEmbedPromise,
+        vidSrcPromise,
+        remoteStreamPromise,
+        smashyStreamPromise,
+        moviesApipromise,
+        vidSrcToPromise,
+      ];
 
       const allSources = await Promise.all(allPromises);
 

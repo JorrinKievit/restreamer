@@ -13,7 +13,7 @@ export class GoMoviesExtractor implements IExtractor {
 
   logger = log.scope('GoMovies');
 
-  url = 'https://gomovies-online.com';
+  url = 'https://gomovies-online.cam';
 
   private qualities = [2160, 1080, 720, 480, 360];
 
@@ -63,8 +63,17 @@ export class GoMoviesExtractor implements IExtractor {
       const contentName = type === 'movie' ? contentTitle : `${contentTitle} - Season ${season}`;
       let contentPageUrl = $(`[data-filmname*="${contentName}"] a`).attr('href');
       if (!contentPageUrl) throw new Error('ContentPage not found');
-      let contentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`);
-      let contentPage$ = load(contentPageDocument.data);
+      let contentPageDocument = null;
+      let contentPage$ = null;
+      if (this.name === 'GoMovies') {
+        const firstContentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`);
+        const firstContentPage$ = load(firstContentPageDocument.data);
+        contentPageDocument = await axiosInstance.get(`${this.url}${firstContentPage$('._sqvVOytuYKN').attr('href')}`);
+        contentPage$ = load(contentPageDocument.data);
+      } else {
+        contentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`);
+        contentPage$ = load(contentPageDocument.data);
+      }
 
       if (type === 'tv') {
         const episodeUrl = contentPage$(`a[title^="Episode ${episode! < 10 ? `0${episode}` : episode}:"]`);

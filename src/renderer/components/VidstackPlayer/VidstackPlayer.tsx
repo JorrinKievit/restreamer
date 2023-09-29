@@ -40,16 +40,6 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   const { mutate: stopProxy } = client.proxy.stop.useMutation();
   const { mutate: getSubUrl } = client.vidsrc.getSubUrl.useMutation();
 
-  client.proxy.validate.useQuery(
-    {
-      url: selectedSource?.extractorData?.url ?? '',
-    },
-    {
-      enabled: !!(selectedSource?.extractorData && selectedSource.server === 'VidSrc Pro'),
-      refetchInterval: 1000 * 60,
-    }
-  );
-
   const setupPlayer = () => {
     insertPlayerButtons(opensubtitlesData?.token !== undefined, !!season && !!episode && !isLastEpisode);
     if (!player.current) return;

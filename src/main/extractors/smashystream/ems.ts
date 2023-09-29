@@ -6,7 +6,7 @@ import { IExtractor } from '../types';
 import { getResolutionFromM3u8 } from '../utils';
 
 export class SmashyEmsExtractor implements IExtractor {
-  name = 'SmashyEms';
+  name = 'Smashy (EMS)';
 
   logger = log.scope(this.name);
 

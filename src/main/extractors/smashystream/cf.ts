@@ -5,7 +5,9 @@ import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 
 export class SmashyCfExtractor implements IExtractor {
-  logger = log.scope('SmashyCf');
+  name = 'Smashy (CF)';
+
+  logger = log.scope(this.name);
 
   url = 'https://embed.smashystream.com/cf.php';
 
@@ -24,7 +26,7 @@ export class SmashyCfExtractor implements IExtractor {
       if (fileRes.status !== 200 || fileRes.data.includes('404')) return undefined;
 
       return {
-        server: 'SmashyCf',
+        server: this.name,
         url: file,
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: 'Unknown',

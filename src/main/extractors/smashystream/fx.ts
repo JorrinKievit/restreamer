@@ -5,7 +5,9 @@ import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 
 export class SmashyFxExtractor implements IExtractor {
-  logger = log.scope('SmashyFx');
+  name = 'Smashy (Fx)';
+
+  logger = log.scope(this.name);
 
   url = 'https://embed.smashystream.com/fx555.php';
 
@@ -22,7 +24,7 @@ export class SmashyFxExtractor implements IExtractor {
       const file = res.data.match(/file:\s*"([^"]+)"/)[1];
 
       return {
-        server: 'SmashyFx',
+        server: this.name,
         referer: this.referer,
         url: file,
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',

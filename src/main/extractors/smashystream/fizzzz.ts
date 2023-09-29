@@ -6,7 +6,7 @@ import { IExtractor } from '../types';
 import { getResolutionName } from '../utils';
 
 export class SmashyFizzzzExtractor implements IExtractor {
-  name = 'SmashyFizzzz';
+  name = 'Smashy (Fiz)';
 
   logger = log.scope(this.name);
 

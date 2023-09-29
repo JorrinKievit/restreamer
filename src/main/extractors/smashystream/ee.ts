@@ -5,7 +5,9 @@ import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 
 export class SmashyEeMovieExtractor implements IExtractor {
-  logger = log.scope('SmashyEe');
+  name = 'Smashy (EE)';
+
+  logger = log.scope(this.name);
 
   url = 'https://embed.smashystream.com/cf.php';
 
@@ -25,7 +27,7 @@ export class SmashyEeMovieExtractor implements IExtractor {
       if (fileRes.status !== 200 || fileRes.data.includes('404')) return undefined;
 
       return {
-        server: 'SmashyEe',
+        server: this.name,
         url: file,
         type: 'mp4',
         quality: 'Unknown',

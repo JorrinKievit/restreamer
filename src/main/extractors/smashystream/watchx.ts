@@ -6,7 +6,9 @@ import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 
 export class SmashyWatchXExtractor implements IExtractor {
-  logger = log.scope('SmashyWatchX');
+  name = 'Smashy (WX)';
+
+  logger = log.scope(this.name);
 
   url = 'https://embed.smashystream.com/watchx.php';
 
@@ -40,7 +42,7 @@ export class SmashyWatchXExtractor implements IExtractor {
       const thumbnails = tracks.filter((it: any) => it.kind === 'thumbnails');
 
       return {
-        server: 'SmashyWatchX',
+        server: this.name,
         url: sources[0].file,
         type: sources[0].type === 'hls' ? 'm3u8' : 'mp4',
         quality: sources[0].label,

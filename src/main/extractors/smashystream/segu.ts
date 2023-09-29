@@ -3,10 +3,9 @@ import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
-import { getResolutionFromM3u8 } from '../utils';
 
 export class SmashySeguExtractor implements IExtractor {
-  name = 'SmashySegu';
+  name = 'Smashy (Se)';
 
   logger = log.scope(this.name);
 

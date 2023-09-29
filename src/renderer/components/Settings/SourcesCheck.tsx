@@ -8,6 +8,12 @@ const AVAILABLE_SOURCES = [
     name: 'GoMovies',
   },
   {
+    name: 'PrimeWire',
+  },
+  {
+    name: 'PutLocker',
+  },
+  {
     name: 'SuperStream',
   },
   {
@@ -47,25 +53,40 @@ const AVAILABLE_SOURCES = [
     name: 'SmashyStream',
     children: [
       {
-        name: 'SmashyCf',
+        name: 'Smashy (Fiz)',
       },
       {
-        name: 'SmashyEe',
+        name: 'Smashy (FM22)',
       },
       {
-        name: 'SmashyFfix',
+        name: 'Smashy (Se)',
       },
       {
-        name: 'SmashyFx',
+        name: 'Smashy (DM)',
       },
       {
-        name: 'SmashyIm',
+        name: 'Smashy (EMS)',
       },
       {
-        name: 'SmashyNflim',
+        name: 'Smashy (Im)',
       },
       {
-        name: 'SmashyWatchX',
+        name: 'Smashy (FFix)',
+      },
+      {
+        name: 'Smashy (WX)',
+      },
+      {
+        name: 'Smashy (NF)',
+      },
+      {
+        name: 'Smashy (Fx)',
+      },
+      {
+        name: 'Smashy (CF)',
+      },
+      {
+        name: 'Smashy (EE)',
       },
     ],
   },
@@ -100,9 +121,9 @@ const SourcesCheck: FC = () => {
     isLoading,
     refetch,
   } = client.app.getSources.useQuery({
-    imdbId: 'tt0068646',
-    tmdbId: '238',
-    showName: 'The Godfather',
+    imdbId: 'tt4154756',
+    tmdbId: '299536',
+    showName: 'Avengers: Infinity War',
     type: 'movie',
   });
   const [sources, setSources] = useState<Source[]>(sourcesData ?? []);

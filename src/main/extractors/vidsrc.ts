@@ -97,13 +97,11 @@ export class VidSrcExtractor implements IExtractor {
           url: hlsUrl,
           type: 'm3u8',
           quality: 'Unknown',
-          referer: this.referer,
-          origin: this.origin,
           extractorData: {
             url: extractorDataUrl,
             hash: hashes[0],
           },
-          requiresProxy: true,
+          requiresProxy: false,
           subtitles: finalSubtitles,
         },
       ];

@@ -6,7 +6,9 @@ import { IExtractor } from '../types';
 import { getResolutionName } from '../utils';
 
 export class SmashyFFixExtractor implements IExtractor {
-  logger = log.scope('SmashyFFix');
+  name = 'Smashy (FFix)';
+
+  logger = log.scope(this.name);
 
   url = 'https://embed.smashystream.com/ffix1.php';
 
@@ -26,7 +28,7 @@ export class SmashyFFixExtractor implements IExtractor {
       });
 
       return {
-        server: 'SmashyFfix',
+        server: this.name,
         url: fileUrl.split(']')[1],
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: getResolutionName(parseInt(fileUrl.split(']')[0].split('[')[1], 10)),
