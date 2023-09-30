@@ -16,7 +16,7 @@ import {
   PopoverHeader,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useMediaPlayer, useMediaRemote, useMediaStore } from '@vidstack/react';
+import { useMediaPlayer, useMediaStore } from '@vidstack/react';
 import { useEffect, useState } from 'react';
 
 export const SyncSubtitlesPopover = () => {
@@ -25,7 +25,6 @@ export const SyncSubtitlesPopover = () => {
 
   const player = useMediaPlayer();
   const store = useMediaStore();
-  const remote = useMediaRemote();
 
   useEffect(() => {
     document.addEventListener('open-sync-subtitles-popover', () => {
@@ -58,16 +57,17 @@ export const SyncSubtitlesPopover = () => {
   };
 
   useEffect(() => {
-    if (isOpen) remote.toggleControls();
-  }, [isOpen, remote]);
+    if (isOpen) player?.controls.pause();
+    if (!isOpen) player?.controls.resume();
+  }, [isOpen, player?.controls]);
 
   return (
     <Popover isOpen={isOpen} onClose={onClose} placement="bottom" id="sync-subtitles-popover">
       <PopoverContent
         sx={{
-          marginTop: '10px',
+          marginTop: '50px',
           width: '450px',
-          left: player?.state.fullscreen ? '290%' : '143%',
+          left: '10px',
         }}
       >
         <PopoverHeader>Sync Subtitles</PopoverHeader>

@@ -2,6 +2,7 @@
 import axios, { AxiosResponse, isAxiosError } from 'axios';
 import z from 'zod';
 import { TRPCError } from '@trpc/server';
+import { app } from 'electron';
 import { t } from '../trpc-client';
 import { DownloadResponse } from './download.types';
 import { LoginResponse } from './login.types';
@@ -17,6 +18,7 @@ const baseApi = axios.create({
   headers: {
     'Api-Key': API_KEY,
     'Content-Type': 'application/json',
+    'User-Agent': `Restreamer ${app.getVersion()}`,
   },
 });
 

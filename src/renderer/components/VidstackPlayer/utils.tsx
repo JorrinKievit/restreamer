@@ -8,7 +8,7 @@ import { Subtitle } from 'types/sources';
 import SyncSubtitlesIcon from 'renderer/assets/sync-subtitles-button.png';
 import SubtitlesIcon from 'renderer/assets/subtitle-button.png';
 import NextEpisodeIcon from 'renderer/assets/next-episode-button.png';
-import { ToggleButton, Tooltip, TooltipContentProps } from '@vidstack/react';
+import { Tooltip, TooltipContentProps } from '@vidstack/react';
 
 export const getSubtitlePlayerLanguage = (subtitle: Subtitle, languageCounts: { [key: string]: number }) => {
   let language = OPENSUBTITLES_LANGUAGES.find((lang) => lang.language_name.includes(subtitle.label.split(' ')[0].trim()));
@@ -41,9 +41,14 @@ const PlayerButton: FC<{
   placement: TooltipContentProps['placement'];
 }> = ({ id, eventName, icon, tooltipName, placement }) => {
   return (
-    <Tooltip.Root>
-      <ToggleButton id={id} onClick={() => document.dispatchEvent(new CustomEvent(eventName))}>
+    <Tooltip.Root showDelay={100}>
+      <Tooltip.Trigger asChild>
         <IconButton
+          id={id}
+          onClick={() => {
+            document.dispatchEvent(new Event(eventName));
+          }}
+          className="vds-play-button vds-button"
           aria-label="opensubtitles"
           icon={
             <Box padding={10}>
@@ -52,10 +57,10 @@ const PlayerButton: FC<{
           }
           size="sm"
         />
-        <Tooltip.Content placement={placement}>
-          <span>{tooltipName}</span>
-        </Tooltip.Content>
-      </ToggleButton>
+      </Tooltip.Trigger>
+      <Tooltip.Content placement={placement} className="vds-tooltip-content">
+        {tooltipName}
+      </Tooltip.Content>
     </Tooltip.Root>
   );
 };
@@ -73,8 +78,8 @@ const NextEpisodeButton = () => {
 };
 
 export const insertPlayerButtons = (isOpenSubtitlesLoggedIn: boolean, hasNextEpisode: boolean) => {
-  const settingsMenu = document.querySelector('[part="settings-menu"]');
-  if (!settingsMenu) return;
+  const controlsContainer = document.querySelector('.vds-controls');
+  if (!controlsContainer) return;
 
   const existingButton = document.querySelector('#sync-subtitles-button');
   const existingUploadSubtitlesButton = document.querySelector('#upload-subtitles-button');
@@ -82,26 +87,30 @@ export const insertPlayerButtons = (isOpenSubtitlesLoggedIn: boolean, hasNextEpi
   if (existingButton || existingUploadSubtitlesButton || existingNextEpisodeButton) return;
 
   const container = document.createElement('div');
-  settingsMenu.insertBefore(container, settingsMenu.firstChild);
+  container.className = 'vds-controls-group';
+  container.style.pointerEvents = 'auto';
+  controlsContainer.prepend(container);
 
-  const root = createRoot(container);
-  root.render(<SyncPlayerButton />);
+  const syncSubtitlesButton = document.createElement('div');
+  container.append(syncSubtitlesButton);
+  const syncSubtitlesRoot = createRoot(syncSubtitlesButton);
+  syncSubtitlesRoot.render(<SyncPlayerButton />);
 
   if (isOpenSubtitlesLoggedIn) {
     const uploadSubtitlesButton = document.createElement('div');
-    settingsMenu.insertBefore(uploadSubtitlesButton, settingsMenu.firstChild);
+    container.append(uploadSubtitlesButton);
 
     const uploadSubtitlesRoot = createRoot(uploadSubtitlesButton);
     uploadSubtitlesRoot.render(<UploadSubtitlesButton />);
   }
 
   if (hasNextEpisode) {
-    const controlsNodes = document.querySelectorAll('[part="controls-group"]');
-    const controlsContainer = controlsNodes[controlsNodes.length - 1];
+    const controlsNodes = document.querySelectorAll('.vds-controls-group');
+    const controlGroupContainer = controlsNodes[controlsNodes.length - 1];
     const nextEpisodeButton = document.createElement('div');
     nextEpisodeButton.style.width = '40px';
     nextEpisodeButton.style.height = '40px';
-    controlsContainer.insertBefore(nextEpisodeButton, controlsContainer.firstChild);
+    controlGroupContainer.prepend(nextEpisodeButton);
 
     const nextEpisodeRoot = createRoot(nextEpisodeButton);
     nextEpisodeRoot.render(<NextEpisodeButton />);

@@ -4,7 +4,7 @@ import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
 import { OpenSubtitlesUser } from 'main/api/opensubtitles/user-information.types';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { client } from 'renderer/api/trpc';
-import { useMediaPlayer, useMediaRemote, useMediaStore } from '@vidstack/react';
+import { useMediaPlayer, useMediaStore } from '@vidstack/react';
 
 interface SubtitleSelectorProps {
   tmdbId: string;
@@ -32,7 +32,6 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({ tmdbId, season, ep
 
   const player = useMediaPlayer();
   const store = useMediaStore();
-  const remote = useMediaRemote();
 
   useEffect(() => {
     document.addEventListener('open-subtitles-popover', () => {
@@ -50,8 +49,9 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({ tmdbId, season, ep
   }, [language]);
 
   useEffect(() => {
-    if (isOpen) remote.toggleControls();
-  }, [isOpen, remote]);
+    if (isOpen) player?.controls.pause();
+    if (!isOpen) player?.controls.resume();
+  }, [isOpen, player?.controls]);
 
   const handleSubtitleChange = () => {
     mutate(
@@ -94,8 +94,9 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({ tmdbId, season, ep
     <Popover isOpen={isOpen} onClose={onClose}>
       <PopoverContent
         sx={{
-          marginTop: '10px',
-          left: player?.state.fullscreen ? '450%' : '240%',
+          marginTop: '50px',
+          width: '450px',
+          left: '10px',
         }}
       >
         <PopoverHeader>Subtitle selector</PopoverHeader>
