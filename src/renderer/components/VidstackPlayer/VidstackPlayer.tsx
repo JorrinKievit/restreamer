@@ -1,10 +1,10 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import { MediaCommunitySkin, MediaOutlet, MediaPlayer } from '@vidstack/react';
+import { MediaPlayer, MediaPlayerInstance, MediaProvider } from '@vidstack/react';
+import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 import { Source } from 'types/sources';
 import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { client } from 'renderer/api/trpc';
 import { PlayingData } from 'types/localstorage';
-import { MediaPlayerElement } from 'vidstack';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { getProxyUrl } from 'renderer/lib/proxy';
 import { SubtitleSelector } from '../SubtitleSelector';
@@ -25,7 +25,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
 
   const [subtitles, setSubtitles] = useState(selectedSource?.subtitles);
 
-  const player = useRef<MediaPlayerElement>(null);
+  const player = useRef<MediaPlayerInstance>(null);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
   const playerVolumeRef = useRef<number>(0);
@@ -152,8 +152,6 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       title={title}
       // eslint-disable-next-line no-nested-ternary
       src={{ src: getSourceUrl() ?? '', type: isM3U8String() ? 'application/x-mpegurl' : selectedSource?.type === 'mp4' ? 'video/mp4' : 'application/x-mpegurl' }}
-      thumbnails={selectedSource?.thumbnails}
-      aspectRatio={16 / 9}
       crossorigin="anonymous"
       autoplay
       onCanPlay={setupPlayer}
@@ -163,19 +161,19 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
         }, 100);
       }}
       onVolumeChange={(e) => {
-        playerVolumeRef.current = e.target.volume;
+        playerVolumeRef.current = e.volume;
       }}
       onTimeUpdate={(e) => {
-        currentTimeRef.current = e.target.currentTime;
+        currentTimeRef.current = e.currentTime;
       }}
       onLoadedMetadata={(e) => {
         durationRef.current = e.target.state.duration;
       }}
       onTextTrackChange={async (e) => {
-        if (!e.detail?.src) return;
+        if (!e?.src) return;
         if (selectedSource?.server !== 'VidSrc Pro') return;
 
-        const [language, count] = e.detail?.label.split(' ') ?? [];
+        const [language, count] = e?.label.split(' ') ?? [];
         const selectedCount = Number(count);
         if (!language || Number.isNaN(selectedCount)) return;
 
@@ -210,7 +208,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
         );
       }}
     >
-      <MediaOutlet>
+      <MediaProvider>
         {subtitles?.map((subtitle) => {
           const subtitleLanguage = getSubtitlePlayerLanguage(subtitle, languageCounts);
           const labelName = `${subtitleLanguage.name} ${subtitleLanguage.count}`;
@@ -226,8 +224,8 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
             />
           );
         })}
-      </MediaOutlet>
-      <MediaCommunitySkin />
+      </MediaProvider>
+      <DefaultVideoLayout thumbnails={selectedSource?.thumbnails} icons={defaultLayoutIcons} />
       {(selectedSource?.subtitles || opensubtitlesData?.token) && <SyncSubtitlesPopover />}
       {opensubtitlesData?.token && <SubtitleSelector tmdbId={tmdbId} season={season} episode={episode} />}
     </MediaPlayer>

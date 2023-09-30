@@ -43,7 +43,6 @@ export class CricFoot2Extractor implements ILiveExtractor {
       const liveUrlRes = await axiosInstance.get(liveUrl);
       const $1 = load(liveUrlRes.data);
       const iframeUrl = $1('iframe').attr('src');
-
       if (!iframeUrl) throw new Error('No iframe url found');
 
       let finalLiveUrl: LiveSourceUrl | undefined;
@@ -52,6 +51,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
       }
       if (iframeUrl.includes('crichd.vip')) {
         finalLiveUrl = await this.extractCrichdUrl(iframeUrl);
+      }
+      if (iframeUrl.includes('dlhd.sx')) {
+        finalLiveUrl = await this.extractDlhd(iframeUrl);
       }
 
       if (!finalLiveUrl) throw new Error('No live url found');
@@ -106,6 +108,33 @@ export class CricFoot2Extractor implements ILiveExtractor {
       url: finalUrl,
       requiresProxy: true,
       referer: 'https://lovesomecommunity.com/',
+    };
+  };
+
+  private extractDlhd = async (url: string): Promise<LiveSourceUrl | undefined> => {
+    const res = await axiosInstance.get(url, {
+      headers: {
+        Referer: 'https://dlhd.sx/',
+      },
+    });
+    const $ = load(res.data);
+    const iframeUrl = $('iframe').attr('src');
+    if (!iframeUrl) throw new Error('No iframe url found');
+    const iframeRes = await axiosInstance.get(iframeUrl, {
+      headers: {
+        Referer: 'https://dlhd.sx/',
+      },
+    });
+    const regex = /\/\/.*?(?=\n|$)|source\s*:\s*'([^']+)'/g;
+    const matches = iframeRes.data.match(regex);
+    const nonCommentedSources = matches.filter((match: string) => !match.startsWith('//'));
+    const firstNonCommentedSource = nonCommentedSources[0].match(/source\s*:\s*'([^']+)'/)[1];
+
+    return {
+      name: this.name,
+      url: firstNonCommentedSource,
+      requiresProxy: true,
+      referer: 'https://superntuplay.xyz/',
     };
   };
 }

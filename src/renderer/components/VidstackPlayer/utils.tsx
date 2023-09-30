@@ -1,5 +1,4 @@
 import { Box, IconButton } from '@chakra-ui/react';
-import { MediaToggleButton, MediaTooltip, MediaTooltipProps } from '@vidstack/react';
 import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
 import { randomString } from 'main/extractors/utils';
 import { FC } from 'react';
@@ -9,6 +8,7 @@ import { Subtitle } from 'types/sources';
 import SyncSubtitlesIcon from 'renderer/assets/sync-subtitles-button.png';
 import SubtitlesIcon from 'renderer/assets/subtitle-button.png';
 import NextEpisodeIcon from 'renderer/assets/next-episode-button.png';
+import { ToggleButton, Tooltip, TooltipContentProps } from '@vidstack/react';
 
 export const getSubtitlePlayerLanguage = (subtitle: Subtitle, languageCounts: { [key: string]: number }) => {
   let language = OPENSUBTITLES_LANGUAGES.find((lang) => lang.language_name.includes(subtitle.label.split(' ')[0].trim()));
@@ -38,36 +38,38 @@ const PlayerButton: FC<{
   eventName: string;
   icon: string;
   tooltipName: string;
-  position: MediaTooltipProps['position'];
-}> = ({ id, eventName, icon, tooltipName, position }) => {
+  placement: TooltipContentProps['placement'];
+}> = ({ id, eventName, icon, tooltipName, placement }) => {
   return (
-    <MediaToggleButton id={id} onClick={() => document.dispatchEvent(new CustomEvent(eventName))}>
-      <IconButton
-        aria-label="opensubtitles"
-        icon={
-          <Box padding={10}>
-            <img style={{ height: '100%' }} src={icon} alt="Subtitles" />
-          </Box>
-        }
-        size="sm"
-      />
-      <MediaTooltip position={position}>
-        <span>{tooltipName}</span>
-      </MediaTooltip>
-    </MediaToggleButton>
+    <Tooltip.Root>
+      <ToggleButton id={id} onClick={() => document.dispatchEvent(new CustomEvent(eventName))}>
+        <IconButton
+          aria-label="opensubtitles"
+          icon={
+            <Box padding={10}>
+              <img style={{ height: '100%' }} src={icon} alt="Subtitles" />
+            </Box>
+          }
+          size="sm"
+        />
+        <Tooltip.Content placement={placement}>
+          <span>{tooltipName}</span>
+        </Tooltip.Content>
+      </ToggleButton>
+    </Tooltip.Root>
   );
 };
 
 const UploadSubtitlesButton = () => {
-  return <PlayerButton id="upload-subtitles-button" eventName="open-subtitles-popover" icon={SubtitlesIcon} tooltipName="Upload OpenSubtitles" position="bottom center" />;
+  return <PlayerButton id="upload-subtitles-button" eventName="open-subtitles-popover" icon={SubtitlesIcon} tooltipName="Upload OpenSubtitles" placement="bottom center" />;
 };
 
 const SyncPlayerButton = () => {
-  return <PlayerButton id="sync-subtitles-button" eventName="open-sync-subtitles-popover" icon={SyncSubtitlesIcon} tooltipName="Sync subtitles" position="bottom center" />;
+  return <PlayerButton id="sync-subtitles-button" eventName="open-sync-subtitles-popover" icon={SyncSubtitlesIcon} tooltipName="Sync subtitles" placement="bottom center" />;
 };
 
 const NextEpisodeButton = () => {
-  return <PlayerButton id="next-episode-button" eventName="next-episode" icon={NextEpisodeIcon} tooltipName="Next episode" position="top left" />;
+  return <PlayerButton id="next-episode-button" eventName="next-episode" icon={NextEpisodeIcon} tooltipName="Next episode" placement="top start" />;
 };
 
 export const insertPlayerButtons = (isOpenSubtitlesLoggedIn: boolean, hasNextEpisode: boolean) => {

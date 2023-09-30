@@ -4,7 +4,7 @@ import { OPENSUBTITLES_LANGUAGES } from 'main/api/opensubtitles/languages';
 import { OpenSubtitlesUser } from 'main/api/opensubtitles/user-information.types';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import { client } from 'renderer/api/trpc';
-import { useMediaPlayer, useMediaStore } from '@vidstack/react';
+import { useMediaPlayer, useMediaRemote, useMediaStore } from '@vidstack/react';
 
 interface SubtitleSelectorProps {
   tmdbId: string;
@@ -32,6 +32,7 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({ tmdbId, season, ep
 
   const player = useMediaPlayer();
   const store = useMediaStore();
+  const remote = useMediaRemote();
 
   useEffect(() => {
     document.addEventListener('open-subtitles-popover', () => {
@@ -42,16 +43,15 @@ export const SubtitleSelector: FC<SubtitleSelectorProps> = ({ tmdbId, season, ep
         if (isOpen) onClose();
       });
     };
-  }, [isOpen, onClose, onOpen, player?.user]);
+  }, [isOpen, onClose, onOpen]);
 
   useEffect(() => {
     setFileId('');
   }, [language]);
 
   useEffect(() => {
-    if (isOpen) player?.user.pauseIdleTracking(true);
-    else player?.user.pauseIdleTracking(false);
-  }, [isOpen, player?.user]);
+    if (isOpen) remote.toggleControls();
+  }, [isOpen, remote]);
 
   const handleSubtitleChange = () => {
     mutate(

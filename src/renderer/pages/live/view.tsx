@@ -1,4 +1,5 @@
-import { MediaCommunitySkin, MediaOutlet, MediaPlayer } from '@vidstack/react';
+import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 import React, { FC, useEffect } from 'react';
 import { client } from 'renderer/api/trpc';
 import { useQuery } from 'renderer/hooks/useQuery';
@@ -30,9 +31,9 @@ const LiveViewPage: FC = () => {
   }, [liveUrl.data, startProxy, stopProxy]);
 
   return liveUrl.data?.url ? (
-    <MediaPlayer src={{ src: getProxyUrl(liveUrl.data.url, liveUrl.data.referer), type: 'application/x-mpegurl' }} aspectRatio={16 / 9} crossorigin="anonymous" autoplay streamType="live">
-      <MediaOutlet />
-      <MediaCommunitySkin />
+    <MediaPlayer src={{ src: getProxyUrl(liveUrl.data.url, liveUrl.data.referer), type: 'application/x-mpegurl' }} crossorigin="anonymous" autoplay streamType="live">
+      <MediaProvider />
+      <DefaultVideoLayout icons={defaultLayoutIcons} />
     </MediaPlayer>
   ) : null;
 };
