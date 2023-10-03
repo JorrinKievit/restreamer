@@ -1,21 +1,28 @@
 import axios from 'axios';
 import z from 'zod';
-import { startProxy, stopProxy } from '../lib/proxy';
+import { startProxy, stopProxy } from '../lib/mp4-proxy/command';
+import { startM3U8Proxy, stopM3U8Proxy } from '../lib/m3u8-proxy';
 import { t } from './trpc-client';
 
 export const proxyRouter = t.router({
   start: t.procedure
     .input(
       z.object({
-        referer: z.string(),
+        type: z.enum(['mp4', 'm3u8']),
+        referer: z.string().optional(),
         origin: z.string().optional(),
       })
     )
     .mutation(({ input }) => {
-      startProxy(input.referer, input.origin);
+      if (input.type === 'mp4') {
+        startProxy();
+        return;
+      }
+      startM3U8Proxy(input.referer, input.origin);
     }),
   stop: t.procedure.mutation(() => {
     stopProxy();
+    stopM3U8Proxy();
   }),
   validate: t.procedure
     .input(

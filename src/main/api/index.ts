@@ -6,6 +6,7 @@ import { tmdbRouter } from './tmdb/api.router';
 import { t } from './trpc-client';
 import { updaterRouter } from './updater.router';
 import { vidSrcRouter } from './vidsrc.router';
+import { vlcRouter } from './vlc.router';
 
 export const router = t.router({
   app: appRouter,
@@ -15,6 +16,7 @@ export const router = t.router({
   vidsrc: vidSrcRouter,
   tmdb: tmdbRouter,
   opensubtitles: openSubtitlesRouter,
+  vlc: vlcRouter,
 });
 
 export type AppRouter = typeof router;

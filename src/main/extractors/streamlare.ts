@@ -36,7 +36,7 @@ export class StreamlareExtractor implements IExtractor {
           url: res.data.result.Original.file,
           type: res.data.type.includes('mp4') ? 'mp4' : 'm3u8',
           quality: 'Unknown',
-          requiresProxy: false,
+          proxyType: 'none',
         };
       }
       return undefined;

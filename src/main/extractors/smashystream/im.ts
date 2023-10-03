@@ -45,7 +45,7 @@ export class SmashyImExtractor implements IExtractor {
         url: fileUrl,
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality,
-        requiresProxy: false,
+        proxyType: 'none',
         subtitles: subtitleArray,
       };
     } catch (err) {

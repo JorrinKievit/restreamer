@@ -54,7 +54,7 @@ export class VidstreamExtractor implements IExtractor {
         type: 'm3u8',
         quality,
         thumbnails: thumbnail?.file,
-        requiresProxy: false,
+        proxyType: 'none',
         referer: this.referer,
         origin: this.referer,
       };

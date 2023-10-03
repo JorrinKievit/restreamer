@@ -59,16 +59,8 @@ export class VidSrcExtractor implements IExtractor {
       if (!hlsUrl) throw new Error('HLS URL not found');
 
       const regex = /var path\s+=\s+['"]([^'"]+)['"]/g;
-
-      let match;
-      const paths = [];
-
-      // eslint-disable-next-line no-cond-assign
-      while ((match = regex.exec(srcRcpPro.data)) !== null) {
-        paths.push(match[1]);
-      }
-
-      const extractorDataUrl = paths[1].replace('//', 'https://');
+      const extractorDataUrl = regex.exec(srcRcpPro.data)?.[1].replace('//', 'https://');
+      if (!extractorDataUrl) throw new Error('Extractor data URL not found');
 
       const subtitleData = await axiosInstance.get(`${this.subtitleUrl}${imdbId}`, {
         headers: {
@@ -101,7 +93,8 @@ export class VidSrcExtractor implements IExtractor {
             url: extractorDataUrl,
             hash: hashes[0],
           },
-          requiresProxy: false,
+          proxyType: 'm3u8',
+          referer: this.referer,
           subtitles: finalSubtitles,
         },
       ];

@@ -4,6 +4,7 @@ import log from 'electron-log';
 import { ContentType } from 'types/tmbd';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
+import vm from 'vm';
 import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
 
@@ -14,8 +15,19 @@ export class MoviesApiExtractor implements IExtractor {
 
   referer = 'https://moviesapi.club/';
 
-  // Stolen from https://github.com/recloudstream/cloudstream/blob/bbbb7c4982d6f83f236883e2a9ed40d7a2b8eb61/app/src/main/java/com/lagradost/cloudstream3/extractors/Chillx.kt#L35C34-L35C51
-  private KEY = 'm4H6D9%0$N&F6rQ&';
+  private getKey(stringData: string) {
+    const sandbox = {
+      JScript: '',
+      CryptoJSAesJson: {
+        decrypt: (data: string, key: string) => {
+          return JSON.stringify(key);
+        },
+      },
+    };
+    vm.createContext(sandbox);
+    const key = vm.runInContext(stringData, sandbox);
+    return key;
+  }
 
   async extractUrls(tmdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
@@ -36,15 +48,24 @@ export class MoviesApiExtractor implements IExtractor {
           referer: url,
         },
       });
+      const res2$ = load(res2.data);
+      const stringData = res2$('body script').eq(2).html();
+      if (!stringData) throw new Error('No script found');
+      const key = this.getKey(stringData);
+      this.logger.debug(key);
 
-      const regex = /MasterJS\s*=\s*'([^']*)'/;
+      const regex = /JScript\s*=\s*'([^']*)'/;
       const base64EncryptedData = regex.exec(res2.data)![1];
       const base64DecryptedData = JSON.parse(base64EncryptedData);
 
-      const derivedKey = crypto.pbkdf2Sync(this.KEY, Buffer.from(base64DecryptedData.s, 'hex'), 1, 32, 'md5');
-      const decipher = crypto.createDecipheriv('aes-256-cbc', derivedKey, Buffer.from(base64DecryptedData.iv, 'hex'));
+      const salt = Buffer.from(base64DecryptedData.s, 'hex');
+      const iv = Buffer.from(base64DecryptedData.iv, 'hex');
+      const derivedKey = crypto.pbkdf2Sync(key, salt, 1, 32, 'md5');
+      const decipher = crypto.createDecipheriv('aes-256-cbc', derivedKey, iv);
+      decipher.setAutoPadding(false);
+      this.logger.debug('decipher', decipher);
 
-      const decrypted = Buffer.concat([decipher.update(Buffer.from(base64DecryptedData.ct, 'base64')), decipher.final()]);
+      const decrypted = Buffer.concat([decipher.update(Buffer.from(base64DecryptedData.ct, 'utf-8')), decipher.final()]);
       const decryptedString = decrypted.toString('utf8');
       this.logger.debug(decryptedString);
 
@@ -69,7 +90,7 @@ export class MoviesApiExtractor implements IExtractor {
             kind: it.kind,
           })),
           thumbnails: thumbnails[0]?.file,
-          requiresProxy: true,
+          proxyType: 'm3u8',
         },
       ];
     } catch (err) {

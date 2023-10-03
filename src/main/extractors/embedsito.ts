@@ -29,7 +29,7 @@ export class EmbedsitoExtractor implements IExtractor {
         url: finalUrl.headers.location!,
         type: fileType === 'mp4' ? 'mp4' : 'm3u8',
         quality,
-        requiresProxy: false,
+        proxyType: 'none',
       };
     } catch (error) {
       if (isAxiosError(error) || error instanceof Error) {

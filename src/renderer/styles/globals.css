@@ -36,3 +36,8 @@ a {
 * {
   box-sizing: border-box;
 }
+
+/* Emotion overrides html button element */
+:where(.vds-menu-button[role='menuitem']) {
+  padding: var(--media-menu-item-padding, 10px) !important;
+}

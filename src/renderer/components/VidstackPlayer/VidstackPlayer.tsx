@@ -6,7 +6,7 @@ import { LoginResponse } from 'main/api/opensubtitles/login.types';
 import { client } from 'renderer/api/trpc';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
-import { getProxyUrl } from 'renderer/lib/proxy';
+import { getM3U8ProxyUrl, getMP4ProxyUrl } from 'renderer/lib/proxy';
 import { SubtitleSelector } from '../SubtitleSelector';
 import { SyncSubtitlesPopover } from '../SyncSubtitlesPopover';
 import { getSubtitlePlayerLanguage, insertPlayerButtons } from './utils';
@@ -41,7 +41,9 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   const { mutate: getSubUrl } = client.vidsrc.getSubUrl.useMutation();
 
   const setupPlayer = () => {
-    insertPlayerButtons(opensubtitlesData?.token !== undefined, !!season && !!episode && !isLastEpisode);
+    setTimeout(() => {
+      insertPlayerButtons(opensubtitlesData?.token !== undefined, !!season && !!episode && !isLastEpisode);
+    }, 1000);
     if (!player.current) return;
     player.current.volume = playerVolume;
 
@@ -110,8 +112,9 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   }, [selectedSource]);
 
   useEffect(() => {
-    if (selectedSource?.requiresProxy && selectedSource.referer) {
+    if (selectedSource && selectedSource?.proxyType !== 'none') {
       startProxy({
+        type: selectedSource.type,
         referer: selectedSource.referer,
         origin: selectedSource.origin,
       });
@@ -140,8 +143,11 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     if (isM3U8String()) {
       url = URL.createObjectURL(new Blob([url]));
     }
-    if (selectedSource.requiresProxy) {
-      return getProxyUrl(url, selectedSource.referer);
+    if (selectedSource.proxyType === 'm3u8') {
+      return getM3U8ProxyUrl(url, selectedSource.referer);
+    }
+    if (selectedSource.proxyType === 'mp4') {
+      return getMP4ProxyUrl(url);
     }
     return url;
   };
@@ -153,6 +159,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       // eslint-disable-next-line no-nested-ternary
       src={{ src: getSourceUrl() ?? '', type: isM3U8String() ? 'application/x-mpegurl' : selectedSource?.type === 'mp4' ? 'video/mp4' : 'application/x-mpegurl' }}
       crossorigin="anonymous"
+      aspectRatio="16/9"
       autoplay
       onCanPlay={setupPlayer}
       onFullscreenChange={() => {

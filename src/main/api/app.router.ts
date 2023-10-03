@@ -3,6 +3,7 @@ import z from 'zod';
 import { observable } from '@trpc/server/observable';
 import { EventEmitter } from 'events';
 import { Source } from 'types/sources';
+import { VegaMoviesExtractor } from '../extractors/vegamovies/vegamovies';
 import { VidSrcToExtractor } from '../extractors/vidsrcto';
 import { PrimeWireExtractor } from '../extractors/primewire';
 import { MoviesApiExtractor } from '../extractors/moviesapi';
@@ -43,6 +44,7 @@ export const appRouter = t.router({
       const smashyStreamExtractor = new SmashyStreamExtractor();
       const moviesApiExtractor = new MoviesApiExtractor();
       const vidSrcToExtractor = new VidSrcToExtractor();
+      const vegaMoviesExtractor = new VegaMoviesExtractor();
 
       const { imdbId, tmdbId, showName, type, season, episode } = req.input;
 
@@ -96,6 +98,11 @@ export const appRouter = t.router({
         return sources;
       });
 
+      const vegaMoviesPromise = vegaMoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
       const allPromises = [
         goMoviesPromise,
         primeWirePromise,
@@ -107,6 +114,7 @@ export const appRouter = t.router({
         smashyStreamPromise,
         moviesApipromise,
         vidSrcToPromise,
+        vegaMoviesPromise,
       ];
 
       const allSources = await Promise.all(allPromises);

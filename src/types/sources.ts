@@ -9,7 +9,7 @@ export interface Source {
   server: string;
   type: 'm3u8' | 'mp4';
   quality: '4K' | '1440p' | '1080p' | '808p' | '720p' | '480p' | '360p' | '240p' | '144p' | '720p/1080p' | 'Unknown';
-  requiresProxy: boolean;
+  proxyType: 'mp4' | 'm3u8' | 'none';
   origin?: string;
   referer?: string;
   extractorData?: {
@@ -18,6 +18,7 @@ export interface Source {
   };
   subtitles?: Subtitle[];
   thumbnails?: string;
+  isVlc?: boolean;
 }
 
 export interface LiveSource {

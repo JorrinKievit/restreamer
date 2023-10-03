@@ -29,7 +29,7 @@ export class SmashyFxExtractor implements IExtractor {
         url: file,
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: 'Unknown',
-        requiresProxy: true,
+        proxyType: file.includes('.m3u8') ? 'm3u8' : 'mp4',
       };
     } catch (err) {
       if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);

@@ -29,7 +29,7 @@ export class RemoteStreamExtractor implements IExtractor {
           url: match[1],
           type: 'm3u8',
           quality: 'Unknown',
-          requiresProxy: true,
+          proxyType: 'm3u8',
         },
       ];
     } catch (error) {

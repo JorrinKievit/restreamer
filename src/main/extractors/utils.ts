@@ -103,6 +103,17 @@ export const findHighestResolutionStream = (m3u8Content: string) => {
   return highestResolution;
 };
 
+export const findResolutionBasedOnFileName = (fileName: string): Source['quality'] => {
+  if (fileName.includes('2160p') || fileName.includes('4K')) return '4K';
+  if (fileName.includes('1440p')) return '1440p';
+  if (fileName.includes('1080p')) return '1080p';
+  if (fileName.includes('808p')) return '808p';
+  if (fileName.includes('720p')) return '720p';
+  if (fileName.includes('480p')) return '480p';
+  if (fileName.includes('360p')) return '360p';
+  return 'Unknown';
+};
+
 export const resolveRelativePaths = (m3u8Content: string, baseUrl: string) => {
   return m3u8Content.replace(/^(.*\.jpg)$/gm, `${baseUrl}$1`);
 };

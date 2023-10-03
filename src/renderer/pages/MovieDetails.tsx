@@ -4,7 +4,7 @@ import { Source } from 'types/sources';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import EpisodeList from 'renderer/components/EpisodeList';
-import { Skeleton, useToast, Flex, VStack } from '@chakra-ui/react';
+import { Skeleton, useToast, Flex, VStack, Heading } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import SourceSelector from 'renderer/components/SourceSelector';
@@ -12,6 +12,7 @@ import ShowDetails from 'renderer/components/ShowDetails';
 import { client } from 'renderer/api/trpc';
 import VidstackPlayer from 'renderer/components/VidstackPlayer/VidstackPlayer';
 import { useRequiredParams } from 'renderer/hooks/useRequiredParams';
+import { getM3U8ProxyUrl, getMP4ProxyUrl } from 'renderer/lib/proxy';
 
 const MovieDetails: FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,10 @@ const MovieDetails: FC = () => {
     episode: playingData[id]?.episode ?? 1,
   });
 
+  const { mutate: launchVlc } = client.vlc.launch.useMutation();
+  const { mutate: quitVlc } = client.vlc.quit.useMutation();
+  const { mutateAsync: startProxy } = client.proxy.start.useMutation();
+  const { mutate: stopProxy } = client.proxy.stop.useMutation();
   const { data: tvData, isInitialLoading: tvInitialLoading } = client.tmdb.tvShowDetails.useQuery(
     {
       tvShowId: mediaType === 'tv' ? id : '',
@@ -126,15 +131,36 @@ const MovieDetails: FC = () => {
   return (
     <Flex flexDirection="column" gap={4}>
       <Flex gap={4} flexDirection="column">
-        <VidstackPlayer
-          selectedSource={selectedSource}
-          title={mediaType === 'tv' ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}` : movieData?.title}
-          tmdbId={id}
-          season={mediaType === 'tv' ? activeEpisode.season : undefined}
-          episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
-          isLastEpisode={isLastEpisode}
-        />
-        {selectedSource && <SourceSelector sources={sources} activeSource={selectedSource} selectSource={setSelectedSource} />}
+        {!selectedSource?.isVlc && (
+          <VidstackPlayer
+            selectedSource={selectedSource}
+            title={mediaType === 'tv' ? `${tvData?.name} | Season ${activeEpisode.season} Episode ${activeEpisode.episode}` : movieData?.title}
+            tmdbId={id}
+            season={mediaType === 'tv' ? activeEpisode.season : undefined}
+            episode={mediaType === 'tv' ? activeEpisode.episode : undefined}
+            isLastEpisode={isLastEpisode}
+          />
+        )}
+        {selectedSource && (
+          <SourceSelector
+            sources={sources}
+            activeSource={selectedSource}
+            selectSource={async (source) => {
+              if (source.isVlc) {
+                if (source.proxyType === 'none') {
+                  launchVlc({ url: source.url });
+                } else if (source.proxyType === 'mp4') {
+                  await startProxy({ type: 'mp4' });
+                  launchVlc({ url: getMP4ProxyUrl(source.url) });
+                } else {
+                  await startProxy({ type: 'm3u8', referer: source.referer });
+                  launchVlc({ url: getM3U8ProxyUrl(source.url, source.referer) });
+                }
+              }
+              setSelectedSource(source);
+            }}
+          />
+        )}
       </Flex>
       {(tvInitialLoading || movieIsInitialLoading) && (
         <VStack gap={4} w="full">
