@@ -1,5 +1,4 @@
 /* eslint-disable max-classes-per-file */
-import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import vm from 'vm';
@@ -93,7 +92,7 @@ export class FileMoonExtractor implements IExtractor {
 
       return await extractionPromise;
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) this.logger.error(error.message);
+      if (error instanceof Error) this.logger.error(error.message);
       return undefined;
     }
   }

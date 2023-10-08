@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { Source } from 'types/sources';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
@@ -32,9 +31,7 @@ export class EmbedsitoExtractor implements IExtractor {
         proxyType: 'none',
       };
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) {
-        this.logger.error(error.message);
-      }
+      if (error instanceof Error) this.logger.error(error.message);
       return undefined;
     }
   }

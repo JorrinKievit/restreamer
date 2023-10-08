@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import * as m3u8Parser from 'm3u8-parser';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
@@ -102,7 +101,7 @@ export class RabbitStreamExtractor implements IExtractor {
         subtitles,
       };
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) {
+      if (error instanceof Error) {
         this.logger.error(error.message);
       }
       return undefined;

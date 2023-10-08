@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
@@ -31,7 +30,7 @@ export class SmashyDudMovieExtractor implements IExtractor {
         proxyType: 'none',
       };
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return undefined;
     }
   }

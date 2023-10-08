@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
 import { Source } from 'types/sources';
@@ -118,7 +117,7 @@ export class SmashyStreamExtractor implements IExtractor {
 
       return sources.filter((it) => it !== undefined) as Source[];
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err);
+      if (err instanceof Error) this.logger.error(err);
       return [];
     }
   }

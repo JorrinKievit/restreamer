@@ -40,7 +40,7 @@ const SourceSelector: FC<SourceSelectorProps> = ({ sources, activeSource, select
             <SourceButton key={source.server} source={source} activeSource={activeSource} selectSource={selectSource} />
           ))}
       </Grid>
-      {sources.filter((source) => source.isVlc).length > 0 ?? <Heading size="lg">VLC supported sources</Heading>}
+      {sources.filter((source) => source.isVlc).length > 0 ? <Heading size="lg">Sources only playable through VLC</Heading> : null}
       <Grid templateColumns="repeat(5, 1fr)" w="full" gap={4}>
         {sources
           .filter((source) => source.isVlc)

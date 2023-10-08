@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from 'axios';
+import axios from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
 import { ContentType } from 'types/tmbd';
@@ -94,7 +94,7 @@ export class MoviesApiExtractor implements IExtractor {
         },
       ];
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return [];
     }
   }

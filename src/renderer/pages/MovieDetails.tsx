@@ -4,7 +4,7 @@ import { Source } from 'types/sources';
 import { useQuery } from 'renderer/hooks/useQuery';
 import { ContentType } from 'types/tmbd';
 import EpisodeList from 'renderer/components/EpisodeList';
-import { Skeleton, useToast, Flex, VStack, Heading } from '@chakra-ui/react';
+import { Skeleton, useToast, Flex, VStack } from '@chakra-ui/react';
 import { PlayingData } from 'types/localstorage';
 import { useLocalStorage } from 'renderer/hooks/useLocalStorage';
 import SourceSelector from 'renderer/components/SourceSelector';
@@ -32,9 +32,7 @@ const MovieDetails: FC = () => {
   });
 
   const { mutate: launchVlc } = client.vlc.launch.useMutation();
-  const { mutate: quitVlc } = client.vlc.quit.useMutation();
   const { mutateAsync: startProxy } = client.proxy.start.useMutation();
-  const { mutate: stopProxy } = client.proxy.stop.useMutation();
   const { data: tvData, isInitialLoading: tvInitialLoading } = client.tmdb.tvShowDetails.useQuery(
     {
       tvShowId: mediaType === 'tv' ? id : '',
@@ -67,14 +65,13 @@ const MovieDetails: FC = () => {
     }
   );
   const [sources, setSources] = useState<Source[]>(sourcesData ?? []);
+  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   client.app.getSourcesSubscription.useSubscription(undefined, {
     onData: (data: Source[]) => {
-      if (!data || data.length === 0) return;
+      if (sources && sources.length === 0) setSelectedSource(data[0]);
       setSources((prev) => [...prev, ...data]);
     },
   });
-
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
   const isLastEpisode = mediaType === 'tv' ? tvData?.seasons.find((s) => s.season_number === tvData.number_of_seasons)?.episode_count === activeEpisode.episode : false;
 

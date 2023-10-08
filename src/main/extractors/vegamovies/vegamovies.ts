@@ -2,7 +2,6 @@ import { load } from 'cheerio';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
-import fs from 'fs';
 import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 import { findResolutionBasedOnFileName } from '../utils';
@@ -26,11 +25,11 @@ export class VegaMoviesExtractor implements IExtractor {
   }
 
   private mapWrongShowTitles(title: string) {
-    if (title.includes('Guardians of the Galaxy Vol. 3')) return title.replace('Vol.', 'Volume');
+    if (title.includes('Guardians of the Galaxy Vol. 3')) title.replace('Vol.', 'Volume');
     return title;
   }
 
-  public async extractUrls(title: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
+  public async extractUrls(title: string, type: ContentType): Promise<Source[]> {
     try {
       if (type === 'tv') throw new Error('TV Shows not supported');
       const findMovieUrl = await this.getTitleUrl(this.mapWrongShowTitles(title));
@@ -53,47 +52,27 @@ export class VegaMoviesExtractor implements IExtractor {
         .toArray()
         .find((a) => downloadPage$(a).attr('href')?.includes('v-cloud.bio'));
 
-      let redirectLinkData = '';
       const vcloudPage = await axiosInstance.get(vcloudUrl!.attribs.href!);
       const vCloudPageCookies = vcloudPage.headers['set-cookie'];
       const vCloudDownloadLinkRegex = /var\s+url\s*=\s*'([^']+)'/;
-
-      const isResumable = vcloudUrl?.attribs.href.includes('v-cloud.bio/api/index');
-
-      if (!isResumable) {
-        const vCloudDownloadLink = vcloudPage.data.match(vCloudDownloadLinkRegex)[1];
-        const redirectLink = Buffer.from(vCloudDownloadLink.split('r=')[1], 'base64').toString();
-        const data = await axiosInstance.get(redirectLink, {
-          headers: {
-            cookie: vCloudPageCookies,
-          },
-        });
-        redirectLinkData = data.data;
-      } else {
-        const $ = load(vcloudPage.data);
-        const d = $('.btn.btn-success.btn-lg.h6').attr('href');
-        const redirectDownloadData = await axiosInstance.get(d!, {
-          headers: {
-            cookie: vCloudPageCookies,
-          },
-        });
-        const vCloudDownloadLink = redirectDownloadData.data.match(vCloudDownloadLinkRegex)[1];
-        const redirectLink = Buffer.from(vCloudDownloadLink.split('r=')[1], 'base64').toString();
-        console.log(redirectLink, redirectDownloadData.headers['set-cookie']);
-        const data = await axiosInstance.get(redirectLink, {
-          headers: {
-            cookie: redirectDownloadData.headers['set-cookie'],
-          },
-        });
-        redirectLinkData = data.data;
-      }
-      const $redirectLinkData = load(redirectLinkData);
+      const vCloudDownloadLink = vcloudPage.data.match(vCloudDownloadLinkRegex)[1];
+      const redirectLink = Buffer.from(vCloudDownloadLink.split('r=')[1], 'base64').toString();
+      this.logger.debug(redirectLink);
+      const redirectLinkData = await axiosInstance.get(redirectLink, {
+        headers: {
+          cookie: vCloudPageCookies,
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36',
+        },
+      });
+      const $redirectLinkData = load(redirectLinkData.data);
       const finalDownloadLink = $redirectLinkData('.btn.btn-success.btn-lg.h6').attr('href');
       if (!finalDownloadLink) throw new Error('No download link found');
       if (finalDownloadLink.includes('gofile')) {
         const source = await this.goFileExtractor.extractUrl(finalDownloadLink);
         return source ? [source] : [];
       }
+      const isValidResponse = await axiosInstance.head(finalDownloadLink);
+      if (isValidResponse.headers['content-type'] === 'application/json') throw new Error('Invalid download link');
       return [
         {
           server: this.name,

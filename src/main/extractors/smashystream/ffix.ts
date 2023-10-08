@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
@@ -43,7 +42,7 @@ export class SmashyFFixExtractor implements IExtractor {
         thumbnails: vttArray.find((it: any) => it.link.includes('thumbnails'))?.link,
       };
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return undefined;
     }
   }

@@ -41,3 +41,8 @@ a {
 :where(.vds-menu-button[role='menuitem']) {
   padding: var(--media-menu-item-padding, 10px) !important;
 }
+
+:where(.vds-captions [data-part='cue']) {
+  background-color: unset;
+  backdrop-filter: unset;
+}

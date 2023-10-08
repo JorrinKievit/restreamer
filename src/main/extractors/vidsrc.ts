@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
 import { Source, Subtitle } from 'types/sources';
@@ -99,9 +98,7 @@ export class VidSrcExtractor implements IExtractor {
         },
       ];
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) {
-        this.logger.error(error.message);
-      }
+      if (error instanceof Error) this.logger.error(error.message);
       return [];
     }
   }

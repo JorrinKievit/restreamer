@@ -33,8 +33,8 @@ dependencies:
     specifier: ^10.23.0
     version: 10.23.0
   '@vidstack/react':
-    specifier: ^1.1.5
-    version: 1.1.5(@types/react@18.2.8)(react@18.2.0)
+    specifier: ^1.1.8
+    version: 1.1.8(@types/react@18.2.8)(react@18.2.0)
   axios:
     specifier: ^1.4.0
     version: 1.4.0
@@ -93,8 +93,8 @@ dependencies:
     specifier: ^2.9.1
     version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
   vidstack:
-    specifier: ^1.1.5
-    version: 1.1.5
+    specifier: ^1.1.8
+    version: 1.1.8
   zod:
     specifier: ^3.21.4
     version: 3.21.4
@@ -4745,8 +4745,8 @@ packages:
       url-toolkit: 2.2.5
     dev: false
 
-  /@vidstack/react@1.1.5(@types/react@18.2.8)(react@18.2.0):
-    resolution: {integrity: sha512-EutVuOU2b6XTryEmPU23T2Ftu3j4BuJGdGbyHoDtc15m6iL/DtpkBJCLqRVI7PaiuQtqneKcvKUNcBNogVz5KQ==}
+  /@vidstack/react@1.1.8(@types/react@18.2.8)(react@18.2.0):
+    resolution: {integrity: sha512-bwigitlnecYI2DtdMOr70RJ/T9fwxaUy+QZzlk7jYmLfKuTWCIr9IDLAjcIybzHALIYSxzRc6OoZTJicqew6TQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/react': ^18.0.0
@@ -13154,8 +13154,8 @@ packages:
     dev: true
     optional: true
 
-  /vidstack@1.1.5:
-    resolution: {integrity: sha512-4qTktjJ/Pf1WumM9p6laS6Ti7JDVl0MNqEEyQw+Dk0MlYtw2A7wPHxtX0DHkPiTPDIWODnlgroz/edbxfBO2/g==}
+  /vidstack@1.1.8:
+    resolution: {integrity: sha512-qugFSKlavZd6Nu3+sqpiJP1oJXYTcWQfHNDKYpltv6pghKD0rTo8vjfIffnR8AvVAIdhKaioiGaoQjmsjjNEsw==}
     engines: {node: '>=18'}
     dependencies:
       media-captions: 1.0.0

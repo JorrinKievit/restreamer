@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
@@ -32,7 +31,7 @@ export class SmashyFxExtractor implements IExtractor {
         proxyType: file.includes('.m3u8') ? 'm3u8' : 'mp4',
       };
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return undefined;
     }
   }

@@ -79,20 +79,17 @@ const NextEpisodeButton = () => {
 
 export const insertPlayerButtons = (isOpenSubtitlesLoggedIn: boolean, hasNextEpisode: boolean) => {
   const controlsContainer = document.querySelector('.vds-controls');
-  console.log(controlsContainer);
   if (!controlsContainer) return;
 
   const existingButton = document.querySelector('#sync-subtitles-button');
   const existingUploadSubtitlesButton = document.querySelector('#upload-subtitles-button');
   const existingNextEpisodeButton = document.querySelector('#next-episode-button');
-  console.log(existingButton, existingUploadSubtitlesButton, existingNextEpisodeButton);
   if (existingButton || existingUploadSubtitlesButton || existingNextEpisodeButton) return;
 
   const container = document.createElement('div');
   container.className = 'vds-controls-group';
   container.style.pointerEvents = 'auto';
   controlsContainer.prepend(container);
-  console.log(controlsContainer);
 
   const syncSubtitlesButton = document.createElement('div');
   container.append(syncSubtitlesButton);

@@ -8,7 +8,7 @@ export const proxyRouter = t.router({
   start: t.procedure
     .input(
       z.object({
-        type: z.enum(['mp4', 'm3u8']),
+        type: z.enum(['mp4', 'm3u8', 'mkv']),
         referer: z.string().optional(),
         origin: z.string().optional(),
       })

@@ -47,7 +47,7 @@ export class GoFileExtractor implements IExtractor {
         };
       }
     } catch (err) {
-      if (axios.isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return undefined;
     }
   }

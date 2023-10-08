@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import crypto from 'crypto';
 import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
@@ -174,7 +173,7 @@ export class SuperStreamExtractor implements IExtractor {
         },
       ];
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) this.logger.error(error.message);
+      if (error instanceof Error) this.logger.error(error.message);
       return [];
     }
   }

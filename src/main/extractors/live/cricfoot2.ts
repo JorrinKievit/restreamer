@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
 import { LiveMainPage, LiveSourceUrl } from 'types/sources';
@@ -35,6 +34,7 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
   async extractUrl(url: string): Promise<LiveSourceUrl | undefined> {
     try {
+      this.logger.debug(`extracting url: ${url}`);
       const res = await axiosInstance.get(url);
       const $ = load(res.data);
       const script = JSON.parse($("script[type='application/ld+json']").html()!);
@@ -44,6 +44,7 @@ export class CricFoot2Extractor implements ILiveExtractor {
       const $1 = load(liveUrlRes.data);
       const iframeUrl = $1('iframe').attr('src');
       if (!iframeUrl) throw new Error('No iframe url found');
+      this.logger.debug(`iframeUrl: ${iframeUrl}`);
 
       let finalLiveUrl: LiveSourceUrl | undefined;
       if (iframeUrl.includes('tvpclive.com')) {
@@ -55,12 +56,15 @@ export class CricFoot2Extractor implements ILiveExtractor {
       if (iframeUrl.includes('dlhd.sx')) {
         finalLiveUrl = await this.extractDlhd(iframeUrl);
       }
+      if (iframeUrl.includes('daddylivehd.online')) {
+        finalLiveUrl = await this.extractDaddyLiveHD(iframeUrl);
+      }
 
       if (!finalLiveUrl) throw new Error('No live url found');
 
       return finalLiveUrl;
     } catch (err) {
-      if (err instanceof Error || isAxiosError(err)) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return undefined;
     }
   }
@@ -88,12 +92,12 @@ export class CricFoot2Extractor implements ILiveExtractor {
     };
   };
 
-  private extractCrichdUrl = async (url: string): Promise<LiveSourceUrl | undefined> => {
+  private async extractCrichdUrl(url: string): Promise<LiveSourceUrl | undefined> {
     const res = await axiosInstance.get(url);
 
     const regex = /fid="([^"]+)"/;
     const fid = res.data.match(regex)[1];
-    const res2 = await axiosInstance.get(`https://lovesomecommunity.com/crichd.php?player=desktop&live=${fid}`, {
+    const res2 = await axiosInstance.get(`https://lovesomecommunity.com/crichdkk.php?player=desktop&live=${fid}`, {
       headers: {
         Referer: 'https://stream.crichd.vip/',
       },
@@ -109,9 +113,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
       requiresProxy: true,
       referer: 'https://lovesomecommunity.com/',
     };
-  };
+  }
 
-  private extractDlhd = async (url: string): Promise<LiveSourceUrl | undefined> => {
+  private async extractDlhd(url: string): Promise<LiveSourceUrl | undefined> {
     const res = await axiosInstance.get(url, {
       headers: {
         Referer: 'https://dlhd.sx/',
@@ -125,16 +129,51 @@ export class CricFoot2Extractor implements ILiveExtractor {
         Referer: 'https://dlhd.sx/',
       },
     });
-    const regex = /\/\/.*?(?=\n|$)|source\s*:\s*'([^']+)'/g;
-    const matches = iframeRes.data.match(regex);
-    const nonCommentedSources = matches.filter((match: string) => !match.startsWith('//'));
-    const firstNonCommentedSource = nonCommentedSources[0].match(/source\s*:\s*'([^']+)'/)[1];
+    const source = this.getNonCommentedSource(iframeRes.data);
+    if (!source) throw new Error('No source url found');
 
     return {
       name: this.name,
-      url: firstNonCommentedSource,
+      url: source,
       requiresProxy: true,
       referer: 'https://superntuplay.xyz/',
     };
-  };
+  }
+
+  private async extractOlaliveHdPlay(url: string) {
+    const res = await axiosInstance.get(url, {
+      headers: {
+        Referer: 'https://daddylivehd.com/',
+      },
+    });
+    const source = this.getNonCommentedSource(res.data);
+    if (!source) throw new Error('No source url found');
+    return source;
+  }
+
+  private async extractDaddyLiveHD(url: string): Promise<LiveSourceUrl | undefined> {
+    const res = await axiosInstance.get(url, {
+      headers: {
+        Referer: 'https://daddylivehd.com/',
+      },
+    });
+    const $ = load(res.data);
+    const iframeUrl = $('iframe').attr('src');
+    if (!iframeUrl) throw new Error('No iframe url found');
+    const source = await this.extractOlaliveHdPlay(iframeUrl);
+    return {
+      name: this.name,
+      url: source,
+      requiresProxy: true,
+      referer: 'https://livehdplay.ru/',
+    };
+  }
+
+  private getNonCommentedSource(data: string) {
+    const regex = /\/\/.*?(?=\n|$)|source\s*:\s*'([^']+)'/g;
+    const matches = data.match(regex);
+    const nonCommentedSources = matches?.filter((match: string) => !match.startsWith('//'));
+    const firstNonCommentedSource = nonCommentedSources?.[0].match(/source\s*:\s*'([^']+)'/)?.[1];
+    return firstNonCommentedSource;
+  }
 }

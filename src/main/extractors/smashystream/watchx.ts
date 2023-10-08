@@ -1,7 +1,6 @@
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import crypto from 'crypto';
-import { isAxiosError } from 'axios';
 import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 
@@ -55,7 +54,7 @@ export class SmashyWatchXExtractor implements IExtractor {
         proxyType: 'none',
       };
     } catch (err) {
-      if (isAxiosError(err) || err instanceof Error) this.logger.error(err.message);
+      if (err instanceof Error) this.logger.error(err.message);
       return undefined;
     }
   }

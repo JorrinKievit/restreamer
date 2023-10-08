@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
@@ -41,7 +40,7 @@ export class GoMoviesExtractor implements IExtractor {
           return link;
         }
       } catch (error) {
-        if (isAxiosError(error)) this.logger.error(error.message);
+        if (error instanceof Error) this.logger.error(error.message);
       }
       return null;
     });
@@ -158,8 +157,7 @@ export class GoMoviesExtractor implements IExtractor {
         },
       ];
     } catch (e) {
-      if (isAxiosError(e) || e instanceof Error) this.logger.error(e.message);
-
+      if (e instanceof Error) this.logger.error(e.message);
       return [];
     }
   }

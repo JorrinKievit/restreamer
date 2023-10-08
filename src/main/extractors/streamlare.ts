@@ -41,9 +41,7 @@ export class StreamlareExtractor implements IExtractor {
       }
       return undefined;
     } catch (error) {
-      if (isAxiosError(error) || error instanceof Error) {
-        this.logger.error(error.message);
-      }
+      if (error instanceof Error) this.logger.error(error.message);
       return undefined;
     }
   }

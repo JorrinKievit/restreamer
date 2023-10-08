@@ -1,7 +1,6 @@
-import { isAxiosError } from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
-import { Source, Subtitle } from 'types/sources';
+import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 import { axiosInstance } from '../utils/axios';
 import { FileMoonExtractor } from './filemoon';
@@ -104,7 +103,7 @@ export class VidSrcToExtractor implements IExtractor {
 
       return sourceUrls;
     } catch (error) {
-      if (error instanceof Error || isAxiosError(error)) this.logger.error(error.message);
+      if (error instanceof Error) this.logger.error(error.message);
       return [];
     }
   }
