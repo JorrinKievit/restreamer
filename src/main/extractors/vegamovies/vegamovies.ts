@@ -10,7 +10,7 @@ import { GoFileExtractor } from './gofile';
 export class VegaMoviesExtractor implements IExtractor {
   name = 'VegaMovies';
 
-  url = 'https://m.vegamovies.sx/';
+  url = 'https://vegamovies.sx/';
 
   logger = log.scope(this.name);
 
@@ -71,8 +71,10 @@ export class VegaMoviesExtractor implements IExtractor {
         const source = await this.goFileExtractor.extractUrl(finalDownloadLink);
         return source ? [source] : [];
       }
-      const isValidResponse = await axiosInstance.head(finalDownloadLink);
-      if (isValidResponse.headers['content-type'] === 'application/json') throw new Error('Invalid download link');
+      const isValidResponse = await axiosInstance.head(finalDownloadLink, {
+        validateStatus: () => true,
+      });
+      if (isValidResponse.status === 403) throw new Error('Invalid download link');
       return [
         {
           server: this.name,

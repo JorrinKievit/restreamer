@@ -24,9 +24,7 @@ export class VidSrcExtractor implements IExtractor {
 
   async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
-      const url =
-        // eslint-disable-next-line no-nested-ternary
-        type === 'movie' ? `${this.embedUrl}${imdbId}/` : type === 'tv' ? `${this.embedUrl}${imdbId}/${season}-${episode}/` : '';
+      const url = type === 'movie' ? `${this.embedUrl}movie?imdb=${imdbId}` : `${this.embedUrl}tv?imdb=${imdbId}&season=${season}&episode=${episode}`;
       const res = await axiosInstance.get(url);
 
       const $ = load(res.data);

@@ -14,7 +14,7 @@ import { TwoEmbedExtractor } from '../extractors/2embed';
 import { SuperStreamExtractor } from '../extractors/superstream/superstream';
 import { VidSrcExtractor } from '../extractors/vidsrc';
 import { SmashyStreamExtractor } from '../extractors/smashystream/smashystream';
-import { PutLockerExtractor } from '../extractors/putlocker';
+import { NewMovies123Extractor } from '../extractors/newmovies123';
 import { t } from './trpc-client';
 
 const ee = new EventEmitter();
@@ -37,7 +37,7 @@ export const appRouter = t.router({
     .query(async (req) => {
       const goMoviesExtractor = new GoMoviesExtractor();
       const primeWireExtractor = new PrimeWireExtractor();
-      const putLockerExtractor = new PutLockerExtractor();
+      const putLockerExtractor = new NewMovies123Extractor();
       const superStreamExtractor = new SuperStreamExtractor();
       const twoEmbedExtractor = new TwoEmbedExtractor();
       const vidSrcExtractor = new VidSrcExtractor();

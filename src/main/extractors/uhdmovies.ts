@@ -13,6 +13,43 @@ export class UHDMoviesExtractor implements IExtractor {
 
   public logger = log.scope(this.name);
 
+  private async extractOddFirmDriveLeechUrl(url: string) {
+    const result = await axiosInstance.get(url);
+    const result$ = load(result.data);
+    const continuePage = await axiosInstance.post(
+      result$('form').attr('action')!,
+      new URLSearchParams({
+        _wp_http: result$('input[name="_wp_http"]').attr('value')!,
+      })
+    );
+    const continuePage$ = load(continuePage.data);
+    const goToDownloadPage = await axiosInstance.post(
+      continuePage$('form').attr('action')!,
+      new URLSearchParams({
+        _wp_http2: continuePage$('input[name="_wp_http2"]').attr('value')!,
+        token: continuePage$('input[name="token"]').attr('value')!,
+      })
+    );
+    const regex = /s_343\(([^,]+),\s*([^,]+)/g;
+    let match;
+    let redirectId;
+    let token;
+
+    // eslint-disable-next-line no-cond-assign
+    while ((match = regex.exec(goToDownloadPage.data)) !== null) {
+      redirectId = match[1].trim();
+      token = match[2].trim();
+    }
+    const driveLeechUrl = await axiosInstance.get(`https://oddfirm.com/?go=${redirectId?.replace("'", '').replace("'", '')}`, {
+      headers: {
+        cookie: `${redirectId?.replace("'", '').replace("'", '')}=${token?.replace("'", '')};path=/`,
+      },
+    });
+    const driveLeechUrl$ = load(driveLeechUrl.data);
+    const finalUrl = driveLeechUrl$('meta[http-equiv=refresh]').attr('content');
+    return finalUrl;
+  }
+
   private async extractDriveLeech(url: string) {
     const driveResult = await axiosInstance.get(url);
     const regex = /window\.location\.replace\("([^"]+)"\)/;
@@ -49,8 +86,15 @@ export class UHDMoviesExtractor implements IExtractor {
       if (!detailLink) throw new Error('Movie not found');
       const detailResult = await axiosInstance.get(detailLink);
       const detailResult$ = load(detailResult.data);
-      const driveLink = detailResult$(`a[title="Download From Google Drive"]`).attr('href');
+      let driveLink = detailResult$(`a[title="Download From Google Drive"]`).attr('href');
       if (!driveLink) throw new Error('Google Drive link not found');
+
+      if (driveLink.includes('oddfirm')) {
+        const driveLeechUrl = await this.extractOddFirmDriveLeechUrl(driveLink);
+        if (!driveLeechUrl) throw new Error('Drive leech link not found in oddfirm');
+        driveLink = driveLeechUrl.split('url=')[1];
+      }
+
       const videoCdnLink = await this.extractDriveLeech(driveLink);
       const finalUrl = await this.extractVideoCdn(videoCdnLink);
 

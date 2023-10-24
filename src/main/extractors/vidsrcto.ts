@@ -5,6 +5,7 @@ import { ContentType } from 'types/tmbd';
 import { axiosInstance } from '../utils/axios';
 import { FileMoonExtractor } from './filemoon';
 import { IExtractor } from './types';
+import { VidPlayExtractor } from './vidplay';
 import { VidstreamExtractor } from './vidstream';
 
 export class VidSrcToExtractor implements IExtractor {
@@ -17,6 +18,8 @@ export class VidSrcToExtractor implements IExtractor {
   private vidStreamExtractor = new VidstreamExtractor();
 
   private fileMoonExtractor = new FileMoonExtractor();
+
+  private vidPlayExtractor = new VidPlayExtractor();
 
   private key = '8z5Ag5wgagfsOuhz';
 
@@ -91,6 +94,11 @@ export class VidSrcToExtractor implements IExtractor {
           const fileMoonUrl = await this.fileMoonExtractor.extractUrl(decryptedUrl);
           return fileMoonUrl;
         }
+        if (source.title === 'Vidplay') {
+          const vidPlayUrl = await this.vidPlayExtractor.extractUrl(decryptedUrl);
+          return vidPlayUrl;
+        }
+
         return undefined;
       });
 
