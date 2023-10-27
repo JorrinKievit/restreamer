@@ -3,9 +3,12 @@ import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './types';
+import { getResolutionFromM3u8 } from './utils';
 
 export class RemoteStreamExtractor implements IExtractor {
-  logger = log.scope('RemoteStream');
+  name = 'RemoteStream';
+
+  logger = log.scope(this.name);
 
   url = 'https://remotestre.am/e/?';
 
@@ -21,13 +24,17 @@ export class RemoteStreamExtractor implements IExtractor {
 
       if (!match) return [];
 
+      const quality = await getResolutionFromM3u8(match[1], true, {
+        referer: this.referer,
+      });
+
       return [
         {
-          server: 'RemoteStr',
+          server: this.name,
           referer: this.referer,
           url: match[1],
           type: 'm3u8',
-          quality: 'Unknown',
+          quality,
           proxyType: 'm3u8',
         },
       ];

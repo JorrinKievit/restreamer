@@ -15,6 +15,7 @@ import { SuperStreamExtractor } from '../extractors/superstream/superstream';
 import { VidSrcExtractor } from '../extractors/vidsrc';
 import { SmashyStreamExtractor } from '../extractors/smashystream/smashystream';
 import { NewMovies123Extractor } from '../extractors/newmovies123';
+import { ShowBoxExtractor } from '../extractors/showbox';
 import { t } from './trpc-client';
 
 const ee = new EventEmitter();
@@ -47,6 +48,7 @@ export const appRouter = t.router({
       const vidSrcToExtractor = new VidSrcToExtractor();
       const vegaMoviesExtractor = new VegaMoviesExtractor();
       const uhdmoviesExtractor = new UHDMoviesExtractor();
+      const showBoxExtractor = new ShowBoxExtractor();
 
       const { imdbId, tmdbId, showName, type, season, episode } = req.input;
 
@@ -110,6 +112,11 @@ export const appRouter = t.router({
         return sources;
       });
 
+      const showBoxPromise = showBoxExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
       const allPromises = [
         goMoviesPromise,
         primeWirePromise,
@@ -123,6 +130,7 @@ export const appRouter = t.router({
         vidSrcToPromise,
         vegaMoviesPromise,
         uhdmoviesPromise,
+        showBoxPromise,
       ];
 
       const allSources = await Promise.all(allPromises);

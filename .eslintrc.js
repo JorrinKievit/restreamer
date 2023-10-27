@@ -26,6 +26,7 @@ module.exports = {
     'prefer-destructuring': 'off',
     'no-bitwise': 'off',
     printWidth: 'off',
+    'no-restricted-syntax': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,

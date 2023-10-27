@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import { Source } from 'types/sources';
 import * as m3u8Parser from 'm3u8-parser';
@@ -51,7 +51,7 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
     case 1080:
       return '1080p';
     case 808:
-      return '808p';
+      return '1080p';
     case 720:
       return '720p';
     case 480:
@@ -63,21 +63,28 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
   }
 };
 
-export const getResolutionFromM3u8 = async (m3u8: string, shouldRequest: boolean) => {
-  let m3u8Manifest = m3u8;
-  if (shouldRequest) {
-    const res = await axios.get(m3u8);
-    m3u8Manifest = res.data;
-  }
-  const parser = new m3u8Parser.Parser();
-  parser.push(m3u8Manifest);
-  parser.end();
+export const getResolutionFromM3u8 = async (m3u8: string, shouldRequest: boolean, headers: RawAxiosRequestHeaders = {}): Promise<Source['quality']> => {
+  try {
+    let m3u8Manifest = m3u8;
+    if (shouldRequest) {
+      const res = await axios.get(m3u8, {
+        headers,
+      });
+      m3u8Manifest = res.data;
+    }
+    const parser = new m3u8Parser.Parser();
+    parser.push(m3u8Manifest);
+    parser.end();
+    console.log(parser.manifest);
 
-  const parsedManifest = parser.manifest;
-  const highestQuality = parsedManifest.playlists.reduce((prev: any, current: any) => {
-    return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH ? prev : current;
-  });
-  return getResolutionName(highestQuality.attributes.RESOLUTION.height);
+    const parsedManifest = parser.manifest;
+    const highestQuality = parsedManifest.playlists.reduce((prev: any, current: any) => {
+      return prev.attributes.BANDWIDTH > current.attributes.BANDWIDTH ? prev : current;
+    });
+    return getResolutionName(highestQuality.attributes.RESOLUTION.height);
+  } catch {
+    return 'Unknown';
+  }
 };
 
 export const findHighestResolutionStream = (m3u8Content: string) => {
@@ -112,6 +119,10 @@ export const findResolutionBasedOnFileName = (fileName: string): Source['quality
   if (fileName.includes('480p')) return '480p';
   if (fileName.includes('360p')) return '360p';
   return 'Unknown';
+};
+
+export const addLeadingZero = (number: number) => {
+  return number.toString().padStart(2, '0');
 };
 
 export const resolveRelativePaths = (m3u8Content: string, baseUrl: string) => {
