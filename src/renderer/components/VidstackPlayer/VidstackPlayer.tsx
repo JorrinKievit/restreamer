@@ -162,11 +162,6 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       aspectRatio="16/9"
       autoplay
       onCanPlay={setupPlayer}
-      onFullscreenChange={() => {
-        setTimeout(() => {
-          insertPlayerButtons(opensubtitlesData?.token !== undefined, !!season && !!episode && !isLastEpisode);
-        }, 100);
-      }}
       onVolumeChange={(e) => {
         playerVolumeRef.current = e.volume;
       }}
@@ -192,7 +187,6 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
         getSubUrl(
           {
             url: currentTrack.file!,
-            hash: selectedSource.extractorData!.hash!,
           },
           {
             onSuccess: (res) => {

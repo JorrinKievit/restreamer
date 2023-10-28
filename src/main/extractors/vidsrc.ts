@@ -16,48 +16,45 @@ export class VidSrcExtractor implements IExtractor {
 
   private embedUrl = `${this.url}embed/`;
 
-  private rcpUrl = 'https://rcp.vidsrc.me/rcp/';
-
-  private rcp2Url = 'https://v2.vidsrc.me/srcrcp/';
-
   private subtitleUrl = 'https://rest.opensubtitles.org/search/imdbid-';
+
+  private getHashBasedOnIndex(hash: string, index: string) {
+    let result = '';
+    for (let i = 0; i < hash.length; i += 2) {
+      const j = hash.substring(i, i + 2);
+      result += String.fromCharCode(parseInt(j, 16) ^ index.charCodeAt((i / 2) % index.length));
+    }
+    return result;
+  }
 
   async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       const url = type === 'movie' ? `${this.embedUrl}movie?imdb=${imdbId}` : `${this.embedUrl}tv?imdb=${imdbId}&season=${season}&episode=${episode}`;
       const res = await axiosInstance.get(url);
-
       const $ = load(res.data);
-      const hashes = $('div.source')
-        .map((_, el) => {
-          const childDiv = $(el).find('div#name');
-          const text = childDiv.text();
-          if (text.includes('VidSrc Fembed')) return undefined;
-          return el;
-        })
-        .map((_, el) => $(el).attr('data-hash'))
-        .get();
 
-      const srcRcpRes = await axiosInstance.get(`${this.rcpUrl}${hashes[0]}`, {
+      const activeSourceUrl = `https:${$('#player_iframe').attr('src')}`;
+      const srcRcpRes = await axiosInstance.get(activeSourceUrl, {
         headers: {
           referer: url,
         },
       });
-
-      if (srcRcpRes.status !== 200) throw new Error('RCP Error');
-
-      const srcRcpPro = await axiosInstance.get(`${this.rcp2Url}${hashes[0]}`, {
+      const srcRcpRes$ = load(srcRcpRes.data);
+      const id = srcRcpRes$('body').attr('data-i');
+      const hash = srcRcpRes$('#hidden').attr('data-h');
+      if (!id || !hash) throw new Error('No id or hash found');
+      const sourceUrl = this.getHashBasedOnIndex(hash, id);
+      const script = await axiosInstance.get(`https:${sourceUrl}`, {
         headers: {
-          referer: `${this.rcpUrl}${hashes[0]}`,
+          referer: url,
         },
       });
-
-      const hlsUrl = /var hls_url = "(.*)"/g.exec(srcRcpPro.data)?.[1];
-      if (!hlsUrl) throw new Error('HLS URL not found');
-
-      const regex = /var path\s+=\s+['"]([^'"]+)['"]/g;
-      const extractorDataUrl = regex.exec(srcRcpPro.data)?.[1].replace('//', 'https://');
-      if (!extractorDataUrl) throw new Error('Extractor data URL not found');
+      const match = script.data
+        .match(/file:"(.*?)"/)[1]
+        .replace(/(\/\/\S+?=)/g, '')
+        .replace('#2', '');
+      const finalUrl = Buffer.from(match, 'base64').toString();
+      this.logger.debug(finalUrl);
 
       const subtitleData = await axiosInstance.get(`${this.subtitleUrl}${imdbId}`, {
         headers: {
@@ -83,14 +80,10 @@ export class VidSrcExtractor implements IExtractor {
       return [
         {
           server: 'VidSrc Pro',
-          url: hlsUrl,
+          url: finalUrl,
           type: 'm3u8',
           quality: 'Unknown',
-          extractorData: {
-            url: extractorDataUrl,
-            hash: hashes[0],
-          },
-          proxyType: 'm3u8',
+          proxyType: 'none',
           referer: this.referer,
           subtitles: finalSubtitles,
         },

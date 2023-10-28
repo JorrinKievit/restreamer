@@ -8,7 +8,6 @@ export const vidSrcRouter = t.router({
     .input(
       z.object({
         url: z.string(),
-        hash: z.string(),
       })
     )
     .mutation(async ({ input }) => {
@@ -38,7 +37,7 @@ export const vidSrcRouter = t.router({
           'Accept-Encoding': 'gzip, deflate, br',
           'Accept-Language': 'en-US,en;q=0.5',
           Origin: 'https://vidsrc.stream',
-          Referer: `https://vidsrc.stream/prorcp/${input.hash}`,
+          Referer: `https://vidsrc.stream/`,
           'X-Requested-With': 'XMLHttpRequest',
         },
       });
