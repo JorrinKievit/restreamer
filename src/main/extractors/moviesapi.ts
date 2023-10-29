@@ -11,13 +11,13 @@ import { getResolutionFromM3u8 } from './utils';
 export class MoviesApiExtractor implements IExtractor {
   logger = log.scope('MoviesApi');
 
-  url = 'https://moviesapi.club/';
+  url = 'https://ww1.moviesapi.club/';
 
   referer = 'https://moviesapi.club/';
 
   private getKey(stringData: string) {
     const sandbox = {
-      JScript: '',
+      JScripts: '',
       CryptoJSAesJson: {
         decrypt: (data: string, key: string) => {
           return JSON.stringify(key);
@@ -35,11 +35,12 @@ export class MoviesApiExtractor implements IExtractor {
 
       const res = await axios.get(url, {
         headers: {
-          referer: 'https://moviesapi.club/movie/299536',
+          referer: 'https://pressplay.top',
         },
       });
       const res$ = load(res.data);
       const iframeUrl = res$('iframe').attr('src');
+      this.logger.debug(iframeUrl);
 
       if (!iframeUrl) throw new Error('No iframe url found');
 
@@ -54,19 +55,21 @@ export class MoviesApiExtractor implements IExtractor {
       const key = this.getKey(stringData);
       this.logger.debug(key);
 
-      const regex = /JScript\s*=\s*'([^']*)'/;
+      const regex = /JScripts\s*=\s*'([^']*)'/;
       const base64EncryptedData = regex.exec(res2.data)![1];
       const base64DecryptedData = JSON.parse(base64EncryptedData);
+      this.logger.debug(base64DecryptedData);
 
       const salt = Buffer.from(base64DecryptedData.s, 'hex');
       const iv = Buffer.from(base64DecryptedData.iv, 'hex');
       const derivedKey = crypto.pbkdf2Sync(key, salt, 1, 32, 'md5');
       const decipher = crypto.createDecipheriv('aes-256-cbc', derivedKey, iv);
       decipher.setAutoPadding(false);
-      this.logger.debug('decipher', decipher);
 
-      const decrypted = Buffer.concat([decipher.update(Buffer.from(base64DecryptedData.ct, 'utf-8')), decipher.final()]);
-      const decryptedString = decrypted.toString('utf8');
+      const encryptedBuffer = Buffer.from(base64DecryptedData.ct, 'base64');
+      const decryptedBuffer = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
+
+      const decryptedString = decryptedBuffer.toString('utf-8');
       this.logger.debug(decryptedString);
 
       const sources = JSON.parse(decryptedString.match(/sources: ([^\]]*\])/)![1]);

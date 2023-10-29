@@ -11,7 +11,7 @@ const AVAILABLE_SOURCES = [
     name: 'PrimeWire',
   },
   {
-    name: 'PutLocker',
+    name: 'NewMovies123',
   },
   {
     name: 'SuperStream',
@@ -39,15 +39,7 @@ const AVAILABLE_SOURCES = [
     ],
   },
   {
-    name: 'VidSrcTo',
-    children: [
-      {
-        name: 'Vidstream',
-      },
-      {
-        name: 'FileMoon',
-      },
-    ],
+    name: 'RemoteStr',
   },
   {
     name: 'SmashyStream',
@@ -91,10 +83,30 @@ const AVAILABLE_SOURCES = [
     ],
   },
   {
-    name: 'RemoteStr',
+    name: 'MoviesApi',
   },
   {
-    name: 'MoviesApi',
+    name: 'VidSrcTo',
+    children: [
+      {
+        name: 'Vidstream',
+      },
+      {
+        name: 'FileMoon',
+      },
+      {
+        name: 'VidPlay',
+      },
+    ],
+  },
+  {
+    name: 'VegaMovies',
+  },
+  {
+    name: 'UHDMovies',
+  },
+  {
+    name: 'ShowBox',
   },
 ];
 

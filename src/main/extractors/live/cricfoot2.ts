@@ -1,6 +1,7 @@
 import { load } from 'cheerio';
 import log from 'electron-log';
 import { LiveMainPage, LiveSourceUrl } from 'types/sources';
+import vm, { runInContext } from 'vm';
 import { axiosInstance } from '../../utils/axios';
 import { ILiveExtractor } from '../types';
 
@@ -59,6 +60,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
       if (iframeUrl.includes('daddylivehd.online')) {
         finalLiveUrl = await this.extractDaddyLiveHD(iframeUrl);
       }
+      if (iframeUrl.includes('1stream.buzz')) {
+        finalLiveUrl = await this.extract1StreamBuzz(iframeUrl);
+      }
 
       if (!finalLiveUrl) throw new Error('No live url found');
 
@@ -94,10 +98,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
   private async extractCrichdUrl(url: string): Promise<LiveSourceUrl | undefined> {
     const res = await axiosInstance.get(url);
-
     const regex = /fid="([^"]+)"/;
     const fid = res.data.match(regex)[1];
-    const res2 = await axiosInstance.get(`https://lovesomecommunity.com/crichdkk.php?player=desktop&live=${fid}`, {
+    const res2 = await axiosInstance.get(`https://lovesomecommunity.com/crichdisi.php?player=desktop&live=${fid}`, {
       headers: {
         Referer: 'https://stream.crichd.vip/',
       },
@@ -169,11 +172,58 @@ export class CricFoot2Extractor implements ILiveExtractor {
     };
   }
 
-  private getNonCommentedSource(data: string) {
+  private async extract1StreamBuzz(url: string): Promise<LiveSourceUrl | undefined> {
+    const res = await axiosInstance.get(url, {
+      headers: {
+        Referer: this.mainPageUrl,
+      },
+    });
+    const $ = load(res.data);
+    const iframeUrl = $('iframe').attr('src');
+    if (!iframeUrl) throw new Error('No iframe url found');
+    const source = await this.extractAbolishStand(iframeUrl);
+    return {
+      name: this.name,
+      url: source,
+      requiresProxy: true,
+      referer: 'https://abolishstand.net/',
+    };
+  }
+
+  private async extractAbolishStand(url: string): Promise<string> {
+    const res = await axiosInstance.get(url, {
+      headers: {
+        Referer: 'https://1stream.buzz/',
+      },
+    });
+    const $ = load(res.data);
+    const script = $('script')
+      .filter((_, el) => $(el).html()?.includes('eval') ?? false)
+      .first()
+      .html();
+
+    this.logger.debug(script);
+    if (!script) throw new Error('No script found');
+    const sandbox = {
+      src: '',
+      $: () => {
+        return {
+          ready: () => {},
+        };
+      },
+      document: {},
+    };
+    runInContext(script, vm.createContext(sandbox));
+
+    return sandbox.src;
+  }
+
+  private getNonCommentedSource(data: string): string {
     const regex = /\/\/.*?(?=\n|$)|source\s*:\s*'([^']+)'/g;
     const matches = data.match(regex);
     const nonCommentedSources = matches?.filter((match: string) => !match.startsWith('//'));
     const firstNonCommentedSource = nonCommentedSources?.[0].match(/source\s*:\s*'([^']+)'/)?.[1];
+    if (!firstNonCommentedSource) throw new Error('No source url found');
     return firstNonCommentedSource;
   }
 }

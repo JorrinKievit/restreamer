@@ -20,6 +20,20 @@ import { t } from './trpc-client';
 
 const ee = new EventEmitter();
 
+const goMoviesExtractor = new GoMoviesExtractor();
+const primeWireExtractor = new PrimeWireExtractor();
+const newMovies123Extractor = new NewMovies123Extractor();
+const superStreamExtractor = new SuperStreamExtractor();
+const twoEmbedExtractor = new TwoEmbedExtractor();
+const vidSrcExtractor = new VidSrcExtractor();
+const remoteStreamExtractor = new RemoteStreamExtractor();
+const smashyStreamExtractor = new SmashyStreamExtractor();
+const moviesApiExtractor = new MoviesApiExtractor();
+const vidSrcToExtractor = new VidSrcToExtractor();
+const vegaMoviesExtractor = new VegaMoviesExtractor();
+const uhdmoviesExtractor = new UHDMoviesExtractor();
+const showBoxExtractor = new ShowBoxExtractor();
+
 export const appRouter = t.router({
   getAppVersion: t.procedure.query(() => {
     return app.getVersion();
@@ -36,20 +50,6 @@ export const appRouter = t.router({
       })
     )
     .query(async (req) => {
-      const goMoviesExtractor = new GoMoviesExtractor();
-      const primeWireExtractor = new PrimeWireExtractor();
-      const putLockerExtractor = new NewMovies123Extractor();
-      const superStreamExtractor = new SuperStreamExtractor();
-      const twoEmbedExtractor = new TwoEmbedExtractor();
-      const vidSrcExtractor = new VidSrcExtractor();
-      const remoteStreamExtractor = new RemoteStreamExtractor();
-      const smashyStreamExtractor = new SmashyStreamExtractor();
-      const moviesApiExtractor = new MoviesApiExtractor();
-      const vidSrcToExtractor = new VidSrcToExtractor();
-      const vegaMoviesExtractor = new VegaMoviesExtractor();
-      const uhdmoviesExtractor = new UHDMoviesExtractor();
-      const showBoxExtractor = new ShowBoxExtractor();
-
       const { imdbId, tmdbId, showName, type, season, episode } = req.input;
 
       const goMoviesPromise = goMoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
@@ -62,7 +62,7 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const putLockerPromise = putLockerExtractor.extractUrls(showName, type, season, episode).then((sources) => {
+      const newMovies123Promise = newMovies123Extractor.extractUrls(showName, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
         return sources;
       });
@@ -120,7 +120,7 @@ export const appRouter = t.router({
       const allPromises = [
         goMoviesPromise,
         primeWirePromise,
-        putLockerPromise,
+        newMovies123Promise,
         superStreamPromise,
         twoEmbedPromise,
         vidSrcPromise,

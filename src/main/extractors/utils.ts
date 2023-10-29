@@ -75,7 +75,6 @@ export const getResolutionFromM3u8 = async (m3u8: string, shouldRequest: boolean
     const parser = new m3u8Parser.Parser();
     parser.push(m3u8Manifest);
     parser.end();
-    console.log(parser.manifest);
 
     const parsedManifest = parser.manifest;
     const highestQuality = parsedManifest.playlists.reduce((prev: any, current: any) => {
