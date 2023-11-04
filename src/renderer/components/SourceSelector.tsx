@@ -9,7 +9,7 @@ interface SourceSelectorProps {
   selectSource: (source: Source) => void;
 }
 
-const SourceButton: FC<{ source: Source; activeSource: Source; selectSource: (source: Source) => void }> = ({ source, activeSource, selectSource }) => {
+const SourceButton: FC<Omit<SourceSelectorProps, 'sources'> & { source: Source }> = ({ source, activeSource, selectSource }) => {
   return (
     <Button p={3} variant="solid" colorScheme="blue" size="lg" onClick={() => selectSource(source)} isDisabled={activeSource.server === source.server}>
       <Flex align="center" justify="center" w="full">

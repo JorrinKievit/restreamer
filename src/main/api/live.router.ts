@@ -4,8 +4,8 @@ import { t } from './trpc-client';
 
 export const liveRouter = t.router({
   getMainPage: t.procedure.query(async () => {
-    const pakTech2Extractor = new CricFoot2Extractor();
-    const sources = await pakTech2Extractor.getMainPage();
+    const cricFoot2Extractor = new CricFoot2Extractor();
+    const sources = await cricFoot2Extractor.getMainPage();
 
     return sources;
   }),
@@ -17,8 +17,8 @@ export const liveRouter = t.router({
       })
     )
     .query(async (req) => {
-      const pakTech2Extractor = new CricFoot2Extractor();
-      const source = await pakTech2Extractor.extractUrl(req.input.url);
+      const cricFoot2Extractor = new CricFoot2Extractor();
+      const source = await cricFoot2Extractor.extractUrls(req.input.url);
 
       return source;
     }),

@@ -8,7 +8,7 @@ import { Subtitle } from 'types/sources';
 import SyncSubtitlesIcon from 'renderer/assets/sync-subtitles-button.png';
 import SubtitlesIcon from 'renderer/assets/subtitle-button.png';
 import NextEpisodeIcon from 'renderer/assets/next-episode-button.png';
-import { Tooltip, TooltipContentProps } from '@vidstack/react';
+import { Tooltip, TooltipPlacement } from '@vidstack/react';
 
 export const getSubtitlePlayerLanguage = (subtitle: Subtitle, languageCounts: { [key: string]: number }) => {
   let language = OPENSUBTITLES_LANGUAGES.find((lang) => lang.language_name.includes(subtitle.label.split(' ')[0].trim()));
@@ -38,7 +38,7 @@ const PlayerButton: FC<{
   eventName: string;
   icon: string;
   tooltipName: string;
-  placement: TooltipContentProps['placement'];
+  placement: TooltipPlacement;
 }> = ({ id, eventName, icon, tooltipName, placement }) => {
   return (
     <Tooltip.Root showDelay={100}>

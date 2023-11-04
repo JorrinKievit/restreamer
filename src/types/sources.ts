@@ -21,19 +21,6 @@ export interface Source {
   isVlc?: boolean;
 }
 
-export interface LiveSource {
-  title: string;
-  imgSrc: string;
-  url: string;
-}
-
-export interface LiveSourceUrl {
-  name: string;
-  url: string;
-  requiresProxy: boolean;
-  referer?: string;
-}
-
 export interface LiveMainPage {
   imgSrc: string;
   title: string;

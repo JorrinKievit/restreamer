@@ -1,9 +1,10 @@
 import { load } from 'cheerio';
 import log from 'electron-log';
-import { LiveMainPage, LiveSourceUrl } from 'types/sources';
+import { LiveMainPage, Source } from 'types/sources';
 import vm, { runInContext } from 'vm';
 import { axiosInstance } from '../../utils/axios';
 import { ILiveExtractor } from '../types';
+import { getResolutionFromM3u8 } from '../utils';
 
 export class CricFoot2Extractor implements ILiveExtractor {
   name = 'CricFoot2';
@@ -33,47 +34,54 @@ export class CricFoot2Extractor implements ILiveExtractor {
     return items;
   }
 
-  async extractUrl(url: string): Promise<LiveSourceUrl | undefined> {
+  async extractUrls(url: string): Promise<Source[]> {
     try {
       this.logger.debug(`extracting url: ${url}`);
       const res = await axiosInstance.get(url);
       const $ = load(res.data);
-      const script = JSON.parse($("script[type='application/ld+json']").html()!);
-      const liveUrl = script.itemListElement.find((item: any) => item.name === 'TV').item;
+      const link = $("a:contains('Go Watch Links')").attr('href');
+      if (!link) throw new Error('No link found');
+      const watchLinksPage = await axiosInstance.get(link);
+      const watchLInksPage$ = load(watchLinksPage.data);
+      const streamLinks = watchLInksPage$("a:contains('Stream')")
+        .map((i, el) => watchLInksPage$(el).attr('href'))
+        .get();
+      this.logger.debug(`streamLinks: ${streamLinks}`);
+      const streamLinkPromises = streamLinks.map(async (streamLink) => {
+        const streamPage = await axiosInstance.get(streamLink);
+        const streamPage$ = load(streamPage.data);
+        return streamPage$('iframe').attr('src');
+      });
+      const streamPageLinks = [...new Set((await Promise.all(streamLinkPromises)).filter((l): l is string => l !== undefined))];
+      this.logger.debug(`streamPageLinks: ${streamPageLinks}`);
+      const streamPageLinkPromises = streamPageLinks.map(async (streamPageLink) => {
+        if (streamPageLink.includes('tvpclive.com')) {
+          return this.extractTVpLiveUrl(streamPageLink);
+        }
+        if (streamPageLink.includes('crichd.vip')) {
+          return this.extractCrichdUrl(streamPageLink);
+        }
+        if (streamPageLink.includes('dlhd.sx')) {
+          return this.extractDlhd(streamPageLink);
+        }
+        if (streamPageLink.includes('daddylivehd.online')) {
+          return this.extractDaddyLiveHD(streamPageLink);
+        }
+        if (streamPageLink.includes('1stream.buzz')) {
+          return this.extract1StreamBuzz(streamPageLink);
+        }
+      });
+      const streamPageLinkResults = (await Promise.all(streamPageLinkPromises)).filter((l): l is Source => l !== undefined);
+      this.logger.debug(streamPageLinkResults);
 
-      const liveUrlRes = await axiosInstance.get(liveUrl);
-      const $1 = load(liveUrlRes.data);
-      const iframeUrl = $1('iframe').attr('src');
-      if (!iframeUrl) throw new Error('No iframe url found');
-      this.logger.debug(`iframeUrl: ${iframeUrl}`);
-
-      let finalLiveUrl: LiveSourceUrl | undefined;
-      if (iframeUrl.includes('tvpclive.com')) {
-        finalLiveUrl = await this.extractTVpLiveUrl(iframeUrl);
-      }
-      if (iframeUrl.includes('crichd.vip')) {
-        finalLiveUrl = await this.extractCrichdUrl(iframeUrl);
-      }
-      if (iframeUrl.includes('dlhd.sx')) {
-        finalLiveUrl = await this.extractDlhd(iframeUrl);
-      }
-      if (iframeUrl.includes('daddylivehd.online')) {
-        finalLiveUrl = await this.extractDaddyLiveHD(iframeUrl);
-      }
-      if (iframeUrl.includes('1stream.buzz')) {
-        finalLiveUrl = await this.extract1StreamBuzz(iframeUrl);
-      }
-
-      if (!finalLiveUrl) throw new Error('No live url found');
-
-      return finalLiveUrl;
+      return streamPageLinkResults;
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);
-      return undefined;
+      return [];
     }
   }
 
-  private extractTVpLiveUrl = async (url: string): Promise<LiveSourceUrl | undefined> => {
+  private extractTVpLiveUrl = async (url: string): Promise<Source | undefined> => {
     const res = await axiosInstance.get(url);
     const $ = load(res.data);
     const iframeUrl = $('iframe').attr('src');
@@ -88,15 +96,19 @@ export class CricFoot2Extractor implements ILiveExtractor {
     const matches = [...iframeRes.data.matchAll(regex)];
     const finalLiveUrl = matches.map((match) => match[1])[1];
 
+    const quality = await getResolutionFromM3u8(finalLiveUrl, true);
+
     return {
-      name: this.name,
+      server: 'TVPLive',
       url: finalLiveUrl,
-      requiresProxy: true,
+      quality,
+      type: 'm3u8',
+      proxyType: 'm3u8',
       referer: 'https://ddolahdplay.xyz/',
     };
   };
 
-  private async extractCrichdUrl(url: string): Promise<LiveSourceUrl | undefined> {
+  private async extractCrichdUrl(url: string): Promise<Source | undefined> {
     const res = await axiosInstance.get(url);
     const regex = /fid="([^"]+)"/;
     const fid = res.data.match(regex)[1];
@@ -110,15 +122,19 @@ export class CricFoot2Extractor implements ILiveExtractor {
       .join('')
       .replace('////', '//');
 
+    const quality = await getResolutionFromM3u8(finalUrl, true);
+
     return {
-      name: this.name,
+      server: 'Crichd',
       url: finalUrl,
-      requiresProxy: true,
+      quality,
+      type: 'm3u8',
+      proxyType: 'm3u8',
       referer: 'https://lovesomecommunity.com/',
     };
   }
 
-  private async extractDlhd(url: string): Promise<LiveSourceUrl | undefined> {
+  private async extractDlhd(url: string): Promise<Source | undefined> {
     const res = await axiosInstance.get(url, {
       headers: {
         Referer: 'https://dlhd.sx/',
@@ -135,10 +151,20 @@ export class CricFoot2Extractor implements ILiveExtractor {
     const source = this.getNonCommentedSource(iframeRes.data);
     if (!source) throw new Error('No source url found');
 
+    const m3u8File = await axiosInstance.get(source, {
+      headers: {
+        Referer: 'https://dlhd.sx/',
+      },
+    });
+    if (m3u8File.data.includes('Unable to find the specified')) throw new Error('Unable to find the specified');
+    const quality = await getResolutionFromM3u8(m3u8File.data, false);
+
     return {
-      name: this.name,
+      server: 'Dlhd',
       url: source,
-      requiresProxy: true,
+      quality,
+      type: 'm3u8',
+      proxyType: 'm3u8',
       referer: 'https://superntuplay.xyz/',
     };
   }
@@ -154,7 +180,7 @@ export class CricFoot2Extractor implements ILiveExtractor {
     return source;
   }
 
-  private async extractDaddyLiveHD(url: string): Promise<LiveSourceUrl | undefined> {
+  private async extractDaddyLiveHD(url: string): Promise<Source | undefined> {
     const res = await axiosInstance.get(url, {
       headers: {
         Referer: 'https://daddylivehd.com/',
@@ -164,15 +190,19 @@ export class CricFoot2Extractor implements ILiveExtractor {
     const iframeUrl = $('iframe').attr('src');
     if (!iframeUrl) throw new Error('No iframe url found');
     const source = await this.extractOlaliveHdPlay(iframeUrl);
+    const quality = await getResolutionFromM3u8(source, true);
+
     return {
-      name: this.name,
+      server: 'DaddyLiveHD',
       url: source,
-      requiresProxy: true,
+      quality,
+      type: 'm3u8',
+      proxyType: 'm3u8',
       referer: 'https://livehdplay.ru/',
     };
   }
 
-  private async extract1StreamBuzz(url: string): Promise<LiveSourceUrl | undefined> {
+  private async extract1StreamBuzz(url: string): Promise<Source | undefined> {
     const res = await axiosInstance.get(url, {
       headers: {
         Referer: this.mainPageUrl,
@@ -182,10 +212,13 @@ export class CricFoot2Extractor implements ILiveExtractor {
     const iframeUrl = $('iframe').attr('src');
     if (!iframeUrl) throw new Error('No iframe url found');
     const source = await this.extractAbolishStand(iframeUrl);
+    const quality = await getResolutionFromM3u8(source, true);
     return {
-      name: this.name,
+      server: '1StreamBuzz',
       url: source,
-      requiresProxy: true,
+      quality,
+      type: 'm3u8',
+      proxyType: 'm3u8',
       referer: 'https://abolishstand.net/',
     };
   }

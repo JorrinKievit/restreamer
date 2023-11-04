@@ -1,5 +1,5 @@
 import { LogFunctions } from 'electron-log';
-import { LiveSource, LiveSourceUrl, Source } from 'types/sources';
+import { LiveMainPage, Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 
 export interface IExtractor {
@@ -16,6 +16,6 @@ export interface ILiveExtractor {
   logger: LogFunctions;
   mainPageUrl: string;
   referer?: string;
-  getMainPage: () => Promise<LiveSource[]>;
-  extractUrl: (url: string) => Promise<LiveSourceUrl | undefined>;
+  getMainPage: () => Promise<LiveMainPage[]>;
+  extractUrls: (url: string) => Promise<Source[]>;
 }
