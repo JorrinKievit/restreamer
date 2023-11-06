@@ -32,9 +32,9 @@ const configuration: webpack.Configuration = {
   module: webpackConfigRendererDev.module,
 
   entry: {
-    renderer: Object.keys(dependencies || {}).filter(
-      (it) => it !== 'electron-trpc'
-    ),
+    renderer: Object.keys(dependencies || {})
+      .filter((it) => it !== 'electron-trpc')
+      .filter((it) => it !== '@warren-bank/hls-proxy'),
   },
 
   output: {
