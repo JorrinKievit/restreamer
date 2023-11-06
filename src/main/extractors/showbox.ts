@@ -88,7 +88,6 @@ export class ShowBoxExtractor implements IExtractor {
             url: febBoxData.url,
             quality,
             type: 'm3u8',
-            proxyType: 'none',
             subtitles: febBoxData.subtitles,
           },
         ];

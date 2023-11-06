@@ -10,7 +10,8 @@ export const proxyRouter = t.router({
       z.object({
         type: z.enum(['mp4', 'm3u8', 'mkv']),
         referer: z.string().optional(),
-        origin: z.string().optional(),
+        origin: z.string().optional().nullable(),
+        userAgent: z.string().optional(),
       })
     )
     .mutation(({ input }) => {
@@ -18,7 +19,11 @@ export const proxyRouter = t.router({
         startProxy();
         return;
       }
-      startM3U8Proxy(input.referer, input.origin);
+      startM3U8Proxy({
+        referer: input.referer,
+        origin: input.origin,
+        userAgent: input.userAgent,
+      });
     }),
   stop: t.procedure.mutation(() => {
     stopProxy();

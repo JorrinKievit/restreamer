@@ -102,12 +102,12 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const vegaMoviesPromise = vegaMoviesExtractor.extractUrls(showName, type).then((sources) => {
+      const vegaMoviesPromise = vegaMoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
         return sources;
       });
 
-      const uhdmoviesPromise = uhdmoviesExtractor.extractUrls(showName, type).then((sources) => {
+      const uhdmoviesPromise = uhdmoviesExtractor.extractUrls(showName, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
         return sources;
       });

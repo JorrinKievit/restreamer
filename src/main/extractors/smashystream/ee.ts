@@ -30,7 +30,6 @@ export class SmashyEeMovieExtractor implements IExtractor {
         url: file,
         type: 'mp4',
         quality: 'Unknown',
-        proxyType: 'none',
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

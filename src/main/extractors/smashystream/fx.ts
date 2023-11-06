@@ -24,11 +24,13 @@ export class SmashyFxExtractor implements IExtractor {
 
       return {
         server: this.name,
-        referer: this.referer,
         url: file,
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: 'Unknown',
-        proxyType: file.includes('.m3u8') ? 'm3u8' : 'mp4',
+        proxySettings: {
+          type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
+          referer: this.referer,
+        },
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

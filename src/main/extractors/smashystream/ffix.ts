@@ -31,7 +31,6 @@ export class SmashyFFixExtractor implements IExtractor {
         url: fileUrl.split(']')[1],
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: getResolutionName(parseInt(fileUrl.split(']')[0].split('[')[1], 10)),
-        proxyType: 'none',
         subtitles: vttArray
           .filter((it: any) => !it.link.includes('thumbnails'))
           .map((subtitle: any) => ({

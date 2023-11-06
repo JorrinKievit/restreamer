@@ -112,12 +112,8 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
   }, [selectedSource]);
 
   useEffect(() => {
-    if (selectedSource && selectedSource?.proxyType !== 'none') {
-      startProxy({
-        type: selectedSource.type,
-        referer: selectedSource.referer,
-        origin: selectedSource.origin,
-      });
+    if (selectedSource && selectedSource?.proxySettings) {
+      startProxy(selectedSource.proxySettings);
     } else {
       stopProxy();
     }
@@ -143,10 +139,10 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     if (isM3U8String()) {
       url = URL.createObjectURL(new Blob([url]));
     }
-    if (selectedSource.proxyType === 'm3u8') {
-      return getM3U8ProxyUrl(url, selectedSource.referer);
+    if (selectedSource.proxySettings?.type === 'm3u8') {
+      return getM3U8ProxyUrl(url, selectedSource.proxySettings.referer);
     }
-    if (selectedSource.proxyType === 'mp4') {
+    if (selectedSource.proxySettings?.type === 'mp4') {
       return getMP4ProxyUrl(url);
     }
     return url;

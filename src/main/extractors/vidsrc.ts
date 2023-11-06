@@ -2,6 +2,7 @@ import { load } from 'cheerio';
 import { ContentType } from 'types/tmbd';
 import { Source, Subtitle } from 'types/sources';
 import log from 'electron-log';
+import fs from 'fs';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './types';
 
@@ -56,6 +57,8 @@ export class VidSrcExtractor implements IExtractor {
       const finalUrl = Buffer.from(match, 'base64').toString();
       this.logger.debug(finalUrl);
 
+      if (!finalUrl.includes('list.m3u8')) throw new Error('Something went wrong during url decoding');
+
       const subtitleData = await axiosInstance.get(`${this.subtitleUrl}${imdbId}`, {
         headers: {
           'X-User-Agent': 'trailers.to-UA',
@@ -83,8 +86,6 @@ export class VidSrcExtractor implements IExtractor {
           url: finalUrl,
           type: 'm3u8',
           quality: 'Unknown',
-          proxyType: 'none',
-          referer: this.referer,
           subtitles: finalSubtitles,
         },
       ];

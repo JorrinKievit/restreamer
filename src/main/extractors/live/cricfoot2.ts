@@ -13,6 +13,8 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
   mainPageUrl = 'https://cricfoot2.com/';
 
+  referer = 'https://paktech2.com/';
+
   async getMainPage(): Promise<LiveMainPage[]> {
     const res = await axiosInstance.get(`${this.mainPageUrl}/sports_tv.php`);
     const $ = load(res.data);
@@ -103,8 +105,10 @@ export class CricFoot2Extractor implements ILiveExtractor {
       url: finalLiveUrl,
       quality,
       type: 'm3u8',
-      proxyType: 'm3u8',
-      referer: 'https://ddolahdplay.xyz/',
+      proxySettings: {
+        type: 'm3u8',
+        referer: 'https://ddolahdplay.xyz/',
+      },
     };
   };
 
@@ -129,19 +133,22 @@ export class CricFoot2Extractor implements ILiveExtractor {
       url: finalUrl,
       quality,
       type: 'm3u8',
-      proxyType: 'm3u8',
-      referer: 'https://lovesomecommunity.com/',
+      proxySettings: {
+        type: 'm3u8',
+        referer: 'https://lovesomecommunity.com/',
+      },
     };
   }
 
   private async extractDlhd(url: string): Promise<Source | undefined> {
     const res = await axiosInstance.get(url, {
       headers: {
-        Referer: 'https://dlhd.sx/',
+        Referer: this.referer,
       },
     });
     const $ = load(res.data);
     const iframeUrl = $('iframe').attr('src');
+    this.logger.debug(iframeUrl);
     if (!iframeUrl) throw new Error('No iframe url found');
     const iframeRes = await axiosInstance.get(iframeUrl, {
       headers: {
@@ -149,23 +156,30 @@ export class CricFoot2Extractor implements ILiveExtractor {
       },
     });
     const source = this.getNonCommentedSource(iframeRes.data);
+    this.logger.debug(source);
     if (!source) throw new Error('No source url found');
 
     const m3u8File = await axiosInstance.get(source, {
       headers: {
-        Referer: 'https://dlhd.sx/',
+        Referer: 'https://weblivehdplay.ru/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0',
       },
     });
+    this.logger.debug(m3u8File.data);
     if (m3u8File.data.includes('Unable to find the specified')) throw new Error('Unable to find the specified');
     const quality = await getResolutionFromM3u8(m3u8File.data, false);
 
     return {
       server: 'Dlhd',
-      url: source,
+      url: m3u8File.request.res.responseUrl,
       quality,
       type: 'm3u8',
-      proxyType: 'm3u8',
-      referer: 'https://superntuplay.xyz/',
+      proxySettings: {
+        type: 'm3u8',
+        origin: 'https://weblivehdplay.ru',
+        referer: 'https://weblivehdplay.ru/',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+      },
     };
   }
 
@@ -197,8 +211,10 @@ export class CricFoot2Extractor implements ILiveExtractor {
       url: source,
       quality,
       type: 'm3u8',
-      proxyType: 'm3u8',
-      referer: 'https://livehdplay.ru/',
+      proxySettings: {
+        type: 'm3u8',
+        referer: 'https://livehdplay.ru/',
+      },
     };
   }
 
@@ -218,8 +234,10 @@ export class CricFoot2Extractor implements ILiveExtractor {
       url: source,
       quality,
       type: 'm3u8',
-      proxyType: 'm3u8',
-      referer: 'https://abolishstand.net/',
+      proxySettings: {
+        type: 'm3u8',
+        referer: 'https://abolishstand.net/',
+      },
     };
   }
 

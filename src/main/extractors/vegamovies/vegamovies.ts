@@ -6,11 +6,12 @@ import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
 import { findResolutionBasedOnFileName } from '../utils';
 import { GoFileExtractor } from './gofile';
+import { extractAioTechnical } from './aiotechnical';
 
 export class VegaMoviesExtractor implements IExtractor {
   name = 'VegaMovies';
 
-  url = 'https://vegamovies.sx/';
+  url = 'https://vegamovies.green/';
 
   logger = log.scope(this.name);
 
@@ -19,7 +20,10 @@ export class VegaMoviesExtractor implements IExtractor {
   private async getTitleUrl(title: string) {
     const res = await axiosInstance.get(`${this.url}search/${encodeURIComponent(title)}`);
     const $ = load(res.data);
-
+    const pageTitle = $('head title').text();
+    if (pageTitle.includes('Download')) {
+      return res.request.res.responseUrl;
+    }
     const pageUrl = $(`.blog-items article`).first().find('a').attr('href');
     return pageUrl;
   }
@@ -29,14 +33,82 @@ export class VegaMoviesExtractor implements IExtractor {
     return title;
   }
 
-  public async extractUrls(title: string, type: ContentType): Promise<Source[]> {
+  private async extractVCloud(url: string): Promise<Source> {
+    const vcloudPage = await axiosInstance.get(url);
+    const vCloudPageCookies = vcloudPage.headers['set-cookie'];
+    const vCloudDownloadLinkRegex = /var\s+url\s*=\s*'([^']+)'/;
+    const vCloudDownloadLink = vcloudPage.data.match(vCloudDownloadLinkRegex)[1];
+    const redirectLink = Buffer.from(vCloudDownloadLink.split('r=')[1], 'base64').toString();
+    this.logger.debug(redirectLink);
+    const redirectLinkData = await axiosInstance.get(redirectLink, {
+      headers: {
+        cookie: vCloudPageCookies,
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36',
+      },
+    });
+    const $redirectLinkData = load(redirectLinkData.data);
+    const finalDownloadLink = $redirectLinkData('.btn.btn-success.btn-lg.h6').attr('href');
+    this.logger.debug(finalDownloadLink);
+    if (!finalDownloadLink) throw new Error('No download link found');
+    if (finalDownloadLink.includes('gofile')) {
+      const source = await this.goFileExtractor.extractUrl(finalDownloadLink);
+      if (!source) throw new Error('Invalid gofile link');
+      return source;
+    }
+    const isValidResponse = await axiosInstance.head(finalDownloadLink, {
+      validateStatus: () => true,
+    });
+    if (isValidResponse.status === 403) throw new Error('Invalid download link');
+    return {
+      server: this.name,
+      url: finalDownloadLink,
+      type: 'mp4',
+      quality: findResolutionBasedOnFileName(finalDownloadLink),
+      isVlc: true,
+    };
+  }
+
+  private async extractFastDl(url: string): Promise<Source> {
+    const redirectPage = await axiosInstance.get(url);
+
+    let fastDlUrl = '';
+    if (redirectPage.data.includes('aiotechnical.com')) {
+      fastDlUrl = await extractAioTechnical(redirectPage.data);
+    }
+    if (!fastDlUrl) throw new Error('FastDL link was not redirected through aiotechnical');
+    const fastDlPage = await axiosInstance.get(fastDlUrl);
+    throw new Error('FastDL link not implemented yet');
+
+    return {
+      server: this.name,
+      url: '',
+      type: 'mp4',
+      quality: findResolutionBasedOnFileName(''),
+      isVlc: true,
+    };
+  }
+
+  public async extractUrls(title: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
-      if (type === 'tv') throw new Error('TV Shows not supported');
       const findMovieUrl = await this.getTitleUrl(this.mapWrongShowTitles(title));
       if (!findMovieUrl) throw new Error('Movie not found');
       const moviePage = await axiosInstance.get(findMovieUrl);
       const moviePage$ = load(moviePage.data);
-      const downloadLink = moviePage$('.dwd-button').last().parent().attr('href');
+
+      let downloadLink = moviePage$('.dwd-button').last().parent().attr('href');
+      if (type === 'tv') {
+        const seasonTitleContainer = moviePage$('h3:has(span) span')
+          .filter((_, el) => moviePage$(el).text().includes(`Season ${season}`))
+          .last();
+        const seasonButtonContainer = seasonTitleContainer.parentsUntil('h3').parent().next();
+        const vCloudUrl = seasonButtonContainer
+          .find('button')
+          .filter((_, el) => moviePage$(el).text().includes('V-Cloud') || moviePage$(el).text().includes('Episode Links') || moviePage$(el).text().includes('Single Episode'))
+          .parent()
+          .attr('href');
+        downloadLink = vCloudUrl;
+      }
+      this.logger.debug(downloadLink);
       const formData = new URLSearchParams();
       formData.append('link', downloadLink!);
       const downloadLinkWithToken = await axiosInstance.post(`${new URL(downloadLink!).origin}/red.php`, formData.toString(), {
@@ -48,43 +120,28 @@ export class VegaMoviesExtractor implements IExtractor {
       const downloadPageUrl = downloadLinkWithToken.data.match(urlRegex)![1];
       const downloadPage = await axiosInstance.get(downloadPageUrl);
       const downloadPage$ = load(downloadPage.data);
-      const vcloudUrl = downloadPage$('a')
+      let vcloudUrl = downloadPage$('a')
         .toArray()
-        .find((a) => downloadPage$(a).attr('href')?.includes('v-cloud.bio'));
+        .find((a) => downloadPage$(a).attr('href')?.includes('v-cloud.bio') || downloadPage$(a).attr('href')?.includes('fast-dl.pro'));
 
-      const vcloudPage = await axiosInstance.get(vcloudUrl!.attribs.href!);
-      const vCloudPageCookies = vcloudPage.headers['set-cookie'];
-      const vCloudDownloadLinkRegex = /var\s+url\s*=\s*'([^']+)'/;
-      const vCloudDownloadLink = vcloudPage.data.match(vCloudDownloadLinkRegex)[1];
-      const redirectLink = Buffer.from(vCloudDownloadLink.split('r=')[1], 'base64').toString();
-      this.logger.debug(redirectLink);
-      const redirectLinkData = await axiosInstance.get(redirectLink, {
-        headers: {
-          cookie: vCloudPageCookies,
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36',
-        },
-      });
-      const $redirectLinkData = load(redirectLinkData.data);
-      const finalDownloadLink = $redirectLinkData('.btn.btn-success.btn-lg.h6').attr('href');
-      if (!finalDownloadLink) throw new Error('No download link found');
-      if (finalDownloadLink.includes('gofile')) {
-        const source = await this.goFileExtractor.extractUrl(finalDownloadLink);
-        return source ? [source] : [];
+      if (type === 'tv') {
+        const episodesContainer = downloadPage$('h4 > span strong span').filter((_, el) => downloadPage$(el).text().includes(`-:Episodes: ${episode}:-`));
+        const episodeButtonContainer = episodesContainer.parent().parent().parent().next();
+        vcloudUrl = episodeButtonContainer
+          .find('a')
+          .toArray()
+          .find((a) => downloadPage$(a).attr('href')?.includes('v-cloud.bio') || downloadPage$(a).attr('href')?.includes('fast-dl.pro'));
       }
-      const isValidResponse = await axiosInstance.head(finalDownloadLink, {
-        validateStatus: () => true,
-      });
-      if (isValidResponse.status === 403) throw new Error('Invalid download link');
-      return [
-        {
-          server: this.name,
-          url: finalDownloadLink,
-          type: 'mp4',
-          proxyType: 'none',
-          quality: findResolutionBasedOnFileName(finalDownloadLink),
-          isVlc: true,
-        },
-      ];
+      this.logger.debug(vcloudUrl?.attribs.href);
+
+      if (vcloudUrl?.attribs.href.includes('v-cloud.bio')) {
+        return [await this.extractVCloud(vcloudUrl.attribs.href)];
+      }
+      if (vcloudUrl?.attribs.href.includes('fast-dl.pro')) {
+        return [await this.extractFastDl(vcloudUrl.attribs.href)];
+      }
+
+      throw new Error('No download link found');
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);
       return [];

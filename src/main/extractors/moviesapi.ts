@@ -11,9 +11,9 @@ import { getResolutionFromM3u8 } from './utils';
 export class MoviesApiExtractor implements IExtractor {
   logger = log.scope('MoviesApi');
 
-  url = 'https://ww1.moviesapi.club/';
+  url = 'https://moviesapi.club/';
 
-  referer = 'https://moviesapi.club/';
+  referer = 'https://w1.moviesapi.club/';
 
   private getKey(stringData: string) {
     const sandbox = {
@@ -35,7 +35,7 @@ export class MoviesApiExtractor implements IExtractor {
 
       const res = await axios.get(url, {
         headers: {
-          referer: 'https://pressplay.top',
+          referer: this.referer,
         },
       });
       const res$ = load(res.data);
@@ -46,7 +46,14 @@ export class MoviesApiExtractor implements IExtractor {
 
       const res2 = await axios.get(iframeUrl, {
         headers: {
-          referer: url,
+          referer: 'https://moviesapi.club/',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Alt-Used': 'w1.moviesapi.club',
+          Host: 'w1.moviesapi.club',
+          TE: 'Trailers',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0',
         },
       });
       const res2$ = load(res2.data);
@@ -55,7 +62,7 @@ export class MoviesApiExtractor implements IExtractor {
       const key = this.getKey(stringData);
       this.logger.debug(key);
 
-      const regex = /JScripts\s*=\s*'([^']*)'/;
+      const regex = /JScript\s*=\s*'([^']*)'/;
       const base64EncryptedData = regex.exec(res2.data)![1];
       const base64DecryptedData = JSON.parse(base64EncryptedData);
       this.logger.debug(base64DecryptedData);
@@ -67,7 +74,7 @@ export class MoviesApiExtractor implements IExtractor {
       decipher.setAutoPadding(false);
 
       const encryptedBuffer = Buffer.from(base64DecryptedData.ct, 'base64');
-      const decryptedBuffer = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
+      const decryptedBuffer = Buffer.concat([decipher.update(Buffer.from(base64EncryptedData, 'base64')), decipher.final()]);
 
       const decryptedString = decryptedBuffer.toString('utf-8');
       this.logger.debug(decryptedString);
@@ -83,7 +90,6 @@ export class MoviesApiExtractor implements IExtractor {
       return [
         {
           server: 'MoviesApi',
-          referer: this.referer,
           url: sources[0].file,
           type: sources[0].type === 'hls' ? 'm3u8' : 'mp4',
           quality: highestQuality,
@@ -93,7 +99,10 @@ export class MoviesApiExtractor implements IExtractor {
             kind: it.kind,
           })),
           thumbnails: thumbnails[0]?.file,
-          proxyType: 'm3u8',
+          proxySettings: {
+            type: 'm3u8',
+            referer: this.referer,
+          },
         },
       ];
     } catch (err) {

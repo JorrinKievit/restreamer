@@ -97,7 +97,6 @@ export class RabbitStreamExtractor implements IExtractor {
         url: sourceUrl,
         type: isHls ? 'm3u8' : 'mp4',
         quality: getResolutionName(highestQuality.attributes.RESOLUTION.height),
-        proxyType: 'none',
         subtitles,
       };
     } catch (error) {

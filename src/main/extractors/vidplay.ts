@@ -57,9 +57,6 @@ export class VidPlayExtractor implements IExtractor {
         type: 'm3u8',
         quality,
         thumbnails: thumbnail?.file,
-        proxyType: 'none',
-        referer: this.referer,
-        origin: this.referer,
       };
     } catch (error) {
       if (error instanceof Error) this.logger.error(error.message);

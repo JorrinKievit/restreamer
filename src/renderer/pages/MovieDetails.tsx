@@ -144,14 +144,14 @@ const MovieDetails: FC = () => {
             activeSource={selectedSource}
             selectSource={async (source) => {
               if (source.isVlc) {
-                if (source.proxyType === 'none') {
+                if (!source.proxySettings) {
                   launchVlc({ url: source.url });
-                } else if (source.proxyType === 'mp4') {
+                } else if (source.proxySettings?.type === 'mp4') {
                   await startProxy({ type: 'mp4' });
                   launchVlc({ url: getMP4ProxyUrl(source.url) });
                 } else {
-                  await startProxy({ type: 'm3u8', referer: source.referer });
-                  launchVlc({ url: getM3U8ProxyUrl(source.url, source.referer) });
+                  await startProxy({ type: 'm3u8', referer: source.proxySettings.referer });
+                  launchVlc({ url: getM3U8ProxyUrl(source.url, source.proxySettings.referer) });
                 }
               }
               setSelectedSource(source);

@@ -161,7 +161,6 @@ export class SuperStreamExtractor implements IExtractor {
           server: 'SuperStream',
           type: 'mp4',
           quality: link.real_quality as Source['quality'],
-          proxyType: 'none',
           subtitles: subtitleDataResponse.data.list.flatMap((subtitleList) => {
             const subtitles = subtitleList.subtitles.slice(0, 10);
             return subtitles.map((superStreamSubtitle) => ({

@@ -28,7 +28,6 @@ export class EmbedsitoExtractor implements IExtractor {
         url: finalUrl.headers.location!,
         type: fileType === 'mp4' ? 'mp4' : 'm3u8',
         quality,
-        proxyType: 'none',
       };
     } catch (error) {
       if (error instanceof Error) this.logger.error(error.message);

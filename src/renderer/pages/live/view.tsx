@@ -54,12 +54,8 @@ const LiveViewPage: FC = () => {
   }, [isLoading, data]);
 
   useEffect(() => {
-    if (selectedSource && selectedSource?.proxyType !== 'none') {
-      startProxy({
-        type: selectedSource.type,
-        referer: selectedSource.referer,
-        origin: selectedSource.origin,
-      });
+    if (selectedSource && selectedSource.proxySettings) {
+      startProxy(selectedSource.proxySettings);
     } else {
       stopProxy();
     }
@@ -74,24 +70,28 @@ const LiveViewPage: FC = () => {
     };
   }, []);
 
+  console.log(selectedSource);
+
   return (
     <Flex flexDirection="column" gap={4}>
-      <MediaPlayer
-        ref={player}
-        src={{ src: selectedSource ? getM3U8ProxyUrl(selectedSource.url, selectedSource.referer) : '', type: 'application/x-mpegurl' }}
-        aspectRatio="16/9"
-        crossorigin="anonymous"
-        autoplay
-        streamType="live"
-        volume={player.current ? playerVolume : 0}
-        onVolumeChange={(e) => {
-          if (!e.volume) return;
-          setPlayerVolume(e.volume);
-        }}
-      >
-        <MediaProvider />
-        <DefaultVideoLayout icons={defaultLayoutIcons} />
-      </MediaPlayer>
+      {selectedSource && (
+        <MediaPlayer
+          ref={player}
+          src={{ src: selectedSource.proxySettings ? getM3U8ProxyUrl(selectedSource.url, selectedSource.proxySettings?.referer) : selectedSource.url, type: 'application/x-mpegurl' }}
+          aspectRatio="16/9"
+          crossorigin="anonymous"
+          autoplay
+          streamType="live"
+          // volume={playerVolume}
+          // onVolumeChange={(e) => {
+          //   if (!e.volume) return;
+          //   setPlayerVolume(e.volume);
+          // }}
+        >
+          <MediaProvider />
+          <DefaultVideoLayout icons={defaultLayoutIcons} />
+        </MediaPlayer>
+      )}
       {selectedSource && <SourceSelector sources={sources} activeSource={selectedSource} selectSource={setSelectedSource} />}
     </Flex>
   );

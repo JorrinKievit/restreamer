@@ -41,7 +41,9 @@ export class GoFileExtractor implements IExtractor {
           server: 'VegaMovies',
           url: `${goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].link}?accountToken=${accountToken}`,
           type: 'mp4',
-          proxyType: 'mp4',
+          proxySettings: {
+            type: 'mp4',
+          },
           quality: findResolutionBasedOnFileName(goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].name),
           isVlc: true,
         };

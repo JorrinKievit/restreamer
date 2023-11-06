@@ -51,7 +51,6 @@ export class SmashyEmsExtractor implements IExtractor {
         url: fileUrl,
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality,
-        proxyType: 'none',
         subtitles: subtitleArray,
       };
     } catch (err) {

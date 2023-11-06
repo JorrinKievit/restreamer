@@ -153,7 +153,6 @@ export class GoMoviesExtractor implements IExtractor {
             label: subtitle.label,
             kind: 'captions',
           })),
-          proxyType: 'none',
         },
       ];
     } catch (e) {

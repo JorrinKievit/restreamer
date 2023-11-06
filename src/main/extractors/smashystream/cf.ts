@@ -29,7 +29,6 @@ export class SmashyCfExtractor implements IExtractor {
         url: file,
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: 'Unknown',
-        proxyType: 'none',
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

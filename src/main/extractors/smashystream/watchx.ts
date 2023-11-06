@@ -51,7 +51,6 @@ export class SmashyWatchXExtractor implements IExtractor {
           kind: it.kind,
         })),
         thumbnails: thumbnails[0]?.file,
-        proxyType: 'none',
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

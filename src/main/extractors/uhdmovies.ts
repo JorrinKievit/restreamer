@@ -9,7 +9,7 @@ import { IExtractor } from './types';
 export class UHDMoviesExtractor implements IExtractor {
   public name = 'UHDMovies';
 
-  public url = 'https://uhdmovies.store';
+  public url = 'https://uhdmovies.dev';
 
   public logger = log.scope(this.name);
 
@@ -77,18 +77,20 @@ export class UHDMoviesExtractor implements IExtractor {
     return apiData.data.url;
   }
 
-  public async extractUrls(showName: string, type: ContentType): Promise<Source[]> {
+  public async extractUrls(showName: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
-      if (type === 'tv') throw new Error('TV Shows are not supported');
       const searchResult = await axiosInstance.get(`${this.url}?s=${encodeURIComponent(showName)}`);
       const searchResult$ = load(searchResult.data);
       const detailLink = searchResult$('.row.gridlove-posts .layout-masonry article:first-child .box-inner-p a').attr('href');
-      if (!detailLink) throw new Error('Movie not found');
+      if (!detailLink) throw new Error('Show page not found');
       const detailResult = await axiosInstance.get(detailLink);
       const detailResult$ = load(detailResult.data);
-      let driveLink = detailResult$(`a[title="Download From Google Drive"]`).attr('href');
-      if (!driveLink) throw new Error('Google Drive link not found');
 
+      let driveLink = detailResult$(`a[title="Download From Google Drive"]`).attr('href');
+      if (type === 'tv' && season && episode) {
+        // TODO: Extract tv show
+      }
+      if (!driveLink) throw new Error('Drive link not found');
       if (driveLink.includes('oddfirm')) {
         const driveLeechUrl = await this.extractOddFirmDriveLeechUrl(driveLink);
         if (!driveLeechUrl) throw new Error('Drive leech link not found in oddfirm');
@@ -104,7 +106,6 @@ export class UHDMoviesExtractor implements IExtractor {
           url: finalUrl,
           quality: '4K',
           type: 'mkv',
-          proxyType: 'none',
           isVlc: true,
         },
       ];

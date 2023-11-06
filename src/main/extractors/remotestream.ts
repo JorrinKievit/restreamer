@@ -1,6 +1,7 @@
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
+import fs from 'fs';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
@@ -22,8 +23,9 @@ export class RemoteStreamExtractor implements IExtractor {
       const fileRegex = /"file":"(.*?)"/;
       const match = res.data.match(fileRegex);
 
-      if (!match) return [];
+      if (!match || !match[1]) throw new Error('No match found');
 
+      this.logger.debug(match[1]);
       const quality = await getResolutionFromM3u8(match[1], true, {
         referer: this.referer,
       });
@@ -31,11 +33,13 @@ export class RemoteStreamExtractor implements IExtractor {
       return [
         {
           server: this.name,
-          referer: this.referer,
           url: match[1],
           type: 'm3u8',
           quality,
-          proxyType: 'm3u8',
+          proxySettings: {
+            type: 'm3u8',
+            referer: this.referer,
+          },
         },
       ];
     } catch (error) {
