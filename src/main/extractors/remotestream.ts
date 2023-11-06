@@ -38,7 +38,9 @@ export class RemoteStreamExtractor implements IExtractor {
           quality,
           proxySettings: {
             type: 'm3u8',
+            origin: this.referer,
             referer: this.referer,
+            userAgent: 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36',
           },
         },
       ];

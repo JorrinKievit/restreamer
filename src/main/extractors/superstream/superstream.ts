@@ -27,7 +27,7 @@ export class SuperStreamExtractor implements IExtractor {
 
   private secondAppid: string = Buffer.from('Y29tLm1vdmllYm94cHJvLmFuZHJvaWQ=', 'base64').toString();
 
-  private version: string = '14.7';
+  private version: string = '11.5';
 
   private versionCode: string = '160';
 
@@ -112,7 +112,7 @@ export class SuperStreamExtractor implements IExtractor {
       const searchData = {
         ...this.baseData,
         appid: this.secondAppid,
-        module: 'Search3',
+        module: 'Search4',
         page: '1',
         keyword: searchQuery,
         pagelimit: '1',
@@ -120,7 +120,7 @@ export class SuperStreamExtractor implements IExtractor {
         type: 'all',
       };
       const searchDataResponse = await this.executeApiCall<SearchResponse>(searchData, false);
-      const superStreamId = searchDataResponse.data[0].id;
+      const superStreamId = searchDataResponse.data.list[0].id;
 
       const linkData = {
         ...this.baseData,

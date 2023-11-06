@@ -73,7 +73,8 @@ export class UHDMoviesExtractor implements IExtractor {
         'x-token': new URL(url).hostname,
       },
     });
-    if (apiData.data.error) throw new Error(apiData.data.error);
+    this.logger.debug(apiData.data);
+    if (apiData.data.error) throw new Error(apiData.data.message);
     return apiData.data.url;
   }
 

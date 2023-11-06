@@ -82,11 +82,6 @@ export const appRouter = t.router({
         return sources;
       });
 
-      const remoteStreamPromise = remoteStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
-        ee.emit('sources', sources);
-        return sources;
-      });
-
       const smashyStreamPromise = smashyStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
         ee.emit('sources', sources);
         return sources;
@@ -124,7 +119,6 @@ export const appRouter = t.router({
         superStreamPromise,
         twoEmbedPromise,
         vidSrcPromise,
-        remoteStreamPromise,
         smashyStreamPromise,
         moviesApipromise,
         vidSrcToPromise,

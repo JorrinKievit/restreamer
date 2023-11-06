@@ -33,7 +33,9 @@ export interface SearchDataResponse {
 export interface SearchResponse {
   code: number;
   msg: string;
-  data: SearchDataResponse[];
+  data: {
+    list: SearchDataResponse[];
+  };
 }
 
 export interface List {

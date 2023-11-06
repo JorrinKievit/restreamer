@@ -11,7 +11,7 @@ import { extractAioTechnical } from './aiotechnical';
 export class VegaMoviesExtractor implements IExtractor {
   name = 'VegaMovies';
 
-  url = 'https://vegamovies.green/';
+  url = 'https://vegamovies.care/';
 
   logger = log.scope(this.name);
 
@@ -35,19 +35,26 @@ export class VegaMoviesExtractor implements IExtractor {
 
   private async extractVCloud(url: string): Promise<Source> {
     const vcloudPage = await axiosInstance.get(url);
+    const vCloudPage$ = load(vcloudPage.data);
     const vCloudPageCookies = vcloudPage.headers['set-cookie'];
-    const vCloudDownloadLinkRegex = /var\s+url\s*=\s*'([^']+)'/;
-    const vCloudDownloadLink = vcloudPage.data.match(vCloudDownloadLinkRegex)[1];
-    const redirectLink = Buffer.from(vCloudDownloadLink.split('r=')[1], 'base64').toString();
-    this.logger.debug(redirectLink);
-    const redirectLinkData = await axiosInstance.get(redirectLink, {
+
+    let vCloudDownloadLink = vCloudPage$('a.btn.btn-primary.h6').attr('href');
+    if (!vCloudDownloadLink) {
+      const redirectLinkRegex = /var\s+url\s*=\s*'([^']+)'/;
+      const redirectLinkData = vcloudPage.data.match(redirectLinkRegex)[1];
+      vCloudDownloadLink = Buffer.from(redirectLinkData.split('r=')[1], 'base64').toString();
+    }
+    const redirectLinkData = await axiosInstance.get(vCloudDownloadLink, {
       headers: {
         cookie: vCloudPageCookies,
         'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36',
       },
     });
     const $redirectLinkData = load(redirectLinkData.data);
-    const finalDownloadLink = $redirectLinkData('.btn.btn-success.btn-lg.h6').attr('href');
+    let finalDownloadLink = $redirectLinkData('a.btn-success.btn-lg.h6').attr('href');
+    if (!finalDownloadLink) {
+      finalDownloadLink = $redirectLinkData('.btn.btn-success.btn-lg.h6').attr('href');
+    }
     this.logger.debug(finalDownloadLink);
     if (!finalDownloadLink) throw new Error('No download link found');
     if (finalDownloadLink.includes('gofile')) {
