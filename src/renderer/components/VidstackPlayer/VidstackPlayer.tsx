@@ -143,7 +143,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
       return getM3U8ProxyUrl(url, selectedSource.proxySettings.referer);
     }
     if (selectedSource.proxySettings?.type === 'mp4') {
-      return getMP4ProxyUrl(url);
+      return getMP4ProxyUrl(url, selectedSource.proxySettings.referer);
     }
     return url;
   };

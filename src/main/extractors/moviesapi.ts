@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 import log from 'electron-log';
 import { ContentType } from 'types/tmbd';
@@ -7,6 +6,7 @@ import { Source } from 'types/sources';
 import vm from 'vm';
 import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
+import { axiosInstance } from '../utils/axios';
 
 export class MoviesApiExtractor implements IExtractor {
   logger = log.scope('MoviesApi');
@@ -33,7 +33,7 @@ export class MoviesApiExtractor implements IExtractor {
     try {
       const url = type === 'movie' ? `${this.url}movie/${tmdbId}` : `${this.url}tv/${tmdbId}-${season}-${episode}`;
 
-      const res = await axios.get(url, {
+      const res = await axiosInstance.get(url, {
         headers: {
           referer: this.referer,
         },
@@ -44,7 +44,7 @@ export class MoviesApiExtractor implements IExtractor {
 
       if (!iframeUrl) throw new Error('No iframe url found');
 
-      const res2 = await axios.get(iframeUrl, {
+      const res2 = await axiosInstance.get(iframeUrl, {
         headers: {
           referer: 'https://moviesapi.club/',
           Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -74,7 +74,7 @@ export class MoviesApiExtractor implements IExtractor {
       decipher.setAutoPadding(false);
 
       const encryptedBuffer = Buffer.from(base64DecryptedData.ct, 'base64');
-      const decryptedBuffer = Buffer.concat([decipher.update(Buffer.from(base64EncryptedData, 'base64')), decipher.final()]);
+      const decryptedBuffer = Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
 
       const decryptedString = decryptedBuffer.toString('utf-8');
       this.logger.debug(decryptedString);

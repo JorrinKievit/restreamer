@@ -17,6 +17,7 @@ import { SmashyStreamExtractor } from '../extractors/smashystream/smashystream';
 import { NewMovies123Extractor } from '../extractors/newmovies123';
 import { ShowBoxExtractor } from '../extractors/showbox';
 import { t } from './trpc-client';
+import { MyFileStorageExtractor } from '../extractors/myfilestorage';
 
 const ee = new EventEmitter();
 
@@ -33,6 +34,7 @@ const vidSrcToExtractor = new VidSrcToExtractor();
 const vegaMoviesExtractor = new VegaMoviesExtractor();
 const uhdmoviesExtractor = new UHDMoviesExtractor();
 const showBoxExtractor = new ShowBoxExtractor();
+const myFileStorageExtractor = new MyFileStorageExtractor();
 
 export const appRouter = t.router({
   getAppVersion: t.procedure.query(() => {
@@ -112,6 +114,11 @@ export const appRouter = t.router({
         return sources;
       });
 
+      const myFileStoragePromise = myFileStorageExtractor.extractUrls(tmdbId, type, season, episode).then((sources) => {
+        ee.emit('sources', sources);
+        return sources;
+      });
+
       const allPromises = [
         goMoviesPromise,
         primeWirePromise,
@@ -125,6 +132,7 @@ export const appRouter = t.router({
         vegaMoviesPromise,
         uhdmoviesPromise,
         showBoxPromise,
+        myFileStoragePromise,
       ];
 
       const allSources = await Promise.all(allPromises);

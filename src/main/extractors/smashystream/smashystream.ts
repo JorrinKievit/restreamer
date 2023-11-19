@@ -15,6 +15,8 @@ import { SmashyFxExtractor } from './fx';
 import { SmashyImExtractor } from './im';
 import { SmashyNFlimExtractor } from './nflim';
 import { SmashySeguExtractor } from './segu';
+import { SmashyVideo1Extractor } from './video1';
+import { SmashyVideo3MExtractor } from './video3m';
 import { SmashyWatchXExtractor } from './watchx';
 
 export class SmashyStreamExtractor implements IExtractor {
@@ -48,6 +50,10 @@ export class SmashyStreamExtractor implements IExtractor {
 
   private emsExtractor = new SmashyEmsExtractor();
 
+  private video1Extractor = new SmashyVideo1Extractor();
+
+  private video3mExtractor = new SmashyVideo3MExtractor();
+
   async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       const url = type === 'movie' ? `${this.url}?imdb=${imdbId}` : `${this.url}?imdb=${imdbId}&season=${season}&episode=${episode}`;
@@ -59,10 +65,9 @@ export class SmashyStreamExtractor implements IExtractor {
       });
       const $ = load(res.data);
 
-      const sourceUrls = $('.dropdown-menu a[data-id]')
-        .map((_, el) => $(el).attr('data-id'))
-        .get()
-        .filter((it) => it !== '_default');
+      const sourceUrls = $('.dropdown-menu a[data-url]')
+        .map((_, el) => $(el).attr('data-url'))
+        .get();
 
       const sourcesPromise = sourceUrls.map(async (sourceUrl, index) => {
         if (index > 0) {
@@ -108,6 +113,14 @@ export class SmashyStreamExtractor implements IExtractor {
 
         if (sourceUrl.includes('eemovie.php')) {
           return this.eeMovieExtractor.extractUrl(sourceUrl);
+        }
+
+        if (sourceUrl.includes('video1.php')) {
+          return this.video1Extractor.extractUrl(sourceUrl);
+        }
+
+        if (sourceUrl.includes('video3m.php')) {
+          return this.video3mExtractor.extractUrl(sourceUrl);
         }
 
         return undefined;

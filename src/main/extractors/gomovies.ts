@@ -131,6 +131,7 @@ export class GoMoviesExtractor implements IExtractor {
       );
 
       const firstServer = serverUrls[0][0];
+      if (firstServer.capcha) throw new Error('Captcha required');
       const maxQuality = parseInt(firstServer.max, 10);
 
       const updatedLinks = this.qualities.slice(this.qualities.indexOf(maxQuality)).map((quality) => firstServer.src.replace(firstServer.label, quality));

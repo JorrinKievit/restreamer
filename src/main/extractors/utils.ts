@@ -54,6 +54,8 @@ export const getResolutionName = (resolution: number): Source['quality'] => {
       return '1080p';
     case 720:
       return '720p';
+    case 534:
+      return '720p';
     case 480:
       return '480p';
     case 360:
@@ -126,4 +128,8 @@ export const addLeadingZero = (number: number) => {
 
 export const resolveRelativePaths = (m3u8Content: string, baseUrl: string) => {
   return m3u8Content.replace(/^(.*\.jpg)$/gm, `${baseUrl}$1`);
+};
+
+export const formatToJSON = (str: string) => {
+  return str.replace(/([{,])(\s*)([a-zA-Z0-9_]+?)\s*:/g, '$1"$3":');
 };

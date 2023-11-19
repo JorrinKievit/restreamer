@@ -29,7 +29,7 @@ export const tmdbRouter = t.router({
       })
     )
     .query<TvShowDetailsResults & { episodeNames: string[][] }>(async ({ input }) => {
-      const res = (await axios.get(`${TMBD_API_ENDPOINT}/tv/${input.tvShowId}?api_key=${API_KEY}&append_to_response=external_ids,credits`)) as AxiosResponse<TvShowDetailsResults>;
+      const res = await axios.get<TvShowDetailsResults>(`${TMBD_API_ENDPOINT}/tv/${input.tvShowId}?api_key=${API_KEY}&append_to_response=external_ids,credits`);
 
       const episodeNames = await Promise.all(
         res.data.seasons.map(async (season) => {
@@ -105,7 +105,7 @@ export const tmdbRouter = t.router({
         };
       });
       const promises = playingDataWithTypes.map(async (show) => {
-        const res = (await axios.get(`${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${API_KEY}`)) as AxiosResponse<MovieDetailsResults | TvShowDetailsResults>;
+        const res = await axios.get<MovieDetailsResults | TvShowDetailsResults>(`${TMBD_API_ENDPOINT}/${show.showType}/${show.id}?api_key=${API_KEY}`);
 
         return {
           ...res.data,

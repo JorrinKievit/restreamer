@@ -1,4 +1,3 @@
-import axios from 'axios';
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
@@ -22,7 +21,7 @@ export class GoFileExtractor implements IExtractor {
   }
 
   private async getGoFileAccountToken() {
-    const res = await axios.get(`${this.apiUrl}/createAccount`);
+    const res = await axiosInstance.get(`${this.apiUrl}/createAccount`);
     if (res.data.status === 'ok') {
       return res.data.data.token as string;
     }

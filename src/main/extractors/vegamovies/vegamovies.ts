@@ -11,7 +11,7 @@ import { extractAioTechnical } from './aiotechnical';
 export class VegaMoviesExtractor implements IExtractor {
   name = 'VegaMovies';
 
-  url = 'https://vegamovies.care/';
+  url = 'https://vegamovies.boo/';
 
   logger = log.scope(this.name);
 
@@ -62,14 +62,11 @@ export class VegaMoviesExtractor implements IExtractor {
       if (!source) throw new Error('Invalid gofile link');
       return source;
     }
-    const isValidResponse = await axiosInstance.head(finalDownloadLink, {
-      validateStatus: () => true,
-    });
-    if (isValidResponse.status === 403) throw new Error('Invalid download link');
+
     return {
       server: this.name,
       url: finalDownloadLink,
-      type: 'mp4',
+      type: 'mkv',
       quality: findResolutionBasedOnFileName(finalDownloadLink),
       isVlc: true,
     };

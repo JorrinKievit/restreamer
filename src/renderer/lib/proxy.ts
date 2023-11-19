@@ -8,8 +8,11 @@ export const getM3U8ProxyUrl = (m3u8Link: string, referer?: string) => {
   return hlsProxyUrl;
 };
 
-export const getMP4ProxyUrl = (mp4Link: string) => {
-  const mp4ProxyUrl = `${MP4_PROXY_URL}/${mp4Link}}`;
+export const getMP4ProxyUrl = (mp4Link: string, referer?: string) => {
+  let mp4ProxyUrl = `${MP4_PROXY_URL}/${encodeURIComponent(mp4Link)}`;
+  if (referer) {
+    mp4ProxyUrl += `?referer=${encodeURIComponent(referer)}`;
+  }
 
   return mp4ProxyUrl;
 };
