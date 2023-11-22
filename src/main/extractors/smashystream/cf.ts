@@ -26,7 +26,9 @@ export class SmashyCfExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: file,
+        source: {
+          url: file,
+        },
         type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: 'Unknown',
       };

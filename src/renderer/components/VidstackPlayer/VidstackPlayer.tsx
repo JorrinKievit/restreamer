@@ -127,16 +127,10 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     setSubtitles(selectedSource?.subtitles);
   }, [selectedSource?.subtitles]);
 
-  const isM3U8String = () => {
-    if (!selectedSource) return false;
-
-    return !selectedSource.url.includes('.mp4') && selectedSource.type === 'm3u8' && !selectedSource.url.includes('.m3u8');
-  };
-
   const getSourceUrl = () => {
     if (!selectedSource) return '';
-    let url = selectedSource.url;
-    if (isM3U8String()) {
+    let url = selectedSource.source.url;
+    if (selectedSource.source.requiresBlob) {
       url = URL.createObjectURL(new Blob([url]));
     }
     if (selectedSource.proxySettings?.type === 'm3u8') {
@@ -148,12 +142,23 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
     return url;
   };
 
+  const getThumbnails = () => {
+    if (!selectedSource) return '';
+    if (!selectedSource.thumbnails) return '';
+
+    let url = selectedSource.thumbnails.url;
+    if (selectedSource.thumbnails.requiresBlob) {
+      url = URL.createObjectURL(new Blob([url]));
+    }
+    return url;
+  };
+
   return (
     <MediaPlayer
       ref={player}
       title={title}
       // eslint-disable-next-line no-nested-ternary
-      src={{ src: getSourceUrl() ?? '', type: isM3U8String() ? 'application/x-mpegurl' : selectedSource?.type === 'mp4' ? 'video/mp4' : 'application/x-mpegurl' }}
+      src={{ src: getSourceUrl() ?? '', type: selectedSource?.type === 'mp4' ? 'video/mp4' : 'application/x-mpegurl' }}
       crossorigin="anonymous"
       aspectRatio="16/9"
       autoplay
@@ -222,7 +227,7 @@ const VidstackPlayer: FC<VidstackPlayerProps> = ({ selectedSource, title, tmdbId
           );
         })}
       </MediaProvider>
-      <DefaultVideoLayout thumbnails={selectedSource?.thumbnails} icons={defaultLayoutIcons} />
+      <DefaultVideoLayout thumbnails={getThumbnails()} icons={defaultLayoutIcons} />
       {(selectedSource?.subtitles || opensubtitlesData?.token) && <SyncSubtitlesPopover />}
       {opensubtitlesData?.token && <SubtitleSelector tmdbId={tmdbId} season={season} episode={episode} />}
     </MediaPlayer>

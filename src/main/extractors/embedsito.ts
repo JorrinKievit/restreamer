@@ -25,7 +25,9 @@ export class EmbedsitoExtractor implements IExtractor {
       });
       return {
         server: 'Embedsito',
-        url: finalUrl.headers.location!,
+        source: {
+          url: finalUrl.headers.location!,
+        },
         type: fileType === 'mp4' ? 'mp4' : 'm3u8',
         quality,
       };

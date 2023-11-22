@@ -23,7 +23,9 @@ export class SmashySeguExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: fileUrl,
+        source: {
+          url: fileUrl,
+        },
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: quality.includes('K') ? quality : quality.toLowerCase(),
       };

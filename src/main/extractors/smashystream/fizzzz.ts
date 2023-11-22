@@ -41,7 +41,9 @@ export class SmashyFizzzzExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: fileUrl,
+        source: {
+          url: fileUrl,
+        },
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality: getResolutionName(parseInt(quality, 10)),
         subtitles: subtitleArray,

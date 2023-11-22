@@ -58,6 +58,8 @@ export class GoMoviesExtractor implements IExtractor {
     try {
       let episodeID: number | string = 0;
       const searchDocument = await axiosInstance.get(`${this.url}/search/${encodeURIComponent(contentTitle)}`);
+      let combinedCookies = `${searchDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
+      this.logger.debug(combinedCookies);
       const $ = load(searchDocument.data);
       const contentName = type === 'movie' ? contentTitle : `${contentTitle} - Season ${season}`;
       let contentPageUrl = $(`[data-filmname*="${contentName}"] a`).attr('href');
@@ -65,12 +67,27 @@ export class GoMoviesExtractor implements IExtractor {
       let contentPageDocument = null;
       let contentPage$ = null;
       if (this.name === 'GoMovies') {
-        const firstContentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`);
+        const firstContentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`, {
+          headers: {
+            cookie: combinedCookies,
+          },
+        });
+        combinedCookies = `${firstContentPageDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
         const firstContentPage$ = load(firstContentPageDocument.data);
-        contentPageDocument = await axiosInstance.get(`${this.url}${firstContentPage$('._sqvVOytuYKN').attr('href')}`);
+        contentPageDocument = await axiosInstance.get(`${this.url}${firstContentPage$('._sqvVOytuYKN').attr('href')}`, {
+          headers: {
+            cookie: combinedCookies,
+          },
+        });
+        combinedCookies = `${contentPageDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
         contentPage$ = load(contentPageDocument.data);
       } else {
-        contentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`);
+        contentPageDocument = await axiosInstance.get(`${this.url}${contentPageUrl}`, {
+          headers: {
+            cookie: combinedCookies,
+          },
+        });
+        combinedCookies = `${contentPageDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
         contentPage$ = load(contentPageDocument.data);
       }
 
@@ -81,20 +98,25 @@ export class GoMoviesExtractor implements IExtractor {
         const episodeAbsoluteUrl = `${this.url}${episodeUrl.attr('href')}`;
         contentPageUrl = episodeAbsoluteUrl;
         episodeID = episodeUrl.attr('data-ep-id') || 0;
-        contentPageDocument = await axiosInstance.get(episodeAbsoluteUrl);
+        contentPageDocument = await axiosInstance.get(episodeAbsoluteUrl, {
+          headers: {
+            cookie: combinedCookies,
+          },
+        });
+        combinedCookies = `${contentPageDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
         contentPage$ = load(contentPageDocument.data);
       }
 
       const serverCodeRegex = contentPageDocument.data.match(/var url = '\/user\/servers\/(.*?)\?ep=.*?';/);
       const serverCode = serverCodeRegex ? serverCodeRegex[1] : null;
       const url = contentPage$("meta[property='og:url']").attr('content');
-      const cookies = contentPageDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]);
       const serversPage = await axiosInstance.get(`${this.url}/user/servers/${serverCode}?ep=${type === 'tv' ? episodeID : 0}`, {
         headers: {
           Referer: url,
-          cookie: cookies?.join('; '),
+          cookie: combinedCookies,
         },
       });
+      combinedCookies = `${serversPage.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
       const serversPage$ = load(serversPage.data);
       const regex = /eval\((.*)\)/g;
       const evalCode = serversPage.data.match(regex)?.[0];
@@ -118,20 +140,21 @@ export class GoMoviesExtractor implements IExtractor {
 
       const serverUrls = await Promise.all(
         servers.map(async (server) => {
-          const encryptedDataResponse = await axiosInstance.get(`${url}?server=${server}&_=${Date.now()}`, {
+          const encryptedDataResponse = await axiosInstance.get(`${url}?server=${server}&_=${Date.now()}&actionCaptcha=false`, {
             headers: {
-              cookies,
+              cookies: combinedCookies,
               Referer: url,
               'X-Requested-With': 'XMLHttpRequest',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             },
           });
           const decrypted = this.decryptXORCypher(this.base64Decode(encryptedDataResponse.data), key);
           return JSON.parse(decrypted);
         })
       );
+      if (serverUrls[0].capcha) throw new Error('Captcha required');
 
       const firstServer = serverUrls[0][0];
-      if (firstServer.capcha) throw new Error('Captcha required');
       const maxQuality = parseInt(firstServer.max, 10);
 
       const updatedLinks = this.qualities.slice(this.qualities.indexOf(maxQuality)).map((quality) => firstServer.src.replace(firstServer.label, quality));
@@ -145,7 +168,9 @@ export class GoMoviesExtractor implements IExtractor {
 
       return [
         {
-          url: workingLink.url,
+          source: {
+            url: workingLink.url,
+          },
           server: this.name,
           type: firstServer.type,
           quality: workingLink.quality,

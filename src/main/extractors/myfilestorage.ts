@@ -34,7 +34,9 @@ export class MyFileStorageExtractor implements IExtractor {
       return [
         {
           server: this.name,
-          url,
+          source: {
+            url,
+          },
           type: 'mp4',
           quality: '720p/1080p',
           proxySettings: {

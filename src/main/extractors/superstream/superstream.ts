@@ -157,7 +157,9 @@ export class SuperStreamExtractor implements IExtractor {
 
       return [
         {
-          url: link.path,
+          source: {
+            url: link.path,
+          },
           server: 'SuperStream',
           type: 'mp4',
           quality: link.real_quality as Source['quality'],

@@ -23,7 +23,9 @@ export class FileMoonExtractor implements IExtractor {
 
         return {
           server: 'FileMoon',
-          url: file,
+          source: {
+            url: file,
+          },
           type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
           quality,
         };

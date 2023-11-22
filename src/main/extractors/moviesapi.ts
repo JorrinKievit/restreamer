@@ -90,7 +90,9 @@ export class MoviesApiExtractor implements IExtractor {
       return [
         {
           server: 'MoviesApi',
-          url: sources[0].file,
+          source: {
+            url: sources[0].file,
+          },
           type: sources[0].type === 'hls' ? 'm3u8' : 'mp4',
           quality: highestQuality,
           subtitles: subtitles.map((it: any) => ({

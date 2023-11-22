@@ -104,8 +104,10 @@ export class UHDMoviesExtractor implements IExtractor {
       return [
         {
           server: this.name,
-          url: finalUrl,
-          quality: '4K',
+          source: {
+            url: finalUrl,
+          },
+          quality: '4k',
           type: 'mkv',
           isVlc: true,
         },

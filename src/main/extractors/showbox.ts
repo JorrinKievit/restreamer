@@ -85,7 +85,9 @@ export class ShowBoxExtractor implements IExtractor {
         return [
           {
             server: this.name,
-            url: febBoxData.url,
+            source: {
+              url: febBoxData.url,
+            },
             quality,
             type: 'm3u8',
             subtitles: febBoxData.subtitles,

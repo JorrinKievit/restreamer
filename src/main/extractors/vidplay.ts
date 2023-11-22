@@ -9,31 +9,28 @@ export class VidPlayExtractor implements IExtractor {
 
   logger = log.scope(this.name);
 
-  url = 'https://vidplay.site/';
+  url = 'https://vidplay.site';
 
   referer = 'https://vidplay.site/';
 
-  private eltikUrl = 'https://9anime.eltik.net/';
+  private key = 'Or37imdJp49PyZ4J';
 
-  private async getFuToken(referer: string) {
-    const res = await axiosInstance.get(`${this.url}futoken`, {
+  private async getFuTokenKey(referer: string) {
+    const res = await axiosInstance.get(`${this.url}/futoken`, {
       headers: {
         referer: encodeURIComponent(referer),
       },
     });
-    const fuTokenWithoutComments = res.data.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '');
-    return fuTokenWithoutComments;
+    const fuKey = res.data.match(/var\s+k\s*=\s*'([^']+)'/)[1];
+    const a = [];
+    for (let i = 0; i < this.key.length; i += 1) a.push(fuKey.charCodeAt(i % fuKey.length) + this.key.charCodeAt(i));
+    return `${fuKey},${a.join(',')}`;
   }
 
   private async getFileUrl(sourceUrl: string) {
-    const futoken = await this.getFuToken(sourceUrl);
-    const id = sourceUrl.split('/e/')[1].split('?')[0];
-
-    const res = await axiosInstance.post(`${this.eltikUrl}rawVizcloud?query=${id}&apikey=lagrapps`, {
-      query: id,
-      futoken,
-    });
-    return `${res.data.rawURL}?${sourceUrl.split('?')[1]}`;
+    const futoken = await this.getFuTokenKey(sourceUrl);
+    const url = `${this.url}/mediainfo/${futoken}?${sourceUrl.split('?')[1]}`;
+    return url;
   }
 
   async extractUrl(url: string): Promise<Source | undefined> {
@@ -45,6 +42,7 @@ export class VidPlayExtractor implements IExtractor {
           referer: url,
         },
       });
+      this.logger.debug(res.data);
       const source = res.data.result.sources[0].file;
 
       const quality = await getResolutionFromM3u8(source, true);
@@ -53,7 +51,9 @@ export class VidPlayExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: source,
+        source: {
+          url: source,
+        },
         type: 'm3u8',
         quality,
         thumbnails: thumbnail?.file,

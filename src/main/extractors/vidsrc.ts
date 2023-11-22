@@ -83,7 +83,9 @@ export class VidSrcExtractor implements IExtractor {
       return [
         {
           server: 'VidSrc Pro',
-          url: finalUrl,
+          source: {
+            url: finalUrl,
+          },
           type: 'm3u8',
           quality: 'Unknown',
           subtitles: finalSubtitles,

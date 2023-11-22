@@ -27,7 +27,9 @@ export class SmashyEeMovieExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: file,
+        source: {
+          url: file,
+        },
         type: 'mp4',
         quality: 'Unknown',
       };

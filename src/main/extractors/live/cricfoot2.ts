@@ -102,7 +102,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
     return {
       server: 'TVPLive',
-      url: finalLiveUrl,
+      source: {
+        url: finalLiveUrl,
+      },
       quality,
       type: 'm3u8',
       proxySettings: {
@@ -130,7 +132,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
     return {
       server: 'Crichd',
-      url: finalUrl,
+      source: {
+        url: finalUrl,
+      },
       quality,
       type: 'm3u8',
       proxySettings: {
@@ -171,7 +175,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
     return {
       server: 'Dlhd',
-      url: m3u8File.request.res.responseUrl,
+      source: {
+        url: m3u8File.request.res.responseUrl,
+      },
       quality,
       type: 'm3u8',
       proxySettings: {
@@ -208,7 +214,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
 
     return {
       server: 'DaddyLiveHD',
-      url: source,
+      source: {
+        url: source,
+      },
       quality,
       type: 'm3u8',
       proxySettings: {
@@ -231,7 +239,9 @@ export class CricFoot2Extractor implements ILiveExtractor {
     const quality = await getResolutionFromM3u8(source, true);
     return {
       server: '1StreamBuzz',
-      url: source,
+      source: {
+        url: source,
+      },
       quality,
       type: 'm3u8',
       proxySettings: {

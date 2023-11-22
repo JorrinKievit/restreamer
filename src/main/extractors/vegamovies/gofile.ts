@@ -2,7 +2,7 @@ import log from 'electron-log';
 import { Source } from 'types/sources';
 import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
-import { findResolutionBasedOnFileName } from '../utils';
+import { getResolution } from '../utils';
 
 export class GoFileExtractor implements IExtractor {
   name = 'GoFile';
@@ -38,12 +38,14 @@ export class GoFileExtractor implements IExtractor {
       if (goFileDownloadLink.data.status === 'ok') {
         return {
           server: 'VegaMovies',
-          url: `${goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].link}?accountToken=${accountToken}`,
+          source: {
+            url: `${goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].link}?accountToken=${accountToken}`,
+          },
           type: 'mp4',
           proxySettings: {
             type: 'mp4',
           },
-          quality: findResolutionBasedOnFileName(goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].name),
+          quality: getResolution(goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].name),
           isVlc: true,
         };
       }

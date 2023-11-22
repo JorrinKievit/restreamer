@@ -32,7 +32,9 @@ export class SmashyVideo1Extractor implements IExtractor {
 
       return {
         server: this.name,
-        url: res.data.sourceUrls[0],
+        source: {
+          url: res.data.sourceUrls[0],
+        },
         type: 'm3u8',
         quality,
         subtitles: vttArray

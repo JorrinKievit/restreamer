@@ -70,14 +70,12 @@ const LiveViewPage: FC = () => {
     };
   }, []);
 
-  console.log(selectedSource);
-
   return (
     <Flex flexDirection="column" gap={4}>
       {selectedSource && (
         <MediaPlayer
           ref={player}
-          src={{ src: selectedSource.proxySettings ? getM3U8ProxyUrl(selectedSource.url, selectedSource.proxySettings?.referer) : selectedSource.url, type: 'application/x-mpegurl' }}
+          src={{ src: selectedSource.proxySettings ? getM3U8ProxyUrl(selectedSource.source.url, selectedSource.proxySettings?.referer) : selectedSource.source.url, type: 'application/x-mpegurl' }}
           aspectRatio="16/9"
           crossorigin="anonymous"
           autoplay

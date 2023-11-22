@@ -29,7 +29,9 @@ export class SmashyVideo3MExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: sourceUrl,
+        source: {
+          url: sourceUrl,
+        },
         type: 'm3u8',
         quality,
       };

@@ -4,7 +4,7 @@ import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
 import { axiosInstance } from '../../utils/axios';
 import { IExtractor } from '../types';
-import { findResolutionBasedOnFileName } from '../utils';
+import { getResolution } from '../utils';
 import { GoFileExtractor } from './gofile';
 import { extractAioTechnical } from './aiotechnical';
 
@@ -65,9 +65,11 @@ export class VegaMoviesExtractor implements IExtractor {
 
     return {
       server: this.name,
-      url: finalDownloadLink,
+      source: {
+        url: finalDownloadLink,
+      },
       type: 'mkv',
-      quality: findResolutionBasedOnFileName(finalDownloadLink),
+      quality: getResolution(finalDownloadLink),
       isVlc: true,
     };
   }
@@ -85,9 +87,11 @@ export class VegaMoviesExtractor implements IExtractor {
 
     return {
       server: this.name,
-      url: '',
+      source: {
+        url: '',
+      },
       type: 'mp4',
-      quality: findResolutionBasedOnFileName(''),
+      quality: getResolution(''),
       isVlc: true,
     };
   }

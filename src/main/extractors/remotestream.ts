@@ -33,7 +33,9 @@ export class RemoteStreamExtractor implements IExtractor {
       return [
         {
           server: this.name,
-          url: match[1],
+          source: {
+            url: match[1],
+          },
           type: 'm3u8',
           quality,
           proxySettings: {

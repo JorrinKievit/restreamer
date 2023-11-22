@@ -5,14 +5,13 @@ export interface Subtitle {
 }
 
 export interface Source {
-  url: string;
+  source: {
+    url: string;
+    requiresBlob?: boolean;
+  };
   server: string;
   type: 'm3u8' | 'mp4' | 'mkv';
-  quality: '4K' | '1440p' | '1080p' | '808p' | '720p' | '480p' | '360p' | '240p' | '144p' | '720p/1080p' | 'Unknown';
-  extractorData?: {
-    url: string;
-    hash?: string;
-  };
+  quality: '4k' | '1440p' | '1080p' | '808p' | '720p' | '480p' | '360p' | '240p' | '144p' | '720p/1080p' | 'Unknown';
   proxySettings?: {
     type: 'mp4' | 'm3u8';
     referer?: string;
@@ -20,7 +19,10 @@ export interface Source {
     userAgent?: string;
   };
   subtitles?: Subtitle[];
-  thumbnails?: string;
+  thumbnails?: {
+    url: string;
+    requiresBlob?: boolean;
+  };
   isVlc?: boolean;
 }
 

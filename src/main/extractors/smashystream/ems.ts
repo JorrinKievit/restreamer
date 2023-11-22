@@ -48,7 +48,9 @@ export class SmashyEmsExtractor implements IExtractor {
       const quality = await getResolutionFromM3u8(hlsResponse.data, false);
       return {
         server: this.name,
-        url: fileUrl,
+        source: {
+          url: fileUrl,
+        },
         type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
         quality,
         subtitles: subtitleArray,

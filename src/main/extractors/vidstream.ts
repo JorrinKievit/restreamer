@@ -50,7 +50,9 @@ export class VidstreamExtractor implements IExtractor {
 
       return {
         server: 'Vidstream',
-        url: source,
+        source: {
+          url: source,
+        },
         type: 'm3u8',
         quality,
         thumbnails: thumbnail?.file,

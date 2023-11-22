@@ -1,4 +1,3 @@
-import { isAxiosError } from 'axios';
 import { app } from 'electron';
 import { Source } from 'types/sources';
 import log from 'electron-log';
@@ -33,7 +32,9 @@ export class StreamlareExtractor implements IExtractor {
       if (res.data.result?.Original?.file) {
         return {
           server: 'Streamlare',
-          url: res.data.result.Original.file,
+          source: {
+            url: res.data.result.Original.file,
+          },
           type: res.data.type.includes('mp4') ? 'mp4' : 'm3u8',
           quality: 'Unknown',
         };

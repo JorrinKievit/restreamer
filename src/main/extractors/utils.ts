@@ -45,7 +45,7 @@ export const randomString = (length: number) => {
 export const getResolutionName = (resolution: number): Source['quality'] => {
   switch (resolution) {
     case 2160:
-      return '4K';
+      return '4k';
     case 1440:
       return '1440p';
     case 1080:
@@ -111,14 +111,15 @@ export const findHighestResolutionStream = (m3u8Content: string) => {
   return highestResolution;
 };
 
-export const findResolutionBasedOnFileName = (fileName: string): Source['quality'] => {
-  if (fileName.includes('2160p') || fileName.includes('4K')) return '4K';
-  if (fileName.includes('1440p')) return '1440p';
-  if (fileName.includes('1080p')) return '1080p';
-  if (fileName.includes('808p')) return '808p';
-  if (fileName.includes('720p')) return '720p';
-  if (fileName.includes('480p')) return '480p';
-  if (fileName.includes('360p')) return '360p';
+export const getResolution = (fileName: string | number): Source['quality'] => {
+  const fileNameLower = fileName.toString().toLowerCase();
+  if (fileNameLower.includes('2160p') || fileNameLower.includes('2160') || fileNameLower.includes('4K')) return '4k';
+  if (fileNameLower.includes('1440p') || fileNameLower.includes('1440')) return '1440p';
+  if (fileNameLower.includes('1080p') || fileNameLower.includes('1080')) return '1080p';
+  if (fileNameLower.includes('808p') || fileNameLower.includes('808')) return '808p';
+  if (fileNameLower.includes('720p') || fileNameLower.includes('720')) return '720p';
+  if (fileNameLower.includes('480p') || fileNameLower.includes('480')) return '480p';
+  if (fileNameLower.includes('360p') || fileNameLower.includes('360')) return '360p';
   return 'Unknown';
 };
 

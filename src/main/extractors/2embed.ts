@@ -4,9 +4,7 @@ import { ContentType } from 'types/tmbd';
 import log from 'electron-log';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './types';
-import { RabbitStreamExtractor } from './rabbitstream';
-import { StreamlareExtractor } from './streamlare';
-import { formatToJSON, getCaptchaToken, getResolutionFromM3u8 } from './utils';
+import { formatToJSON, getResolutionFromM3u8 } from './utils';
 
 export class TwoEmbedExtractor implements IExtractor {
   name = '2Embed';
@@ -38,7 +36,15 @@ export class TwoEmbedExtractor implements IExtractor {
       const sources = JSON.parse(formatToJSON(res.data.match(/sources:\s*(\[.*?\])/)[1]));
       const tracks = JSON.parse(formatToJSON(res.data.match(/tracks:\s*(\[.*?\])/)[1]));
       const quality = await getResolutionFromM3u8(sources[0].file, true);
-      const thumbnails = tracks.filter((t: any) => t.kind === 'thumbnails');
+      let thumbnails = tracks.find((t: any) => t.kind === 'thumbnails').file;
+      if (thumbnails) {
+        thumbnails = `https://wishfast.top${thumbnails}`;
+      }
+      const thumbnailContent = await axiosInstance.get(thumbnails, {
+        headers: {
+          referer: 'https://wishfast.top/',
+        },
+      });
       const subtitles = tracks
         .filter((t: any) => t.kind === 'captions')
         .map((subtitle: any) => ({
@@ -51,9 +57,14 @@ export class TwoEmbedExtractor implements IExtractor {
         {
           server: this.name,
           quality,
-          url: sources[0].file,
+          source: {
+            url: sources[0].file,
+          },
           type: 'm3u8',
-          thumbnails: thumbnails.length ? thumbnails[0].file : undefined,
+          thumbnails: {
+            url: thumbnailContent.data,
+            requiresBlob: true,
+          },
           subtitles,
         },
       ];

@@ -42,7 +42,9 @@ export class SmashyWatchXExtractor implements IExtractor {
 
       return {
         server: this.name,
-        url: sources[0].file,
+        source: {
+          url: sources[0].file,
+        },
         type: sources[0].type === 'hls' ? 'm3u8' : 'mp4',
         quality: sources[0].label,
         subtitles: subtitles.map((it: any) => ({
