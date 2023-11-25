@@ -71,7 +71,6 @@ export class BlackvidExtractor implements IExtractor {
       });
 
       const filteredSources = (await Promise.all(sources)).filter((source) => source !== null);
-      this.logger.debug(filteredSources);
       return filteredSources;
     } catch (error) {
       if (error instanceof Error) this.logger.error(error.message);

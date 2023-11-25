@@ -73,7 +73,6 @@ export class UHDMoviesExtractor implements IExtractor {
         'x-token': new URL(url).hostname,
       },
     });
-    this.logger.debug(apiData.data);
     if (apiData.data.error) throw new Error(apiData.data.message);
     return apiData.data.url;
   }
@@ -92,7 +91,7 @@ export class UHDMoviesExtractor implements IExtractor {
         // TODO: Extract tv show
       }
       if (!driveLink) throw new Error('Drive link not found');
-      if (driveLink.includes('oddfirm')) {
+      if (driveLink.includes('oddfirm') || driveLink.includes('unblockedgames')) {
         const driveLeechUrl = await this.extractOddFirmDriveLeechUrl(driveLink);
         if (!driveLeechUrl) throw new Error('Drive leech link not found in oddfirm');
         driveLink = driveLeechUrl.split('url=')[1];

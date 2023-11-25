@@ -18,14 +18,6 @@ const AVAILABLE_SOURCES = [
   },
   {
     name: '2Embed',
-    children: [
-      {
-        name: 'VidCloud',
-      },
-      {
-        name: 'Streamlare',
-      },
-    ],
   },
   {
     name: 'VidSrc',
@@ -33,52 +25,16 @@ const AVAILABLE_SOURCES = [
       {
         name: 'VidSrc Pro',
       },
-      {
-        name: 'Embedsito',
-      },
     ],
-  },
-  {
-    name: 'RemoteStr',
   },
   {
     name: 'SmashyStream',
     children: [
       {
-        name: 'Smashy (Fiz)',
+        name: 'Smashy (V1)',
       },
       {
-        name: 'Smashy (FM22)',
-      },
-      {
-        name: 'Smashy (Se)',
-      },
-      {
-        name: 'Smashy (DM)',
-      },
-      {
-        name: 'Smashy (EMS)',
-      },
-      {
-        name: 'Smashy (Im)',
-      },
-      {
-        name: 'Smashy (FFix)',
-      },
-      {
-        name: 'Smashy (WX)',
-      },
-      {
-        name: 'Smashy (NF)',
-      },
-      {
-        name: 'Smashy (Fx)',
-      },
-      {
-        name: 'Smashy (CF)',
-      },
-      {
-        name: 'Smashy (EE)',
+        name: 'Smashy (3M)',
       },
     ],
   },
@@ -107,6 +63,23 @@ const AVAILABLE_SOURCES = [
   },
   {
     name: 'ShowBox',
+  },
+  {
+    name: 'MyFileStorage',
+  },
+  {
+    name: 'Blackvid',
+    children: [
+      {
+        name: 'Blackvid 1',
+      },
+      {
+        name: 'Blackvid 2',
+      },
+      {
+        name: 'Blackvid 3',
+      },
+    ],
   },
 ];
 

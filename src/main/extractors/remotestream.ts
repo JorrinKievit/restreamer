@@ -1,7 +1,6 @@
 import log from 'electron-log';
 import { Source } from 'types/sources';
 import { ContentType } from 'types/tmbd';
-import fs from 'fs';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
@@ -11,13 +10,15 @@ export class RemoteStreamExtractor implements IExtractor {
 
   logger = log.scope(this.name);
 
-  url = 'https://remotestre.am/e/?';
+  url = 'https://remotestream.cc/e/?';
 
-  referer = 'https://remotestre.am/';
+  referer = 'https://remotestream.cc/';
+
+  private apiKey = 'bRR3S48MbSnqjSaYNdCrBLfTIGQQNPRo';
 
   async extractUrls(imdbId: string, type: ContentType, season?: number | undefined, episode?: number | undefined): Promise<Source[]> {
     try {
-      const url = type === 'movie' ? `${this.url}imdb=${imdbId}` : `${this.url}imdb=${imdbId}&s=${season}&e=${episode}`;
+      const url = type === 'movie' ? `${this.url}imdb=${imdbId}&apikey=${this.apiKey}` : `${this.url}imdb=${imdbId}&s=${season}&e=${episode}&apikey=${this.apiKey}`;
       const res = await axiosInstance.get(url);
 
       const fileRegex = /"file":"(.*?)"/;
@@ -42,7 +43,7 @@ export class RemoteStreamExtractor implements IExtractor {
             type: 'm3u8',
             origin: this.referer,
             referer: this.referer,
-            userAgent: 'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36',
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
           },
         },
       ];

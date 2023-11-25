@@ -126,6 +126,11 @@ export const appRouter = t.router({
         return sources;
       });
 
+      // const remoteStreamPromise = remoteStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
+      //   ee.emit('sources', sources);
+      //   return sources;
+      // });
+
       const allPromises = [
         goMoviesPromise,
         primeWirePromise,
@@ -141,6 +146,7 @@ export const appRouter = t.router({
         showBoxPromise,
         myFileStoragePromise,
         blackvidPromise,
+        // remoteStreamPromise,
       ];
 
       const allSources = await Promise.all(allPromises);
