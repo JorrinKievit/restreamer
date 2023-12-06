@@ -9,7 +9,7 @@ import { IExtractor } from './types';
 export class UHDMoviesExtractor implements IExtractor {
   public name = 'UHDMovies';
 
-  public url = 'https://uhdmovies.dev';
+  public url = 'https://uhdmovies.zip';
 
   public logger = log.scope(this.name);
 

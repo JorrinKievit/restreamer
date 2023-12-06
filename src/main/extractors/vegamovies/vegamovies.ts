@@ -11,7 +11,7 @@ import { extractAioTechnical } from './aiotechnical';
 export class VegaMoviesExtractor implements IExtractor {
   name = 'VegaMovies';
 
-  url = 'https://vegamovies.boo/';
+  url = 'https://m.vegamovies.boo/';
 
   logger = log.scope(this.name);
 

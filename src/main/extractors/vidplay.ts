@@ -1,5 +1,6 @@
 import { Source } from 'types/sources';
 import log from 'electron-log';
+import { createCipheriv } from 'crypto';
 import { axiosInstance } from '../utils/axios';
 import { IExtractor } from './types';
 import { getResolutionFromM3u8 } from './utils';
@@ -13,17 +14,35 @@ export class VidPlayExtractor implements IExtractor {
 
   referer = 'https://vidplay.site/';
 
-  private key = 'Or37imdJp49PyZ4J';
+  private async getKeys(): Promise<string[]> {
+    // Thanks to @Claudemirovsky for the keys :D
+    const res = await axiosInstance.get('https://raw.githubusercontent.com/Claudemirovsky/worstsource-keys/keys/keys.json');
+    return res.data;
+  }
 
-  private async getFuTokenKey(referer: string) {
+  private async getEncodedId(sourceUrl: string): Promise<string> {
+    const id = sourceUrl.split('/e/')[1].split('?')[0];
+    const keyList = await this.getKeys();
+    const c1 = createCipheriv('rc4', Buffer.from(keyList[0]), '');
+    const c2 = createCipheriv('rc4', Buffer.from(keyList[1]), '');
+
+    let input = Buffer.from(id);
+    input = Buffer.concat([c1.update(input), c1.final()]);
+    input = Buffer.concat([c2.update(input), c2.final()]);
+
+    return input.toString('base64').replace('/', '_');
+  }
+
+  private async getFuTokenKey(sourceUrl: string) {
+    const id = await this.getEncodedId(sourceUrl);
     const res = await axiosInstance.get(`${this.url}/futoken`, {
       headers: {
-        referer: encodeURIComponent(referer),
+        referer: encodeURIComponent(sourceUrl),
       },
     });
     const fuKey = res.data.match(/var\s+k\s*=\s*'([^']+)'/)[1];
     const a = [];
-    for (let i = 0; i < this.key.length; i += 1) a.push(fuKey.charCodeAt(i % fuKey.length) + this.key.charCodeAt(i));
+    for (let i = 0; i < id.length; i += 1) a.push(fuKey.charCodeAt(i % fuKey.length) + id.charCodeAt(i));
     return `${fuKey},${a.join(',')}`;
   }
 
@@ -42,13 +61,11 @@ export class VidPlayExtractor implements IExtractor {
           referer: url,
         },
       });
-      this.logger.debug(res.data);
       const source = res.data.result.sources[0].file;
 
       const quality = await getResolutionFromM3u8(source, true);
 
       const thumbnail = res.data.result?.tracks?.find((track: any) => track.kind === 'thumbnails');
-
       return {
         server: this.name,
         source: {
@@ -56,7 +73,9 @@ export class VidPlayExtractor implements IExtractor {
         },
         type: 'm3u8',
         quality,
-        thumbnails: thumbnail?.file,
+        thumbnails: {
+          url: thumbnail?.file,
+        },
       };
     } catch (error) {
       if (error instanceof Error) this.logger.error(error.message);

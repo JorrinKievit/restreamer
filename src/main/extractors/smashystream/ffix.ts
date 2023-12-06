@@ -40,7 +40,9 @@ export class SmashyFFixExtractor implements IExtractor {
             label: subtitle.name,
             kind: 'captions',
           })),
-        thumbnails: vttArray.find((it: any) => it.link.includes('thumbnails'))?.link,
+        thumbnails: {
+          url: vttArray.find((it: any) => it.link.includes('thumbnails'))?.link,
+        },
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

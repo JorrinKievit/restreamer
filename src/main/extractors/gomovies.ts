@@ -59,7 +59,6 @@ export class GoMoviesExtractor implements IExtractor {
       let episodeID: number | string = 0;
       const searchDocument = await axiosInstance.get(`${this.url}/search/${encodeURIComponent(contentTitle)}`);
       let combinedCookies = `${searchDocument.headers['set-cookie']?.map((cookie) => cookie.split(';')[0]).join('; ')}`;
-      this.logger.debug(combinedCookies);
       const $ = load(searchDocument.data);
       const contentName = type === 'movie' ? contentTitle : `${contentTitle} - Season ${season}`;
       let contentPageUrl = $(`[data-filmname*="${contentName}"] a`).attr('href');

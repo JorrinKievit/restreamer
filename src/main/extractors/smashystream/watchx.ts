@@ -52,7 +52,9 @@ export class SmashyWatchXExtractor implements IExtractor {
           label: it.label,
           kind: it.kind,
         })),
-        thumbnails: thumbnails[0]?.file,
+        thumbnails: {
+          url: thumbnails[0]?.file,
+        },
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

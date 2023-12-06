@@ -128,7 +128,7 @@ export class SmashyStreamExtractor implements IExtractor {
 
       const sources = await Promise.all(sourcesPromise.filter((it) => it !== undefined));
 
-      return sources.filter((it) => it !== undefined) as Source[];
+      return sources.filter<Source>((it): it is Source => it !== undefined);
     } catch (err) {
       if (err instanceof Error) this.logger.error(err);
       return [];

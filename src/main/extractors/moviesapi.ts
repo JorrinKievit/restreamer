@@ -100,7 +100,9 @@ export class MoviesApiExtractor implements IExtractor {
             label: it.label,
             kind: it.kind,
           })),
-          thumbnails: thumbnails[0]?.file,
+          thumbnails: {
+            url: thumbnails[0]?.file,
+          },
           proxySettings: {
             type: 'm3u8',
             referer: this.referer,

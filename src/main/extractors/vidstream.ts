@@ -55,7 +55,9 @@ export class VidstreamExtractor implements IExtractor {
         },
         type: 'm3u8',
         quality,
-        thumbnails: thumbnail?.file,
+        thumbnails: {
+          url: thumbnail?.file,
+        },
       };
     } catch (error) {
       if (error instanceof Error) this.logger.error(error.message);
