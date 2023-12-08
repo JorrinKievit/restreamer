@@ -80,6 +80,7 @@ export class UHDMoviesExtractor implements IExtractor {
   public async extractUrls(showName: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
     try {
       const searchResult = await axiosInstance.get(`${this.url}?s=${encodeURIComponent(showName)}`);
+      this.logger.debug(searchResult.data);
       const searchResult$ = load(searchResult.data);
       const detailLink = searchResult$('.row.gridlove-posts .layout-masonry article:first-child .box-inner-p a').attr('href');
       if (!detailLink) throw new Error('Show page not found');

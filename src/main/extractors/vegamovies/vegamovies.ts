@@ -11,7 +11,7 @@ import { extractAioTechnical } from './aiotechnical';
 export class VegaMoviesExtractor implements IExtractor {
   name = 'VegaMovies';
 
-  url = 'https://m.vegamovies.boo/';
+  url = 'https://vegamovies.dad/';
 
   logger = log.scope(this.name);
 
@@ -34,7 +34,11 @@ export class VegaMoviesExtractor implements IExtractor {
   }
 
   private async extractVCloud(url: string): Promise<Source> {
-    const vcloudPage = await axiosInstance.get(url);
+    const vcloudPage = await axiosInstance.get(url, {
+      headers: {
+        'User-Agent': 'PostmanRuntime/7.35.0',
+      },
+    });
     const vCloudPage$ = load(vcloudPage.data);
     const vCloudPageCookies = vcloudPage.headers['set-cookie'];
 
@@ -42,7 +46,16 @@ export class VegaMoviesExtractor implements IExtractor {
     if (!vCloudDownloadLink) {
       const redirectLinkRegex = /var\s+url\s*=\s*'([^']+)'/;
       const redirectLinkData = vcloudPage.data.match(redirectLinkRegex)[1];
-      vCloudDownloadLink = Buffer.from(redirectLinkData.split('r=')[1], 'base64').toString();
+      this.logger.debug(redirectLinkData, vCloudPageCookies);
+      const responseUrl = await axiosInstance.get(redirectLinkData, {
+        headers: {
+          cookie: vCloudPageCookies,
+          'User-Agent': 'PostmanRuntime/7.35.0',
+        },
+        validateStatus: () => true,
+      });
+      this.logger.debug(responseUrl.data.request.res.responseUrl);
+      vCloudDownloadLink = Buffer.from(responseUrl.data.request.res.responseUrl.split('r=')[1], 'base64').toString();
     }
     const redirectLinkData = await axiosInstance.get(vCloudDownloadLink, {
       headers: {
@@ -140,7 +153,7 @@ export class VegaMoviesExtractor implements IExtractor {
           .toArray()
           .find((a) => downloadPage$(a).attr('href')?.includes('v-cloud.bio') || downloadPage$(a).attr('href')?.includes('fast-dl.pro'));
       }
-      this.logger.debug(vcloudUrl?.attribs.href);
+      this.logger.debug('vCloudUrl', vcloudUrl?.attribs.href);
 
       if (vcloudUrl?.attribs.href.includes('v-cloud.bio')) {
         return [await this.extractVCloud(vcloudUrl.attribs.href)];
