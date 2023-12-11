@@ -54,10 +54,6 @@
   },
   "browserslist": [],
   "dependencies": {
-    "@chakra-ui/icons": "^2.0.17",
-    "@chakra-ui/react": "^2.4.9",
-    "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -80,7 +76,6 @@
     "@warren-bank/hls-proxy": "^3.4.0",
     "autoprefixer": "^10.4.16",
     "axios": "^1.4.0",
-    "chakra-react-select": "^4.4.3",
     "cheerio": "^1.0.0-rc.12",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
