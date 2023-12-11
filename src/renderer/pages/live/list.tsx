@@ -1,11 +1,22 @@
-import { VStack, Heading, Grid, GridItem, Image, Tooltip, Text, Input, IconButton, Box, AspectRatio } from '@chakra-ui/react';
-import React, { FC, useEffect, useState } from 'react';
-import { client } from 'renderer/api/trpc';
-import SkeletonGrid from 'renderer/components/SkeletonGrid';
-import { Link } from 'react-router-dom';
-import { LiveMainPage } from 'types/sources';
-import { StarIcon } from '@chakra-ui/icons';
-import { useLocalStorage } from 'usehooks-ts';
+import React, { FC, useEffect, useState } from "react";
+import { client } from "renderer/api/trpc";
+import { SkeletonGrid } from "renderer/components/layout/loaders/skeleton-grid";
+import { Link } from "react-router-dom";
+import { LiveMainPage } from "types/sources";
+import { StarIcon } from "@chakra-ui/icons";
+import { useLocalStorage } from "usehooks-ts";
+import { Input } from "renderer/components/ui/input";
+import { AspectRatio } from "renderer/components/ui/aspect-ratio";
+import { Button } from "renderer/components/ui/button";
+import { Star } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "renderer/components/ui/tooltip";
+import { Separator } from "renderer/components/ui/separator";
+import { cn } from "renderer/lib/utils";
 
 const LiveGridItem: FC<{
   item: LiveMainPage;
@@ -13,59 +24,68 @@ const LiveGridItem: FC<{
   toggleFavorite: () => void;
 }> = ({ item, isFavorite, toggleFavorite }) => {
   return (
-    <GridItem key={item.url}>
+    <div key={item.url} className="h-40 w-32 border">
       <Link to={`/live/view?url=${encodeURIComponent(item.url)}`}>
-        <AspectRatio
-          _hover={{
-            background: 'black',
-            transition: 'opacity 0.2s',
-          }}
-        >
+        <AspectRatio className="hover:bg-black hover:opacity-50">
           <>
-            <Image src={item.imgSrc} alt={item.title} />
-            <Box position="absolute" background="rgba(0, 0, 0, 0.5)" opacity={0} transition="opacity 0.2s" _hover={{ opacity: 1 }}>
-              <IconButton
-                icon={<StarIcon color={isFavorite ? 'yellow.400' : 'white'} />}
-                position="absolute"
-                colorScheme="yellow"
-                aria-label="Add/Remove from Favorites"
-                size="sm"
-                top="2"
-                right="2"
+            <img src={item.imgSrc} alt={item.title} className="h-full w-full" />
+            <div className="absolute top-0 h-full w-full opacity-0 transition duration-150 ease-in-out hover:opacity-100">
+              <Button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   toggleFavorite();
                 }}
-              />
-            </Box>
+                className="absolute right-2 top-2"
+              >
+                <Star
+                  size={20}
+                  className={cn(
+                    {
+                      "fill-current": isFavorite,
+                    },
+                    "text-yellow-400",
+                  )}
+                />
+              </Button>
+            </div>
           </>
         </AspectRatio>
-        <VStack mt={1}>
-          <Tooltip label={item.title}>
-            <Text w="full" textAlign="left" noOfLines={1}>
-              {item.title}
-            </Text>
-          </Tooltip>
-        </VStack>
+        <div className="mt-1 flex flex-col">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="w-full truncate text-left">{item.title}</p>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{item.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </Link>
-    </GridItem>
+    </div>
   );
 };
 
 const LiveListPage: FC = () => {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [data, setData] = useState<LiveMainPage[]>([]);
   const mainPageData = client.live.getMainPage.useQuery();
 
-  const [favorites, setFavorites] = useLocalStorage<string[]>('liveFavorites', []);
+  const [favorites, setFavorites] = useLocalStorage<string[]>(
+    "liveFavorites",
+    [],
+  );
 
   useEffect(() => {
     if (!mainPageData.data) return;
     setData(mainPageData.data);
   }, [mainPageData.data]);
 
-  const filteredData = data.filter((item) => item.title.toLowerCase().includes(search.toLowerCase())).filter((item) => !favorites.includes(item.url));
+  const filteredData = data
+    .filter((item) => item.title.toLowerCase().includes(search.toLowerCase()))
+    .filter((item) => !favorites.includes(item.url));
 
   const toggleFavorite = (url: string) => {
     if (favorites.includes(url)) {
@@ -78,40 +98,37 @@ const LiveListPage: FC = () => {
   const favoriteData = data.filter((d) => favorites.includes(d.url));
 
   return (
-    <VStack gap={4}>
-      <Heading w="full" textAlign="left">
-        Favorites
-      </Heading>
-      <Grid
-        templateColumns={{
-          base: 'repeat(2, 1fr)',
-          md: 'repeat(5, 1fr)',
-        }}
-        gap={6}
-        w="full"
-      >
+    <div className="flex flex-col gap-4">
+      <h1 className="w-full text-2xl font-bold">Favorites</h1>
+      <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-6">
         {favoriteData.map((d) => (
-          <LiveGridItem key={d.url} item={d} isFavorite toggleFavorite={() => toggleFavorite(d.url)} />
+          <LiveGridItem
+            key={d.url}
+            item={d}
+            isFavorite
+            toggleFavorite={() => toggleFavorite(d.url)}
+          />
         ))}
-      </Grid>
-      <Heading w="full" textAlign="left">
-        Live
-      </Heading>
-      <Input placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+      <Separator />
+      <h1 className="w-full text-2xl font-bold">Live</h1>
+      <Input
+        placeholder="Search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       {mainPageData.isLoading && <SkeletonGrid />}
-      <Grid
-        templateColumns={{
-          base: 'repeat(2, 1fr)',
-          md: 'repeat(5, 1fr)',
-        }}
-        gap={6}
-        w="full"
-      >
+      <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-6">
         {filteredData.map((d) => (
-          <LiveGridItem key={d.url} item={d} isFavorite={favorites.includes(d.url)} toggleFavorite={() => toggleFavorite(d.url)} />
+          <LiveGridItem
+            key={d.url}
+            item={d}
+            isFavorite={favorites.includes(d.url)}
+            toggleFavorite={() => toggleFavorite(d.url)}
+          />
         ))}
-      </Grid>
-    </VStack>
+      </div>
+    </div>
   );
 };
 

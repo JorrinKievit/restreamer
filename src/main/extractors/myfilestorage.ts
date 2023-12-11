@@ -1,25 +1,32 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { ContentType } from 'types/tmbd';
-import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './types';
-import { addLeadingZero } from './utils';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { ContentType } from "types/tmbd";
+import { axiosInstance } from "../utils/axios";
+import { IExtractor } from "./types";
+import { addLeadingZero } from "./utils";
 
 export class MyFileStorageExtractor implements IExtractor {
-  name = 'MyFileStorage';
+  name = "MyFileStorage";
 
-  logger = log.scope('MyFileStorage');
+  logger = log.scope("MyFileStorage");
 
-  url = 'https://myfilestorage.xyz';
+  url = "https://myfilestorage.xyz";
 
-  referer = 'https://bflix.gs/';
+  referer = "https://bflix.gs/";
 
-  async extractUrls(tmdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
+  async extractUrls(
+    tmdbId: string,
+    type: ContentType,
+    season?: number,
+    episode?: number,
+  ): Promise<Source[]> {
     try {
       let url = `${this.url}/${tmdbId}.mp4`;
 
-      if (type === 'tv' && season && episode) {
-        url = `${this.url}/tv/${tmdbId}/s${season}e${addLeadingZero(episode)}.mp4`;
+      if (type === "tv" && season && episode) {
+        url = `${this.url}/tv/${tmdbId}/s${season}e${addLeadingZero(
+          episode,
+        )}.mp4`;
       }
 
       const res = await axiosInstance.head(url, {
@@ -29,7 +36,7 @@ export class MyFileStorageExtractor implements IExtractor {
         },
       });
       this.logger.debug(res.status, res.statusText);
-      if (res.status !== 200) throw new Error('No sources found');
+      if (res.status !== 200) throw new Error("No sources found");
 
       return [
         {
@@ -37,10 +44,10 @@ export class MyFileStorageExtractor implements IExtractor {
           source: {
             url,
           },
-          type: 'mp4',
-          quality: '720p/1080p',
+          type: "mp4",
+          quality: "720p/1080p",
           proxySettings: {
-            type: 'mp4',
+            type: "mp4",
             referer: this.referer,
           },
         },

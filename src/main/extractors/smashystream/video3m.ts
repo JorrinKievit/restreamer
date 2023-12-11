@@ -1,17 +1,17 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../types';
-import { getResolutionFromM3u8 } from '../utils';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { axiosInstance } from "../../utils/axios";
+import { IExtractor } from "../types";
+import { getResolutionFromM3u8 } from "../utils";
 
 export class SmashyVideo3MExtractor implements IExtractor {
-  name = 'Smashy (3M)';
+  name = "Smashy (3M)";
 
   logger = log.scope(this.name);
 
-  url = 'https://embed.smashystream.com/video1.php';
+  url = "https://embed.smashystream.com/video1.php";
 
-  referer = 'https://embed.smashystream.com/playere.php';
+  referer = "https://embed.smashystream.com/playere.php";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
@@ -20,8 +20,10 @@ export class SmashyVideo3MExtractor implements IExtractor {
           referer: this.referer,
         },
       });
-      const sourceUrl = res.data.sourceUrls.find((s: any) => s.title === 'English').file;
-      if (!sourceUrl) throw new Error('No source url found');
+      const sourceUrl = res.data.sourceUrls.find(
+        (s: any) => s.title === "English",
+      ).file;
+      if (!sourceUrl) throw new Error("No source url found");
 
       const quality = await getResolutionFromM3u8(sourceUrl, true, {
         referer: this.referer,
@@ -32,7 +34,7 @@ export class SmashyVideo3MExtractor implements IExtractor {
         source: {
           url: sourceUrl,
         },
-        type: 'm3u8',
+        type: "m3u8",
         quality,
       };
     } catch (err) {

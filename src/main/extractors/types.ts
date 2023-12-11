@@ -1,6 +1,6 @@
-import { LogFunctions } from 'electron-log';
-import { LiveMainPage, Source } from 'types/sources';
-import { ContentType } from 'types/tmbd';
+import { LogFunctions } from "electron-log";
+import { LiveMainPage, Source } from "types/sources";
+import { ContentType } from "types/tmbd";
 
 export interface IExtractor {
   name?: string;
@@ -8,7 +8,12 @@ export interface IExtractor {
   url: string;
   referer?: string;
   extractUrl?: (url: string) => Promise<Source | undefined>;
-  extractUrls?: (imdbId: string, type: ContentType, season?: number, episode?: number) => Promise<Source[]>;
+  extractUrls?: (
+    imdbId: string,
+    type: ContentType,
+    season?: number,
+    episode?: number,
+  ) => Promise<Source[]>;
 }
 
 export interface ILiveExtractor {

@@ -1,19 +1,19 @@
-import { load } from 'cheerio';
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { ContentType } from 'types/tmbd';
-import { axiosInstance } from '../utils/axios';
-import { FileMoonExtractor } from './filemoon';
-import { IExtractor } from './types';
-import { VidPlayExtractor } from './vidplay';
-import { VidstreamExtractor } from './vidstream';
+import { load } from "cheerio";
+import log from "electron-log";
+import { Source } from "types/sources";
+import { ContentType } from "types/tmbd";
+import { axiosInstance } from "../utils/axios";
+import { FileMoonExtractor } from "./filemoon";
+import { IExtractor } from "./types";
+import { VidPlayExtractor } from "./vidplay";
+import { VidstreamExtractor } from "./vidstream";
 
 export class VidSrcToExtractor implements IExtractor {
-  logger = log.scope('VidSrcTo');
+  logger = log.scope("VidSrcTo");
 
-  url = 'https://vidsrc.to/embed/';
+  url = "https://vidsrc.to/embed/";
 
-  private mainUrl = 'https://vidsrc.to/';
+  private mainUrl = "https://vidsrc.to/";
 
   private vidStreamExtractor = new VidstreamExtractor();
 
@@ -21,12 +21,14 @@ export class VidSrcToExtractor implements IExtractor {
 
   private vidPlayExtractor = new VidPlayExtractor();
 
-  private key = '8z5Ag5wgagfsOuhz';
+  private key = "8z5Ag5wgagfsOuhz";
 
   private decodeBase64UrlSafe(str: string) {
-    const standardizedInput = str.replace(/_/g, '/').replace(/-/g, '+');
+    const standardizedInput = str.replace(/_/g, "/").replace(/-/g, "+");
 
-    const binaryData = Buffer.from(standardizedInput, 'base64').toString('binary');
+    const binaryData = Buffer.from(standardizedInput, "base64").toString(
+      "binary",
+    );
 
     const bytes = new Uint8Array(binaryData.length);
     for (let i = 0; i < bytes.length; i += 1) {
@@ -73,37 +75,58 @@ export class VidSrcToExtractor implements IExtractor {
     return decodeURIComponent(decodeURIComponent(decodedText));
   }
 
-  async extractUrls(imdbId: string, type: ContentType, season?: number, episode?: number): Promise<Source[]> {
+  async extractUrls(
+    imdbId: string,
+    type: ContentType,
+    season?: number,
+    episode?: number,
+  ): Promise<Source[]> {
     try {
-      const mainUrl = type === 'movie' ? `${this.url}movie/${imdbId}` : `${this.url}tv/${imdbId}/${season}/${episode}`;
+      const mainUrl =
+        type === "movie"
+          ? `${this.url}movie/${imdbId}`
+          : `${this.url}tv/${imdbId}/${season}/${episode}`;
       const res = await axiosInstance.get(mainUrl);
       const $ = load(res.data);
-      const dataId = $('a[data-id]').attr('data-id');
+      const dataId = $("a[data-id]").attr("data-id");
 
-      const sources = await axiosInstance.get(`${this.mainUrl}ajax/embed/episode/${dataId}/sources`);
-      if (sources.data.status !== 200) throw new Error('No sources found');
+      const sources = await axiosInstance.get(
+        `${this.mainUrl}ajax/embed/episode/${dataId}/sources`,
+      );
+      if (sources.data.status !== 200) throw new Error("No sources found");
 
       const sourceUrlsPromise = sources.data.result.map(async (source: any) => {
-        const encryptedUrl = await axiosInstance.get(`${this.mainUrl}ajax/embed/source/${source.id}`);
-        const decryptedUrl = this.decryptSourceUrl(encryptedUrl.data.result.url);
-        if (source.title === 'Vidstream') {
-          const vidStreamUrl = await this.vidStreamExtractor.extractUrl(decryptedUrl);
+        const encryptedUrl = await axiosInstance.get(
+          `${this.mainUrl}ajax/embed/source/${source.id}`,
+        );
+        const decryptedUrl = this.decryptSourceUrl(
+          encryptedUrl.data.result.url,
+        );
+        if (source.title === "Vidstream") {
+          const vidStreamUrl =
+            await this.vidStreamExtractor.extractUrl(decryptedUrl);
           return vidStreamUrl;
         }
-        if (source.title === 'Filemoon') {
-          const fileMoonUrl = await this.fileMoonExtractor.extractUrl(decryptedUrl);
+        if (source.title === "Filemoon") {
+          const fileMoonUrl =
+            await this.fileMoonExtractor.extractUrl(decryptedUrl);
           return fileMoonUrl;
         }
-        if (source.title === 'Vidplay') {
-          const vidPlayUrl = await this.vidPlayExtractor.extractUrl(decryptedUrl);
+        if (source.title === "Vidplay") {
+          const vidPlayUrl =
+            await this.vidPlayExtractor.extractUrl(decryptedUrl);
           return vidPlayUrl;
         }
 
         return undefined;
       });
 
-      const sourceUrls = (await Promise.all(sourceUrlsPromise)).filter((it) => it !== undefined) as Source[];
-      const subtitles = await axiosInstance.get(`${this.mainUrl}ajax/embed/episode/${dataId}/subtitles`);
+      const sourceUrls = (await Promise.all(sourceUrlsPromise)).filter(
+        (it) => it !== undefined,
+      ) as Source[];
+      const subtitles = await axiosInstance.get(
+        `${this.mainUrl}ajax/embed/episode/${dataId}/subtitles`,
+      );
 
       sourceUrls.forEach((sourceUrl) => {
         sourceUrl.subtitles = subtitles.data;

@@ -1,15 +1,15 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../types';
-import { getResolutionName } from '../utils';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { axiosInstance } from "../../utils/axios";
+import { IExtractor } from "../types";
+import { getResolutionName } from "../utils";
 
 export class SmashyNFlimExtractor implements IExtractor {
-  name = 'Smashy (NF)';
+  name = "Smashy (NF)";
 
   logger = log.scope(this.name);
 
-  url = 'https://embed.smashystream.com/nflim.php';
+  url = "https://embed.smashystream.com/nflim.php";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
@@ -18,34 +18,42 @@ export class SmashyNFlimExtractor implements IExtractor {
           referer: url,
         },
       });
-      const config = JSON.parse(res.data.match(/var\s+config\s*=\s*({.*?});/)[1]);
-      const fileUrl = config.file.split(',')[0];
+      const config = JSON.parse(
+        res.data.match(/var\s+config\s*=\s*({.*?});/)[1],
+      );
+      const fileUrl = config.file.split(",")[0];
 
-      const vttArray = config.subtitle.match(/\[([^\]]+)\](https?:\/\/\S+?)(?=,\[|$)/g).map((entry: any) => {
-        const [, name, link] = entry.match(/\[([^\]]+)\](https?:\/\/\S+?)(?=,\[|$)/);
-        return { name, link: link.replace(',', '') };
-      });
+      const vttArray = config.subtitle
+        .match(/\[([^\]]+)\](https?:\/\/\S+?)(?=,\[|$)/g)
+        .map((entry: any) => {
+          const [, name, link] = entry.match(
+            /\[([^\]]+)\](https?:\/\/\S+?)(?=,\[|$)/,
+          );
+          return { name, link: link.replace(",", "") };
+        });
 
-      const fileUrlRes = await axiosInstance.head(fileUrl.split(']')[1]);
+      const fileUrlRes = await axiosInstance.head(fileUrl.split("]")[1]);
 
       if (fileUrlRes.status !== 200) return undefined;
 
       return {
         server: this.name,
         source: {
-          url: fileUrl.split(']')[1],
+          url: fileUrl.split("]")[1],
         },
-        type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
-        quality: getResolutionName(parseInt(fileUrl.split(']')[0].split('[')[1], 10)),
+        type: fileUrl.includes(".m3u8") ? "m3u8" : "mp4",
+        quality: getResolutionName(
+          parseInt(fileUrl.split("]")[0].split("[")[1], 10),
+        ),
         subtitles: vttArray
-          .filter((it: any) => !it.link.includes('thumbnails'))
+          .filter((it: any) => !it.link.includes("thumbnails"))
           .map((subtitle: any) => ({
             file: subtitle.link,
             label: subtitle.name,
-            kind: 'captions',
+            kind: "captions",
           })),
         thumbnails: {
-          url: vttArray.find((it: any) => it.link.includes('thumbnails'))?.link,
+          url: vttArray.find((it: any) => it.link.includes("thumbnails"))?.link,
         },
       };
     } catch (err) {

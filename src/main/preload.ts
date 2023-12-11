@@ -1,12 +1,17 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { exposeElectronTRPC } from 'electron-trpc/main';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import { exposeElectronTRPC } from "electron-trpc/main";
 
-export type Channels = 'app-close' | 'app-update-available' | 'app-update-available-confirm' | 'app-download-progress';
+export type Channels =
+  | "app-close"
+  | "app-update-available"
+  | "app-update-available-confirm"
+  | "app-download-progress";
 
 const electronHandler = {
   ipcRenderer: {
     on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) => func(...args);
+      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
+        func(...args);
       ipcRenderer.on(channel, subscription);
 
       return () => {
@@ -19,9 +24,9 @@ const electronHandler = {
   },
 };
 
-contextBridge.exposeInMainWorld('electron', electronHandler);
+contextBridge.exposeInMainWorld("electron", electronHandler);
 
-process.once('loaded', () => {
+process.once("loaded", () => {
   exposeElectronTRPC();
 });
 

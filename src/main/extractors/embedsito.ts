@@ -1,16 +1,18 @@
-import { Source } from 'types/sources';
-import log from 'electron-log';
-import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './types';
+import { Source } from "types/sources";
+import log from "electron-log";
+import { axiosInstance } from "../utils/axios";
+import { IExtractor } from "./types";
 
 export class EmbedsitoExtractor implements IExtractor {
-  logger = log.scope('Embedsito');
+  logger = log.scope("Embedsito");
 
-  url: string = 'https://embedsito.com/api/source/';
+  url: string = "https://embedsito.com/api/source/";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
-      const res = await axiosInstance.post(`https://embedsito.com/api/source/${url}`);
+      const res = await axiosInstance.post(
+        `https://embedsito.com/api/source/${url}`,
+      );
 
       const file = res.data.data[res.data.data.length - 1];
       const redirectUrl = file.file;
@@ -24,11 +26,11 @@ export class EmbedsitoExtractor implements IExtractor {
         },
       });
       return {
-        server: 'Embedsito',
+        server: "Embedsito",
         source: {
           url: finalUrl.headers.location!,
         },
-        type: fileType === 'mp4' ? 'mp4' : 'm3u8',
+        type: fileType === "mp4" ? "mp4" : "m3u8",
         quality,
       };
     } catch (error) {

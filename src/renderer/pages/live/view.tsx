@@ -1,29 +1,39 @@
-import { Flex, useToast } from '@chakra-ui/react';
-import { MediaPlayer, MediaPlayerInstance, MediaProvider } from '@vidstack/react';
-import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
-import React, { FC, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { client } from 'renderer/api/trpc';
-import SourceSelector from 'renderer/components/SourceSelector';
-import { useQuery } from 'renderer/hooks/useQuery';
-import { getM3U8ProxyUrl } from 'renderer/lib/proxy';
-import { Source } from 'types/sources';
-import { useLocalStorage } from 'usehooks-ts';
+import {
+  MediaPlayer,
+  MediaPlayerInstance,
+  MediaProvider,
+} from "@vidstack/react";
+import {
+  defaultLayoutIcons,
+  DefaultVideoLayout,
+} from "@vidstack/react/player/layouts/default";
+import React, { FC, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { client } from "renderer/api/trpc";
+import { SourceSelector } from "renderer/components/player/source-selector";
+import { useToast } from "renderer/components/ui/use-toast";
+import { useQuery } from "renderer/hooks/useQuery";
+import { getM3U8ProxyUrl } from "renderer/lib/proxy";
+import { Source } from "types/sources";
+import { useLocalStorage } from "usehooks-ts";
 
 const LiveViewPage: FC = () => {
-  const toast = useToast();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const player = useRef<MediaPlayerInstance>(null);
   const query = useQuery();
-  const url = decodeURIComponent(query.get<string>('url'));
+  const url = decodeURIComponent(query.get<string>("url"));
 
-  const [playerVolume, setPlayerVolume] = useLocalStorage<number>('playerVolume', 1);
+  const [playerVolume, setPlayerVolume] = useLocalStorage<number>(
+    "playerVolume",
+    1,
+  );
 
   const { data, isLoading } = client.live.getLiveUrl.useQuery(
     { url },
     {
       enabled: !!url,
-    }
+    },
   );
 
   const { mutate: startProxy } = client.proxy.start.useMutation();
@@ -43,9 +53,9 @@ const LiveViewPage: FC = () => {
   useEffect(() => {
     if (!isLoading && data && data.length === 0) {
       toast({
-        title: 'No sources found',
-        description: 'No sources found for this video',
-        status: 'error',
+        title: "No sources found",
+        description: "No sources found for this video",
+        variant: "destructive",
       });
 
       navigate(-1);
@@ -71,11 +81,19 @@ const LiveViewPage: FC = () => {
   }, []);
 
   return (
-    <Flex flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {selectedSource && (
         <MediaPlayer
           ref={player}
-          src={{ src: selectedSource.proxySettings ? getM3U8ProxyUrl(selectedSource.source.url, selectedSource.proxySettings?.referer) : selectedSource.source.url, type: 'application/x-mpegurl' }}
+          src={{
+            src: selectedSource.proxySettings
+              ? getM3U8ProxyUrl(
+                  selectedSource.source.url,
+                  selectedSource.proxySettings?.referer,
+                )
+              : selectedSource.source.url,
+            type: "application/x-mpegurl",
+          }}
           aspectRatio="16/9"
           crossorigin="anonymous"
           autoplay
@@ -90,8 +108,14 @@ const LiveViewPage: FC = () => {
           <DefaultVideoLayout icons={defaultLayoutIcons} />
         </MediaPlayer>
       )}
-      {selectedSource && <SourceSelector sources={sources} activeSource={selectedSource} selectSource={setSelectedSource} />}
-    </Flex>
+      {selectedSource && (
+        <SourceSelector
+          sources={sources}
+          activeSource={selectedSource}
+          selectSource={setSelectedSource}
+        />
+      )}
+    </div>
   );
 };
 

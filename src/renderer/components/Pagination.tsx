@@ -1,6 +1,6 @@
-import React, { FC } from 'react';
-import { Button, Flex, IconButton, Text } from '@chakra-ui/react';
-import { ArrowLeftIcon, ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { FC } from "react";
+import { Button } from "./ui/button";
 
 interface PaginationProps {
   currentPage: number;
@@ -8,13 +8,17 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-const Pagination: FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination: FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     onPageChange(page);
     window.scrollTo({
       top: 0,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   };
 
@@ -22,15 +26,20 @@ const Pagination: FC<PaginationProps> = ({ currentPage, totalPages, onPageChange
     const pageButtons = [];
 
     const createPageButton = (page: number, isActive: boolean) => (
-      <Button key={page} onClick={() => handlePageChange(page)} isActive={isActive} mx={1}>
+      <Button
+        key={page}
+        onClick={() => handlePageChange(page)}
+        variant={isActive ? "default" : "outline"}
+        className="mx-1"
+      >
         {page}
       </Button>
     );
 
     const createEllipsis = (key: string) => (
-      <Text key={key} mx={1}>
+      <p key={key} className="mx-1">
         ...
-      </Text>
+      </p>
     );
 
     const firstVisiblePage = Math.max(1, currentPage - 2);
@@ -39,7 +48,7 @@ const Pagination: FC<PaginationProps> = ({ currentPage, totalPages, onPageChange
     if (firstVisiblePage > 1) {
       pageButtons.push(createPageButton(1, false));
       if (firstVisiblePage > 2) {
-        pageButtons.push(createEllipsis('ellipsis1'));
+        pageButtons.push(createEllipsis("ellipsis1"));
       }
     }
 
@@ -49,7 +58,7 @@ const Pagination: FC<PaginationProps> = ({ currentPage, totalPages, onPageChange
 
     if (lastVisiblePage < totalPages) {
       if (lastVisiblePage < totalPages - 1) {
-        pageButtons.push(createEllipsis('ellipsis2'));
+        pageButtons.push(createEllipsis("ellipsis2"));
       }
       pageButtons.push(createPageButton(totalPages, false));
     }
@@ -58,14 +67,46 @@ const Pagination: FC<PaginationProps> = ({ currentPage, totalPages, onPageChange
   };
 
   return (
-    <Flex align="center" justify="center" mt={4}>
-      <IconButton aria-label="To First Page" icon={<ArrowLeftIcon />} onClick={() => handlePageChange(1)} isDisabled={currentPage === 1} mr={2} colorScheme="blue" />
-      <IconButton aria-label="Previous Page" icon={<ChevronLeftIcon boxSize={8} />} onClick={() => handlePageChange(currentPage - 1)} isDisabled={currentPage === 1} mr={2} colorScheme="blue" />
+    <div className="mt-4 flex items-center justify-center">
+      <Button
+        aria-label="To First Page"
+        variant="outline"
+        onClick={() => handlePageChange(1)}
+        disabled={currentPage === 1}
+        className="mr-2"
+      >
+        <ArrowLeft />
+      </Button>
+      <Button
+        aria-label="Previous Page"
+        variant="outline"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="mr-2"
+      >
+        <ChevronLeft />
+      </Button>
       {renderPageButtons()}
-      <IconButton aria-label="Next Page" icon={<ChevronRightIcon boxSize={8} />} onClick={() => handlePageChange(currentPage + 1)} isDisabled={currentPage === totalPages} ml={2} colorScheme="blue" />
-      <IconButton aria-label="To First Page" icon={<ArrowRightIcon />} onClick={() => handlePageChange(totalPages)} isDisabled={currentPage === totalPages} ml={2} colorScheme="blue" />
-    </Flex>
+      <Button
+        aria-label="Next Page"
+        variant="outline"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="ml-2"
+      >
+        <ChevronRight />
+      </Button>
+      <Button
+        aria-label="To First Page"
+        variant="outline"
+        onClick={() => handlePageChange(totalPages)}
+        disabled={currentPage === totalPages}
+        className="ml-2"
+      >
+        <ArrowRight />
+      </Button>
+    </div>
   );
 };
 
-export default Pagination;
+export { Pagination };

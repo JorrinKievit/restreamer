@@ -1,19 +1,19 @@
-import { app } from 'electron';
-import { Source } from 'types/sources';
-import log from 'electron-log';
-import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './types';
+import { app } from "electron";
+import { Source } from "types/sources";
+import log from "electron-log";
+import { axiosInstance } from "../utils/axios";
+import { IExtractor } from "./types";
 
 export class StreamlareExtractor implements IExtractor {
-  logger = log.scope('Streamlare');
+  logger = log.scope("Streamlare");
 
-  url: string = 'https://streamlare.com/';
+  url: string = "https://streamlare.com/";
 
-  referer: string = 'https://sltube.org/';
+  referer: string = "https://sltube.org/";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
-      const id = url.split('/').pop();
+      const id = url.split("/").pop();
       // Streamlare endpoint requires the same userAgent that is used in the API request
       const userAgent = app.userAgentFallback;
 
@@ -24,19 +24,19 @@ export class StreamlareExtractor implements IExtractor {
         },
         {
           headers: {
-            'User-Agent': userAgent,
+            "User-Agent": userAgent,
           },
-        }
+        },
       );
 
       if (res.data.result?.Original?.file) {
         return {
-          server: 'Streamlare',
+          server: "Streamlare",
           source: {
             url: res.data.result.Original.file,
           },
-          type: res.data.type.includes('mp4') ? 'mp4' : 'm3u8',
-          quality: 'Unknown',
+          type: res.data.type.includes("mp4") ? "mp4" : "m3u8",
+          quality: "Unknown",
         };
       }
       return undefined;

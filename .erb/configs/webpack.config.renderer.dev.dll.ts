@@ -2,29 +2,29 @@
  * Builds the DLL for development electron renderer process
  */
 
-import webpack from 'webpack';
-import path from 'path';
-import { merge } from 'webpack-merge';
-import baseConfig from './webpack.config.base';
-import webpackPaths from './webpack.paths';
-import { dependencies } from '../../package.json';
-import checkNodeEnv from '../scripts/check-node-env';
-import webpackConfigRendererDev from './webpack.config.renderer.dev';
+import webpack from "webpack";
+import path from "path";
+import { merge } from "webpack-merge";
+import baseConfig from "./webpack.config.base";
+import webpackPaths from "./webpack.paths";
+import { dependencies } from "../../package.json";
+import checkNodeEnv from "../scripts/check-node-env";
+import webpackConfigRendererDev from "./webpack.config.renderer.dev";
 
-checkNodeEnv('development');
+checkNodeEnv("development");
 
 const dist = webpackPaths.dllPath;
 
 const configuration: webpack.Configuration = {
   context: webpackPaths.rootPath,
 
-  devtool: 'eval',
+  devtool: "eval",
 
-  mode: 'development',
+  mode: "development",
 
-  target: 'electron-renderer',
+  target: "electron-renderer",
 
-  externals: ['fsevents', 'crypto-browserify'],
+  externals: ["fsevents", "crypto-browserify"],
 
   /**
    * Use `module` from `webpack.config.renderer.dev.js`
@@ -33,23 +33,23 @@ const configuration: webpack.Configuration = {
 
   entry: {
     renderer: Object.keys(dependencies || {})
-      .filter((it) => it !== 'electron-trpc')
-      .filter((it) => it !== '@warren-bank/hls-proxy'),
+      .filter((it) => it !== "electron-trpc")
+      .filter((it) => it !== "@warren-bank/hls-proxy"),
   },
 
   output: {
     path: dist,
-    filename: '[name].dev.dll.js',
+    filename: "[name].dev.dll.js",
     library: {
-      name: 'renderer',
-      type: 'var',
+      name: "renderer",
+      type: "var",
     },
   },
 
   plugins: [
     new webpack.DllPlugin({
-      path: path.join(dist, '[name].json'),
-      name: '[name]',
+      path: path.join(dist, "[name].json"),
+      name: "[name]",
     }),
 
     /**
@@ -62,7 +62,7 @@ const configuration: webpack.Configuration = {
      * development checks
      */
     new webpack.EnvironmentPlugin({
-      NODE_ENV: 'development',
+      NODE_ENV: "development",
     }),
 
     new webpack.LoaderOptionsPlugin({
