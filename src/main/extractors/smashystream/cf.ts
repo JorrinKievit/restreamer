@@ -1,14 +1,14 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../types';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { axiosInstance } from "../../utils/axios";
+import { IExtractor } from "../types";
 
 export class SmashyCfExtractor implements IExtractor {
-  name = 'Smashy (CF)';
+  name = "Smashy (CF)";
 
   logger = log.scope(this.name);
 
-  url = 'https://embed.smashystream.com/cf.php';
+  url = "https://embed.smashystream.com/cf.php";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
@@ -22,15 +22,16 @@ export class SmashyCfExtractor implements IExtractor {
 
       const fileRes = await axiosInstance.head(file);
 
-      if (fileRes.status !== 200 || fileRes.data.includes('404')) return undefined;
+      if (fileRes.status !== 200 || fileRes.data.includes("404"))
+        return undefined;
 
       return {
         server: this.name,
         source: {
           url: file,
         },
-        type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
-        quality: 'Unknown',
+        type: file.includes(".m3u8") ? "m3u8" : "mp4",
+        quality: "Unknown",
       };
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);

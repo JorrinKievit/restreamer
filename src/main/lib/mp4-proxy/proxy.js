@@ -1,11 +1,11 @@
-const express = require('express');
-const httpProxy = require('http-proxy');
+const express = require("express");
+const httpProxy = require("http-proxy");
 
 const proxy = httpProxy.createProxyServer();
 
 const server = express();
 
-server.get('/proxy/:url', (req, res) => {
+server.get("/proxy/:url", (req, res) => {
   const targetURL = new URL(decodeURIComponent(req.params.url));
   const accountToken = req.query.accountToken;
   const referer = encodeURIComponent(req.query.referer);
@@ -28,5 +28,5 @@ server.get('/proxy/:url', (req, res) => {
 });
 
 server.listen(7688, () => {
-  console.log('Server is running on port 3000');
+  console.log("Server is running on port 3000");
 });

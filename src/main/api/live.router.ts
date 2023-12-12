@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { CricFoot2Extractor } from '../extractors/live/cricfoot2';
-import { t } from './trpc-client';
+import { z } from "zod";
+import { CricFoot2Extractor } from "../extractors/live/cricfoot2";
+import { t } from "./trpc-client";
 
 export const liveRouter = t.router({
   getMainPage: t.procedure.query(async () => {
@@ -14,7 +14,7 @@ export const liveRouter = t.router({
     .input(
       z.object({
         url: z.string(),
-      })
+      }),
     )
     .query(async (req) => {
       const cricFoot2Extractor = new CricFoot2Extractor();

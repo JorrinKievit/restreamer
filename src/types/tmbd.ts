@@ -1,1 +1,1 @@
-export type ContentType = 'movie' | 'tv';
+export type ContentType = "movie" | "tv";

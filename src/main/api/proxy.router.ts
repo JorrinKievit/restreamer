@@ -1,21 +1,21 @@
-import axios from 'axios';
-import z from 'zod';
-import { startProxy, stopProxy } from '../lib/mp4-proxy/command';
-import { startM3U8Proxy, stopM3U8Proxy } from '../lib/m3u8-proxy';
-import { t } from './trpc-client';
+import axios from "axios";
+import z from "zod";
+import { startProxy, stopProxy } from "../lib/mp4-proxy/command";
+import { startM3U8Proxy, stopM3U8Proxy } from "../lib/m3u8-proxy";
+import { t } from "./trpc-client";
 
 export const proxyRouter = t.router({
   start: t.procedure
     .input(
       z.object({
-        type: z.enum(['mp4', 'm3u8', 'mkv']),
+        type: z.enum(["mp4", "m3u8", "mkv"]),
         referer: z.string().optional(),
         origin: z.string().optional().nullable(),
         userAgent: z.string().optional(),
-      })
+      }),
     )
     .mutation(({ input }) => {
-      if (input.type === 'mp4') {
+      if (input.type === "mp4") {
         startProxy();
         return;
       }
@@ -33,13 +33,13 @@ export const proxyRouter = t.router({
     .input(
       z.object({
         url: z.string(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const uri = new URL(input.url);
       const { host } = uri;
 
-      let referer = `${host.split('.').slice(-2).join('.')}/`;
+      let referer = `${host.split(".").slice(-2).join(".")}/`;
       referer = `https://${referer}`;
 
       const res = await axios.get(input.url, { headers: { referer } });

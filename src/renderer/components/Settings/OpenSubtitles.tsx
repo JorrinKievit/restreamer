@@ -1,33 +1,70 @@
-import { Card, CardHeader, Heading, CardBody, VStack, FormControl, FormLabel, Input, CardFooter, Button, TableContainer, Table, Tbody, Tr, Td, Text } from '@chakra-ui/react';
-import React, { FC, useState } from 'react';
-import { OpenSubtitlesUser } from 'main/api/opensubtitles/user-information.types';
-import { useLocalStorage } from 'usehooks-ts';
-import { client } from 'renderer/api/trpc';
+import React, { FC, useState } from "react";
+import { OpenSubtitlesUser } from "main/api/opensubtitles/user-information.types";
+import { useLocalStorage } from "usehooks-ts";
+import { client } from "renderer/api/trpc";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { SpinnerButton } from "../ui/spinner-button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { Input } from "../ui/input";
 
 const initialOpenSubtitlesData: OpenSubtitlesUser = {
-  token: '',
+  token: "",
   user: {
     allowed_downloads: 0,
     allowed_translations: 0,
-    level: '',
+    level: "",
     user_id: 0,
     ext_installed: false,
-    username: '',
+    username: "",
     vip: false,
     remaining_downloads: 0,
     downloads_count: 0,
   },
 };
 
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
 const OpenSubtitlesSettings: FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-  const [opensubtitlesData, setOpensubtitlesData] = useLocalStorage<OpenSubtitlesUser>('opensubtitles', initialOpenSubtitlesData);
+  const [opensubtitlesData, setOpensubtitlesData] =
+    useLocalStorage<OpenSubtitlesUser>(
+      "opensubtitles",
+      initialOpenSubtitlesData,
+    );
 
-  const { mutate: login, error: errorLogin, isLoading: isLoadingLogin } = client.opensubtitles.login.useMutation();
+  const {
+    mutate: login,
+    error: errorLogin,
+    isLoading: isLoadingLogin,
+  } = client.opensubtitles.login.useMutation();
 
-  const { mutate: logout, isLoading: isLoadingLogout, error: errorLogout } = client.opensubtitles.logout.useMutation();
+  const {
+    mutate: logout,
+    isLoading: isLoadingLogout,
+    error: errorLogout,
+  } = client.opensubtitles.logout.useMutation();
 
   const handleLogout = async () => {
     logout(
@@ -38,12 +75,14 @@ const OpenSubtitlesSettings: FC = () => {
         onSuccess: () => {
           setOpensubtitlesData(initialOpenSubtitlesData);
         },
-      }
+      },
     );
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = ({
+    username,
+    password,
+  }: z.infer<typeof loginSchema>) => {
     login(
       {
         username,
@@ -53,72 +92,84 @@ const OpenSubtitlesSettings: FC = () => {
         onSuccess: (res) => {
           setOpensubtitlesData(res);
         },
-      }
+      },
     );
   };
 
   return (
-    <Card h="full">
+    <Card className="h-full">
       <CardHeader>
-        <Heading>OpenSubtitles.com Login</Heading>
+        <h4 className="text-2xl font-semibold leading-none tracking-tight">
+          OpenSubtitles
+        </h4>
       </CardHeader>
       {!opensubtitlesData?.token ? (
-        <form onSubmit={handleSubmit}>
-          <CardBody>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Username</FormLabel>
-                <Input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Password</FormLabel>
-                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </FormControl>
-              {errorLogin && <Text color="tomato">{errorLogin.message}</Text>}
-            </VStack>
-          </CardBody>
-          <CardFooter justifyContent="flex-end" pt={0}>
-            <Button type="submit" isLoading={isLoadingLogin} colorScheme="blue">
-              Login
-            </Button>
-          </CardFooter>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {errorLogin?.message && (
+                <span color="tomato">{errorLogin.message}</span>
+              )}
+            </CardContent>
+            <CardFooter className="justify-end">
+              <SpinnerButton type="submit" isLoading={isLoadingLogin}>
+                Login
+              </SpinnerButton>
+            </CardFooter>
+          </form>
+        </Form>
       ) : (
         <>
-          <CardBody>
-            <TableContainer>
-              <Table variant="simple">
-                <Tbody>
-                  <Tr>
-                    <Td>Username</Td>
-                    <Td>{opensubtitlesData.user.username}</Td>
-                  </Tr>
-                  <Tr>
-                    <Td>User ID</Td>
-                    <Td>{opensubtitlesData.user.user_id}</Td>
-                  </Tr>
-                  <Tr>
-                    <Td>Remaining downloads</Td>
-                    <Td>{opensubtitlesData.user.remaining_downloads}</Td>
-                  </Tr>
-                  <Tr>
-                    <Td>Level</Td>
-                    <Td>{opensubtitlesData.user.level}</Td>
-                  </Tr>
-                </Tbody>
-              </Table>
-            </TableContainer>
-          </CardBody>
-          <CardFooter justifyContent="flex-end">
-            <Button colorScheme="blue" isLoading={isLoadingLogout} onClick={handleLogout}>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-x-20 gap-y-10">
+              <Label>Username</Label>
+              <Label>{opensubtitlesData.user.username}</Label>
+              <Label>User ID</Label>
+              <Label>{opensubtitlesData.user.user_id}</Label>
+              <Label>Remaining downloads</Label>
+              <Label>{opensubtitlesData.user.remaining_downloads}</Label>
+              <Label>Level</Label>
+              <Label>{opensubtitlesData.user.level}</Label>
+            </div>
+          </CardContent>
+          <CardFooter className="justify-end">
+            <SpinnerButton isLoading={isLoadingLogout} onClick={handleLogout}>
               Logout
-            </Button>
+            </SpinnerButton>
           </CardFooter>
-          {errorLogout && <Text color="tomato">{errorLogout.message}</Text>}
+          {errorLogout && <span color="tomato">{errorLogout.message}</span>}
         </>
       )}
     </Card>
   );
 };
 
-export default OpenSubtitlesSettings;
+export { OpenSubtitlesSettings };

@@ -1,32 +1,32 @@
 /* eslint-disable max-classes-per-file */
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import vm from 'vm';
-import { axiosInstance } from '../utils/axios';
-import { IExtractor } from './types';
-import { getResolutionFromM3u8 } from './utils';
+import log from "electron-log";
+import { Source } from "types/sources";
+import vm from "vm";
+import { axiosInstance } from "../utils/axios";
+import { IExtractor } from "./types";
+import { getResolutionFromM3u8 } from "./utils";
 
 export class FileMoonExtractor implements IExtractor {
-  logger = log.scope('FileMoon');
+  logger = log.scope("FileMoon");
 
-  url = 'https://filemoon.sx/';
+  url = "https://filemoon.sx/";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
       const res = await axiosInstance.get(url);
       const regex = /eval\((.*)\)/g;
       const evalCode = regex.exec(res.data)?.[0];
-      if (!evalCode) throw new Error('No eval code found');
+      if (!evalCode) throw new Error("No eval code found");
 
       const extractSource = async (file: string): Promise<Source> => {
         const quality = await getResolutionFromM3u8(file, true);
 
         return {
-          server: 'FileMoon',
+          server: "FileMoon",
           source: {
             url: file,
           },
-          type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
+          type: file.includes(".m3u8") ? "m3u8" : "mp4",
           quality,
         };
       };
@@ -40,10 +40,10 @@ export class FileMoonExtractor implements IExtractor {
                 if (firstSource && firstSource.file) {
                   resolve(extractSource(firstSource.file));
                 } else {
-                  reject(new Error('No file found'));
+                  reject(new Error("No file found"));
                 }
               } else {
-                reject(new Error('No sources found'));
+                reject(new Error("No sources found"));
               }
             },
             on: () => {},
@@ -57,7 +57,7 @@ export class FileMoonExtractor implements IExtractor {
           }),
           document: {
             addEventListener: (event: string, callback: () => void) => {
-              if (event === 'DOMContentLoaded') {
+              if (event === "DOMContentLoaded") {
                 callback();
               }
             },

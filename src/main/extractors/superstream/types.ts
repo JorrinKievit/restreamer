@@ -22,7 +22,7 @@ export interface SearchDataResponse {
   download: number;
   imdb_rating: string;
   is_collect: number;
-  '3d': number;
+  "3d": number;
   audio_lang: string;
   quality_tag: string;
   lang: string;
@@ -69,9 +69,9 @@ export interface Names {
   es: string;
   fr: string;
   ja: string;
-  'pt-BR': string;
+  "pt-BR": string;
   ru: string;
-  'zh-CN': string;
+  "zh-CN": string;
 }
 
 export interface Continent {
@@ -86,9 +86,9 @@ export interface Names2 {
   es: string;
   fr: string;
   ja: string;
-  'pt-BR': string;
+  "pt-BR": string;
   ru: string;
-  'zh-CN': string;
+  "zh-CN": string;
 }
 
 export interface Country {
@@ -104,9 +104,9 @@ export interface Names3 {
   es: string;
   fr: string;
   ja: string;
-  'pt-BR': string;
+  "pt-BR": string;
   ru: string;
-  'zh-CN': string;
+  "zh-CN": string;
 }
 
 export interface RegisteredCountry {

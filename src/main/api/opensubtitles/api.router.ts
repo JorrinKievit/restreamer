@@ -1,24 +1,30 @@
 /* eslint-disable no-undef */
-import axios, { AxiosResponse, isAxiosError } from 'axios';
-import z from 'zod';
-import { TRPCError } from '@trpc/server';
-import { app } from 'electron';
-import { t } from '../trpc-client';
-import { DownloadResponse } from './download.types';
-import { LoginResponse } from './login.types';
-import { SearchResponse } from './search.types';
-import { OpenSubtitlesUser, UserInformationResponse } from './user-information.types';
+import axios, { AxiosResponse, isAxiosError } from "axios";
+import z from "zod";
+import { TRPCError } from "@trpc/server";
+import { app } from "electron";
+import { t } from "../trpc-client";
+import { DownloadResponse } from "./download.types";
+import { LoginResponse } from "./login.types";
+import { SearchResponse } from "./search.types";
+import {
+  OpenSubtitlesUser,
+  UserInformationResponse,
+} from "./user-information.types";
 
-const OPENSUBTITLES_API_URL = 'https://api.opensubtitles.com/api/v1/';
+const OPENSUBTITLES_API_URL = "https://api.opensubtitles.com/api/v1/";
 
-const API_KEY = process.env.NODE_ENV === 'development' ? process.env.OPENSUBTITLES_API_KEY : OPENSUBTITLES_API_KEY;
+const API_KEY =
+  process.env.NODE_ENV === "development"
+    ? process.env.OPENSUBTITLES_API_KEY
+    : OPENSUBTITLES_API_KEY;
 
 const baseApi = axios.create({
   baseURL: OPENSUBTITLES_API_URL,
   headers: {
-    'Api-Key': API_KEY,
-    'Content-Type': 'application/json',
-    'User-Agent': `Restreamer ${app.getVersion()}`,
+    "Api-Key": API_KEY,
+    "Content-Type": "application/json",
+    "User-Agent": `Restreamer ${app.getVersion()}`,
   },
 });
 
@@ -28,20 +34,21 @@ export const openSubtitlesRouter = t.router({
       z.object({
         username: z.string(),
         password: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       try {
-        const loginResponse = await baseApi.post<LoginResponse>('login', {
+        const loginResponse = await baseApi.post<LoginResponse>("login", {
           username: input.username,
           password: input.password,
         });
 
-        const userInformationResponse = await baseApi.get<UserInformationResponse>('infos/user', {
-          headers: {
-            Authorization: `Bearer ${loginResponse.data.token}`,
-          },
-        });
+        const userInformationResponse =
+          await baseApi.get<UserInformationResponse>("infos/user", {
+            headers: {
+              Authorization: `Bearer ${loginResponse.data.token}`,
+            },
+          });
 
         const user: OpenSubtitlesUser = {
           user: {
@@ -55,7 +62,7 @@ export const openSubtitlesRouter = t.router({
       } catch (error) {
         if (isAxiosError(error)) {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
+            code: "BAD_REQUEST",
             message: error.response?.data.message,
           });
         }
@@ -67,10 +74,10 @@ export const openSubtitlesRouter = t.router({
     .input(
       z.object({
         token: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
-      const res = await baseApi.delete('logout', {
+      const res = await baseApi.delete("logout", {
         headers: {
           Authorization: `Bearer ${input.token}`,
         },
@@ -81,10 +88,10 @@ export const openSubtitlesRouter = t.router({
     .input(
       z.object({
         token: z.string(),
-      })
+      }),
     )
     .query(async ({ input }) => {
-      const res = await baseApi.get('user', {
+      const res = await baseApi.get("user", {
         headers: {
           Authorization: `Bearer ${input.token}`,
         },
@@ -97,10 +104,10 @@ export const openSubtitlesRouter = t.router({
         tmdbId: z.string(),
         season: z.number().optional(),
         episode: z.number().optional(),
-      })
+      }),
     )
     .query(async ({ input }) => {
-      const res = await baseApi.get<SearchResponse>('subtitles', {
+      const res = await baseApi.get<SearchResponse>("subtitles", {
         params: {
           page: 1,
           tmdb_id: input.tmdbId,
@@ -116,7 +123,7 @@ export const openSubtitlesRouter = t.router({
           // eslint-disable-next-line no-promise-executor-return
           return new Promise((resolve) => setTimeout(resolve, 1500));
         }
-        return baseApi.get<SearchResponse>('subtitles', {
+        return baseApi.get<SearchResponse>("subtitles", {
           params: {
             page: i + 1,
             tmdb_id: input.tmdbId,
@@ -125,7 +132,9 @@ export const openSubtitlesRouter = t.router({
           },
         });
       });
-      const responseData = (await Promise.all(promises)) as AxiosResponse<SearchResponse>[];
+      const responseData = (await Promise.all(
+        promises,
+      )) as AxiosResponse<SearchResponse>[];
 
       const finalData = responseData
         .filter((x) => x !== null)
@@ -140,22 +149,22 @@ export const openSubtitlesRouter = t.router({
       z.object({
         fileId: z.number(),
         token: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const res = await baseApi.post<DownloadResponse>(
-        'download',
+        "download",
         {
           file_id: input.fileId,
-          sub_format: 'webvtt',
+          sub_format: "webvtt",
           force_download: 1,
         },
         {
           headers: {
             Authorization: `Bearer ${input.token}`,
-            Accept: '*/*',
+            Accept: "*/*",
           },
-        }
+        },
       );
       return res.data;
     }),

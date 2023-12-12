@@ -1,12 +1,12 @@
-import { appRouter } from './app.router';
-import { liveRouter } from './live.router';
-import { openSubtitlesRouter } from './opensubtitles/api.router';
-import { proxyRouter } from './proxy.router';
-import { tmdbRouter } from './tmdb/api.router';
-import { t } from './trpc-client';
-import { updaterRouter } from './updater.router';
-import { vidSrcRouter } from './vidsrc.router';
-import { vlcRouter } from './vlc.router';
+import { appRouter } from "./app.router";
+import { liveRouter } from "./live.router";
+import { openSubtitlesRouter } from "./opensubtitles/api.router";
+import { proxyRouter } from "./proxy.router";
+import { tmdbRouter } from "./tmdb/api.router";
+import { t } from "./trpc-client";
+import { updaterRouter } from "./updater.router";
+import { vidSrcRouter } from "./vidsrc.router";
+import { vlcRouter } from "./vlc.router";
 
 export const router = t.router({
   app: appRouter,

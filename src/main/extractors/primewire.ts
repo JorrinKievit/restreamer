@@ -1,10 +1,10 @@
-import log from 'electron-log';
-import { GoMoviesExtractor } from './gomovies';
+import log from "electron-log";
+import { GoMoviesExtractor } from "./gomovies";
 
 export class PrimeWireExtractor extends GoMoviesExtractor {
-  name = 'PrimeWire';
+  name = "PrimeWire";
 
-  logger = log.scope('PrimeWire');
+  logger = log.scope("PrimeWire");
 
-  url = 'https://real-primewire.club';
+  url = "https://real-primewire.club";
 }

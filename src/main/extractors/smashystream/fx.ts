@@ -1,16 +1,16 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../types';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { axiosInstance } from "../../utils/axios";
+import { IExtractor } from "../types";
 
 export class SmashyFxExtractor implements IExtractor {
-  name = 'Smashy (Fx)';
+  name = "Smashy (Fx)";
 
   logger = log.scope(this.name);
 
-  url = 'https://embed.smashystream.com/fx555.php';
+  url = "https://embed.smashystream.com/fx555.php";
 
-  referer = 'https://remotestre.am/';
+  referer = "https://remotestre.am/";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
@@ -27,10 +27,10 @@ export class SmashyFxExtractor implements IExtractor {
         source: {
           url: file,
         },
-        type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
-        quality: 'Unknown',
+        type: file.includes(".m3u8") ? "m3u8" : "mp4",
+        quality: "Unknown",
         proxySettings: {
-          type: file.includes('.m3u8') ? 'm3u8' : 'mp4',
+          type: file.includes(".m3u8") ? "m3u8" : "mp4",
           referer: this.referer,
         },
       };

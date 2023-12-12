@@ -1,19 +1,16 @@
-import { Grid, GridItem } from '@chakra-ui/react';
-import { FC } from 'react';
-import OpenSubtitlesSettings from 'renderer/components/Settings/OpenSubtitles';
-import SourcesCheck from 'renderer/components/Settings/SourcesCheck';
+import { FC } from "react";
+import { ColorThemePicker } from "renderer/components/layout/color-theme";
+import { OpenSubtitlesSettings } from "renderer/components/settings/opensubtitles";
+import { SourcesCheck } from "renderer/components/settings/sources-check";
 
-const Settings: FC = () => {
+const SettingsPage: FC = () => {
   return (
-    <Grid templateColumns="repeat(2, 1fr)" gap={6} h={400}>
-      <GridItem>
-        <OpenSubtitlesSettings />
-      </GridItem>
-      <GridItem overflowY="auto">
-        <SourcesCheck />
-      </GridItem>
-    </Grid>
+    <div className="grid h-[700px] grid-cols-2 grid-rows-2 gap-6">
+      <OpenSubtitlesSettings />
+      <SourcesCheck />
+      <ColorThemePicker />
+    </div>
   );
 };
 
-export default Settings;
+export { SettingsPage };

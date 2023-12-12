@@ -1,15 +1,15 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../types';
-import { getResolutionFromM3u8 } from '../utils';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { axiosInstance } from "../../utils/axios";
+import { IExtractor } from "../types";
+import { getResolutionFromM3u8 } from "../utils";
 
 export class SmashyEmsExtractor implements IExtractor {
-  name = 'Smashy (EMS)';
+  name = "Smashy (EMS)";
 
   logger = log.scope(this.name);
 
-  url = 'https://embed.smashystream.com/ems.php';
+  url = "https://embed.smashystream.com/ems.php";
 
   async extractUrl(url: string): Promise<Source | undefined> {
     try {
@@ -18,22 +18,27 @@ export class SmashyEmsExtractor implements IExtractor {
           referer: url,
         },
       });
-      const config = JSON.parse(res.data.match(/new\s+Playerjs\((\{[^]*?\})\);/)[1].replace(/'/g, '"'));
+      const config = JSON.parse(
+        res.data.match(/new\s+Playerjs\((\{[^]*?\})\);/)[1].replace(/'/g, '"'),
+      );
       const fileUrl = config.file;
 
       const subtitleArray = config.subtitle
-        .split(',')
+        .split(",")
         .map((entry: any) => {
           const nameRegex = /\[([^\]]*)\]/;
           const urlRegex = /(https:\/\/[^\s,]+)/;
           const nameMatch = nameRegex.exec(entry);
           const urlMatch = urlRegex.exec(entry);
-          const name = nameMatch && nameMatch[1].trim() ? nameMatch[1].trim() : urlMatch && urlMatch[1];
+          const name =
+            nameMatch && nameMatch[1].trim()
+              ? nameMatch[1].trim()
+              : urlMatch && urlMatch[1];
           const subtitleUrl = urlMatch && urlMatch[0].trim();
           return {
             file: subtitleUrl,
             label: name,
-            kind: 'captions',
+            kind: "captions",
           };
         })
         .filter((subtitle: any) => subtitle.file !== null);
@@ -43,7 +48,7 @@ export class SmashyEmsExtractor implements IExtractor {
           referer: url,
         },
       });
-      if (hlsResponse.data === '') return;
+      if (hlsResponse.data === "") return;
 
       const quality = await getResolutionFromM3u8(hlsResponse.data, false);
       return {
@@ -51,7 +56,7 @@ export class SmashyEmsExtractor implements IExtractor {
         source: {
           url: fileUrl,
         },
-        type: fileUrl.includes('.m3u8') ? 'm3u8' : 'mp4',
+        type: fileUrl.includes(".m3u8") ? "m3u8" : "mp4",
         quality,
         subtitles: subtitleArray,
       };

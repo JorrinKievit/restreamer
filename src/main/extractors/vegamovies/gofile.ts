@@ -1,15 +1,15 @@
-import log from 'electron-log';
-import { Source } from 'types/sources';
-import { axiosInstance } from '../../utils/axios';
-import { IExtractor } from '../types';
-import { getResolution } from '../utils';
+import log from "electron-log";
+import { Source } from "types/sources";
+import { axiosInstance } from "../../utils/axios";
+import { IExtractor } from "../types";
+import { getResolution } from "../utils";
 
 export class GoFileExtractor implements IExtractor {
-  name = 'GoFile';
+  name = "GoFile";
 
-  url = 'https://gofile.io';
+  url = "https://gofile.io";
 
-  apiUrl = 'https://api.gofile.io';
+  apiUrl = "https://api.gofile.io";
 
   logger = log.scope(this.name);
 
@@ -22,7 +22,7 @@ export class GoFileExtractor implements IExtractor {
 
   private async getGoFileAccountToken() {
     const res = await axiosInstance.get(`${this.apiUrl}/createAccount`);
-    if (res.data.status === 'ok') {
+    if (res.data.status === "ok") {
       return res.data.data.token as string;
     }
   }
@@ -30,22 +30,32 @@ export class GoFileExtractor implements IExtractor {
   public async extractUrl(url: string): Promise<Source | undefined> {
     try {
       const linkData = await axiosInstance.get(url);
-      const contentId = linkData.request.res.responseUrl.split('/d')[1];
+      const contentId = linkData.request.res.responseUrl.split("/d")[1];
       const websiteToken = await this.getGoFileWebsiteToken();
       const accountToken = await this.getGoFileAccountToken();
 
-      const goFileDownloadLink = await axiosInstance.get(`${this.apiUrl}/getContent?contentId=${contentId}&token=${websiteToken}&websiteToken=${accountToken}`);
-      if (goFileDownloadLink.data.status === 'ok') {
+      const goFileDownloadLink = await axiosInstance.get(
+        `${this.apiUrl}/getContent?contentId=${contentId}&token=${websiteToken}&websiteToken=${accountToken}`,
+      );
+      if (goFileDownloadLink.data.status === "ok") {
         return {
-          server: 'VegaMovies',
+          server: "VegaMovies",
           source: {
-            url: `${goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].link}?accountToken=${accountToken}`,
+            url: `${
+              goFileDownloadLink.data.data.contents[
+                goFileDownloadLink.data.data.childs[0]
+              ].link
+            }?accountToken=${accountToken}`,
           },
-          type: 'mp4',
+          type: "mp4",
           proxySettings: {
-            type: 'mp4',
+            type: "mp4",
           },
-          quality: getResolution(goFileDownloadLink.data.data.contents[goFileDownloadLink.data.data.childs[0]].name),
+          quality: getResolution(
+            goFileDownloadLink.data.data.contents[
+              goFileDownloadLink.data.data.childs[0]
+            ].name,
+          ),
           isVlc: true,
         };
       }
