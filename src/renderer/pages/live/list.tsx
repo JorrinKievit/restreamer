@@ -3,7 +3,6 @@ import { client } from "renderer/api/trpc";
 import { SkeletonGrid } from "renderer/components/layout/loaders/skeleton-grid";
 import { Link } from "react-router-dom";
 import { LiveMainPage } from "types/sources";
-import { StarIcon } from "@chakra-ui/icons";
 import { useLocalStorage } from "usehooks-ts";
 import { Input } from "renderer/components/ui/input";
 import { AspectRatio } from "renderer/components/ui/aspect-ratio";

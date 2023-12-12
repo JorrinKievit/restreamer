@@ -45,12 +45,11 @@ const Header: FC = () => {
         <div className="flex items-center gap-4">
           {HEADER_LINKS.map((link) => (
             <NavLink
+              key={link.url}
               to={link.url}
               className={({ isActive }) =>
                 [
-                  isActive
-                    ? "border-b-2 border-purple-700"
-                    : "border-transparent",
+                  isActive ? "border-b-2 border-primary" : "border-transparent",
                 ].join(" ")
               }
             >
