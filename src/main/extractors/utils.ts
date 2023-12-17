@@ -56,7 +56,7 @@ export const randomString = (length: number) => {
 export const getResolutionName = (resolution: number): Source["quality"] => {
   switch (resolution) {
     case 2160:
-      return "4k";
+      return "4K";
     case 1440:
       return "1440p";
     case 1080:
@@ -135,9 +135,9 @@ export const getResolution = (fileName: string | number): Source["quality"] => {
   if (
     fileNameLower.includes("2160p") ||
     fileNameLower.includes("2160") ||
-    fileNameLower.includes("4K")
+    fileNameLower.includes("4k")
   )
-    return "4k";
+    return "4K";
   if (fileNameLower.includes("1440p") || fileNameLower.includes("1440"))
     return "1440p";
   if (fileNameLower.includes("1080p") || fileNameLower.includes("1080"))
