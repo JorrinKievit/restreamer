@@ -6,6 +6,7 @@ import { axiosInstance } from "../../utils/axios";
 import { IExtractor } from "../types";
 import { SmashyCfExtractor } from "./cf";
 import { SmashyDudMovieExtractor } from "./dudmovie";
+import { SmashyDuedExtractor } from "./dued";
 import { SmashyEeMovieExtractor } from "./ee";
 import { SmashyEmsExtractor } from "./ems";
 import { SmashyFFixExtractor } from "./ffix";
@@ -54,6 +55,8 @@ export class SmashyStreamExtractor implements IExtractor {
 
   private video3mExtractor = new SmashyVideo3MExtractor();
 
+  private duedExtractor = new SmashyDuedExtractor();
+
   async extractUrls(
     imdbId: string,
     type: ContentType,
@@ -78,6 +81,7 @@ export class SmashyStreamExtractor implements IExtractor {
         .get();
 
       const sourcesPromise = sourceUrls.map(async (sourceUrl, index) => {
+        this.logger.debug(sourceUrl);
         if (index > 0) {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
@@ -123,14 +127,15 @@ export class SmashyStreamExtractor implements IExtractor {
           return this.eeMovieExtractor.extractUrl(sourceUrl);
         }
 
-        if (sourceUrl.includes("video1.php")) {
+        if (sourceUrl.includes("video1d.php")) {
           return this.video1Extractor.extractUrl(sourceUrl);
         }
-
         if (sourceUrl.includes("video3m.php")) {
           return this.video3mExtractor.extractUrl(sourceUrl);
         }
-
+        if (sourceUrl.includes("dued.php")) {
+          return this.duedExtractor.extractUrl(sourceUrl);
+        }
         return undefined;
       });
 

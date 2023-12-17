@@ -67,15 +67,13 @@ export class BlackvidExtractor implements IExtractor {
       const sources: Source[] = decrypted.sources.map(
         async (s: any, index: number) => {
           const highestQualitySource = s.sources[0];
-          // Same url as SuperStream
-          if (highestQualitySource.url.includes("shegu")) return null;
           const quality =
             highestQualitySource?.quality !== "auto"
               ? getResolution(highestQualitySource.quality)
               : await getResolutionFromM3u8(highestQualitySource.url, true);
 
           return {
-            server: `${this.name} ${index}`,
+            server: `${this.name} ${index + 1}`,
             quality,
             type: highestQualitySource.url.includes(".m3u8") ? "m3u8" : "mp4",
             source: {

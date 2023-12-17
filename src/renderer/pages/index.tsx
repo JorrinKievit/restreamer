@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { PlayingData } from "types/localstorage";
 import { Link as RouterLink } from "react-router-dom";
-import { useBoolean, useLocalStorage } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import { SkeletonGrid } from "renderer/components/layout/loaders/skeleton-grid";
 import NotFoundImage from "renderer/assets/undraw_page_not_found.svg";
 import { client } from "renderer/api/trpc";

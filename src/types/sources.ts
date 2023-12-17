@@ -12,7 +12,7 @@ export interface Source {
   server: string;
   type: "m3u8" | "mp4" | "mkv";
   quality:
-    | "4k"
+    | "4K"
     | "1440p"
     | "1080p"
     | "808p"
