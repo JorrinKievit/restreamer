@@ -3,7 +3,6 @@ import z from "zod";
 import { observable } from "@trpc/server/observable";
 import { EventEmitter } from "events";
 import { Source } from "types/sources";
-import { BlackvidExtractor } from "../extractors/blackvid";
 import { UHDMoviesExtractor } from "../extractors/uhdmovies";
 import { VegaMoviesExtractor } from "../extractors/vegamovies/vegamovies";
 import { VidSrcToExtractor } from "../extractors/vidsrcto";
@@ -32,7 +31,6 @@ const vegaMoviesExtractor = new VegaMoviesExtractor();
 const uhdmoviesExtractor = new UHDMoviesExtractor();
 const showBoxExtractor = new ShowBoxExtractor();
 const myFileStorageExtractor = new MyFileStorageExtractor();
-const blackvidExtractor = new BlackvidExtractor();
 
 export const appRouter = t.router({
   getAppVersion: t.procedure.query(() => {
@@ -129,13 +127,6 @@ export const appRouter = t.router({
           return sources;
         });
 
-      const blackvidPromise = blackvidExtractor
-        .extractUrls(tmdbId, type, season, episode)
-        .then((sources) => {
-          ee.emit("sources", sources);
-          return sources;
-        });
-
       // const remoteStreamPromise = remoteStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
       //   ee.emit('sources', sources);
       //   return sources;
@@ -153,7 +144,6 @@ export const appRouter = t.router({
         uhdmoviesPromise,
         showBoxPromise,
         myFileStoragePromise,
-        blackvidPromise,
         // remoteStreamPromise,
       ];
 

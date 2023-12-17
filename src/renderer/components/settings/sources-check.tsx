@@ -73,20 +73,6 @@ const AVAILABLE_SOURCES = [
   {
     name: "MyFileStorage",
   },
-  {
-    name: "Blackvid",
-    children: [
-      {
-        name: "Blackvid 1",
-      },
-      {
-        name: "Blackvid 2",
-      },
-      {
-        name: "Blackvid 3",
-      },
-    ],
-  },
 ];
 
 const SourceInfo: FC<{

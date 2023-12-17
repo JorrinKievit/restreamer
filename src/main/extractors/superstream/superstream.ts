@@ -42,6 +42,16 @@ export class SuperStreamExtractor implements IExtractor {
     "base64",
   ).toString();
 
+  private firstSubtitleDomain = Buffer.from(
+    "bWJwaW1hZ2VzLmNodWF4aW4uY29t",
+    "base64",
+  ).toString();
+
+  private secondSubtitleDomain = Buffer.from(
+    "aW1hZ2VzLnNoZWd1Lm5ldA==",
+    "base64",
+  ).toString();
+
   private version: string = "11.5";
 
   private versionCode: string = "160";
@@ -199,7 +209,12 @@ export class SuperStreamExtractor implements IExtractor {
           subtitles: subtitleDataResponse.data.list.flatMap((subtitleList) => {
             const subtitles = subtitleList.subtitles.slice(0, 10);
             return subtitles.map((superStreamSubtitle) => ({
-              file: superStreamSubtitle.file_path,
+              file: superStreamSubtitle.file_path
+                .replace(this.firstSubtitleDomain, this.secondSubtitleDomain)
+                .replace(/\s/g, "+")
+                .replace(/[()]/g, (c) => {
+                  return `%${c.charCodeAt(0).toString(16)}`;
+                }),
               label: superStreamSubtitle.language,
               kind: "captions",
             }));
