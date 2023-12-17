@@ -20,12 +20,6 @@ const AVAILABLE_SOURCES = [
     name: "GoMovies",
   },
   {
-    name: "PrimeWire",
-  },
-  {
-    name: "NewMovies123",
-  },
-  {
     name: "SuperStream",
   },
   {
