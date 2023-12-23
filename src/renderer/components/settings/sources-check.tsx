@@ -73,6 +73,23 @@ const AVAILABLE_SOURCES = [
   {
     name: "MyFileStorage",
   },
+  {
+    name: "MultiMovies",
+  },
+  {
+    name: "RidooMovies",
+    children: [
+      {
+        name: "Ridoo",
+      },
+      {
+        name: "Closeload",
+      },
+    ],
+  },
+  {
+    name: "RemoteStream",
+  },
 ];
 
 const SourceInfo: FC<{

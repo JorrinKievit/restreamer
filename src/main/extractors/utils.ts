@@ -107,6 +107,28 @@ export const getResolutionFromM3u8 = async (
   }
 };
 
+export const hasSubtitlesInM3u8 = async (
+  m3u8: string,
+  shouldRequest: boolean,
+  headers: RawAxiosRequestHeaders = {},
+) => {
+  let m3u8Manifest = m3u8;
+  if (shouldRequest) {
+    const res = await axios.get(m3u8, {
+      headers,
+    });
+    m3u8Manifest = res.data;
+  }
+  const parser = new m3u8Parser.Parser();
+  parser.push(m3u8Manifest);
+  parser.end();
+
+  return (
+    parser.manifest?.mediaGroups?.SUBTITLES !== undefined &&
+    Object.keys(parser.manifest?.mediaGroups?.SUBTITLES) !== undefined
+  );
+};
+
 export const findHighestResolutionStream = (m3u8Content: string) => {
   const streamEntries = m3u8Content.split("#EXT-X-STREAM-INF").slice(1);
   let highestResolution = "";

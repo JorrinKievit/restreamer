@@ -100,23 +100,35 @@ export class VegaMoviesExtractor implements IExtractor {
 
   private async extractFastDl(url: string): Promise<Source> {
     const redirectPage = await axiosInstance.get(url);
-
+    this.logger.debug(redirectPage.request.res.responseUrl);
+    if (redirectPage.request.res.responseUrl.includes("r=")) {
+      return {
+        server: this.name,
+        source: {
+          url: Buffer.from(
+            redirectPage.request.res.responseUrl.split("r=")[1],
+            "base64",
+          ).toString(),
+        },
+        type: "mkv",
+        quality: "Unknown",
+        isVlc: true,
+      };
+    }
     let fastDlUrl = "";
     if (redirectPage.data.includes("aiotechnical.com")) {
       fastDlUrl = await extractAioTechnical(redirectPage.data);
     }
     if (!fastDlUrl)
       throw new Error("FastDL link was not redirected through aiotechnical");
-    const fastDlPage = await axiosInstance.get(fastDlUrl);
-    throw new Error("FastDL link not implemented yet");
 
     return {
       server: this.name,
       source: {
-        url: "",
+        url: fastDlUrl,
       },
       type: "mp4",
-      quality: getResolution(""),
+      quality: "Unknown",
       isVlc: true,
     };
   }

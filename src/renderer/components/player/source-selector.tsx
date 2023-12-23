@@ -22,10 +22,9 @@ const SourceButton: FC<
     >
       <span className="pt-4 text-lg">{source.server}</span>
       <div className="flex space-x-2">
-        {source.quality !== "Unknown" && (
-          <Badge className="mx-auto self-start">{source.quality}</Badge>
-        )}
-        {source.subtitles && source.subtitles.length > 0 ? (
+        <Badge className="mx-auto self-start">{source.quality}</Badge>
+        {(source.subtitles && source.subtitles.length > 0) ||
+        source.labels?.hasSubtitles ? (
           <Badge className="self-start">Subtitles</Badge>
         ) : null}
       </div>

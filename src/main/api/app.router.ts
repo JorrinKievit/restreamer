@@ -16,6 +16,8 @@ import { SmashyStreamExtractor } from "../extractors/smashystream/smashystream";
 import { ShowBoxExtractor } from "../extractors/showbox";
 import { t } from "./trpc-client";
 import { MyFileStorageExtractor } from "../extractors/myfilestorage";
+import { MultiMoviesExtractor } from "../extractors/multimovies";
+import { RidoMoviesExtractor } from "../extractors/ridomovies";
 
 const ee = new EventEmitter();
 
@@ -23,7 +25,6 @@ const goMoviesExtractor = new GoMoviesExtractor();
 const superStreamExtractor = new SuperStreamExtractor();
 const twoEmbedExtractor = new TwoEmbedExtractor();
 const vidSrcExtractor = new VidSrcExtractor();
-const remoteStreamExtractor = new RemoteStreamExtractor();
 const smashyStreamExtractor = new SmashyStreamExtractor();
 const moviesApiExtractor = new MoviesApiExtractor();
 const vidSrcToExtractor = new VidSrcToExtractor();
@@ -31,6 +32,10 @@ const vegaMoviesExtractor = new VegaMoviesExtractor();
 const uhdmoviesExtractor = new UHDMoviesExtractor();
 const showBoxExtractor = new ShowBoxExtractor();
 const myFileStorageExtractor = new MyFileStorageExtractor();
+const multiMoviesExtractor = new MultiMoviesExtractor();
+const remoteStreamExtractor = new RemoteStreamExtractor();
+
+const ridoMoviesExtractor = new RidoMoviesExtractor();
 
 export const appRouter = t.router({
   getAppVersion: t.procedure.query(() => {
@@ -127,10 +132,26 @@ export const appRouter = t.router({
           return sources;
         });
 
-      // const remoteStreamPromise = remoteStreamExtractor.extractUrls(imdbId, type, season, episode).then((sources) => {
-      //   ee.emit('sources', sources);
-      //   return sources;
-      // });
+      const multiMoviesPromise = multiMoviesExtractor
+        .extractUrls(showName, type, season, episode)
+        .then((sources) => {
+          ee.emit("sources", sources);
+          return sources;
+        });
+
+      const ridoMoviesPromise = ridoMoviesExtractor
+        .extractUrls(showName, type, season, episode)
+        .then((sources) => {
+          ee.emit("sources", sources);
+          return sources;
+        });
+
+      const remoteStreamPromise = remoteStreamExtractor
+        .extractUrls(imdbId, type, season, episode)
+        .then((sources) => {
+          ee.emit("sources", sources);
+          return sources;
+        });
 
       const allPromises = [
         goMoviesPromise,
@@ -144,7 +165,9 @@ export const appRouter = t.router({
         uhdmoviesPromise,
         showBoxPromise,
         myFileStoragePromise,
-        // remoteStreamPromise,
+        multiMoviesPromise,
+        ridoMoviesPromise,
+        remoteStreamPromise,
       ];
 
       const allSources = await Promise.all(allPromises);

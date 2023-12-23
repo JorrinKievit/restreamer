@@ -7,7 +7,10 @@ export interface IExtractor {
   logger: LogFunctions;
   url: string;
   referer?: string;
-  extractUrl?: (url: string) => Promise<Source | undefined>;
+  extractUrl?: (
+    url: string,
+    serverName?: string,
+  ) => Promise<Source | undefined>;
   extractUrls?: (
     imdbId: string,
     type: ContentType,

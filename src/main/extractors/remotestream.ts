@@ -12,7 +12,7 @@ export class RemoteStreamExtractor implements IExtractor {
 
   url = "https://remotestream.cc/e/?";
 
-  referer = "https://remotestream.cc/";
+  referer = "https://remotestre.am/";
 
   private apiKey = "bRR3S48MbSnqjSaYNdCrBLfTIGQQNPRo";
 
@@ -51,8 +51,6 @@ export class RemoteStreamExtractor implements IExtractor {
             type: "m3u8",
             origin: this.referer,
             referer: this.referer,
-            userAgent:
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
           },
         },
       ];

@@ -63,8 +63,8 @@ dependencies:
     specifier: ^1.9.2
     version: 1.9.4(@types/react@18.2.43)(react@18.2.0)
   '@warren-bank/hls-proxy':
-    specifier: ^3.4.0
-    version: 3.4.7
+    specifier: ^3.5.1
+    version: 3.5.1
   autoprefixer:
     specifier: ^10.4.16
     version: 10.4.16(postcss@8.4.32)
@@ -83,6 +83,9 @@ dependencies:
   cmdk:
     specifier: ^0.2.0
     version: 0.2.0(@types/react@18.2.43)(react-dom@18.2.0)(react@18.2.0)
+  crypto-js:
+    specifier: ^4.2.0
+    version: 4.2.0
   electron-debug:
     specifier: ^3.2.0
     version: 3.2.0
@@ -169,6 +172,9 @@ devDependencies:
   '@testing-library/react':
     specifier: ^13.3.0
     version: 13.4.0(react-dom@18.2.0)(react@18.2.0)
+  '@types/crypto-js':
+    specifier: ^4.2.1
+    version: 4.2.1
   '@types/node':
     specifier: 20.2.5
     version: 20.2.5
@@ -3660,6 +3666,10 @@ packages:
     dependencies:
       '@types/node': 20.2.5
 
+  /@types/crypto-js@4.2.1:
+    resolution: {integrity: sha512-FSPGd9+OcSok3RsM0UZ/9fcvMOXJ1ENE/ZbLfOPlBWj7BgXtEAM8VYfTtT760GiLbQIMoVozwVuisjvsVwqYWw==}
+    dev: true
+
   /@types/debug@4.1.8:
     resolution: {integrity: sha512-/vPO1EPOs306Cvhwv7KfVfYvOJqA/S/AXjaHQiJboCZzcNDb+TIJFN9/2C9DZ//ijSKWioNyUxD792QmDJ+HKQ==}
     dependencies:
@@ -4265,14 +4275,15 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@warren-bank/hls-proxy@3.4.7:
-    resolution: {integrity: sha512-8yNMdnrsz5YPfrpZxoiCyKutayRp5/5SYKaovX4mtOlHEq+O2S8ZHOcie8AmqHet5phT1A1Sy1zS+dGgXtB4jg==}
+  /@warren-bank/hls-proxy@3.5.1:
+    resolution: {integrity: sha512-eFmO6kcVrQ2xVvklglg/ctNyON16MDStAk0k0cxSjVrrEFfBlkGrwN1lea9JTVS1bFuH5y9cq7F5nTCtdnbmrA==}
     hasBin: true
     dependencies:
       '@warren-bank/node-process-argv': 1.2.1
       '@warren-bank/node-request': 2.0.13
       '@warren-bank/url': 3.1.4
       hpagent: 1.2.0
+      regexp-match-indices: 1.0.2
       tough-cookie: 3.0.1
     dev: false
 
@@ -5823,6 +5834,10 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  /crypto-js@4.2.0:
+    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+    dev: false
 
   /css-declaration-sorter@6.4.0(postcss@8.4.32):
     resolution: {integrity: sha512-jDfsatwWMWN0MODAFuHszfjphEXfNw9JUAhmY4pLu3TyTU+ohUpsbVtbU+1MZn4a47D9kqh03i4eyOm+74+zew==}
@@ -11303,6 +11318,17 @@ packages:
     dependencies:
       '@babel/runtime': 7.23.5
     dev: true
+
+  /regexp-match-indices@1.0.2:
+    resolution: {integrity: sha512-DwZuAkt8NF5mKwGGER1EGh2PRqyvhRhhLviH+R8y8dIuaQROlUfXjt4s9ZTXstIsSkptf06BSvwcEmmfheJJWQ==}
+    dependencies:
+      regexp-tree: 0.1.27
+    dev: false
+
+  /regexp-tree@0.1.27:
+    resolution: {integrity: sha512-iETxpjK6YoRWJG5o6hXLwvjYAoW+FEZn9os0PD/b6AP6xQwsa/Y7lCVgIixBbUPMfhu+i2LtdeAqVTgGlQarfA==}
+    hasBin: true
+    dev: false
 
   /regexp.prototype.flags@1.5.0:
     resolution: {integrity: sha512-0SutC3pNudRKgquxGoRGIz946MZVHqbNfPjBdxeOhBrdgDKlRoXmYLQN9xRbrR09ZXWeGAdPuif7egofn6v5LA==}

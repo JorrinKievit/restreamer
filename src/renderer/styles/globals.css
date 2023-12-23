@@ -5,6 +5,11 @@
 @import "~@vidstack/react/player/styles/default/theme.css";
 @import "~@vidstack/react/player/styles/default/layouts/video.css";
 
+:where(.vds-captions [data-part="cue"]) {
+  background-color: unset;
+  backdrop-filter: unset;
+}
+
 html,
 body {
   padding: 0;

@@ -7,9 +7,12 @@ import vm from "vm";
 import { IExtractor } from "./types";
 import { getResolutionFromM3u8 } from "./utils";
 import { axiosInstance } from "../utils/axios";
+import { CryptoJSAesJson } from "../utils/crypto";
 
 export class MoviesApiExtractor implements IExtractor {
-  logger = log.scope("MoviesApi");
+  name = "MoviesApi";
+
+  logger = log.scope(this.name);
 
   url = "https://moviesapi.club/";
 
@@ -54,16 +57,7 @@ export class MoviesApiExtractor implements IExtractor {
 
       const res2 = await axiosInstance.get(iframeUrl, {
         headers: {
-          referer: "https://moviesapi.club/",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-          "Accept-Encoding": "gzip, deflate, br",
-          "Accept-Language": "en-US,en;q=0.5",
-          "Alt-Used": "w1.moviesapi.club",
-          Host: "w1.moviesapi.club",
-          TE: "Trailers",
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
+          referer: this.referer,
         },
       });
       const res2$ = load(res2.data);
@@ -72,25 +66,10 @@ export class MoviesApiExtractor implements IExtractor {
       const key = this.getKey(stringData);
       this.logger.debug(key);
 
-      const regex = /JScript\s*=\s*'([^']*)'/;
+      const regex = /JScripts\s*=\s*'([^']*)'/;
       const base64EncryptedData = regex.exec(res2.data)![1];
-      const base64DecryptedData = JSON.parse(base64EncryptedData);
-      this.logger.debug(base64DecryptedData);
 
-      const salt = Buffer.from(base64DecryptedData.s, "hex");
-      const iv = Buffer.from(base64DecryptedData.iv, "hex");
-      const derivedKey = crypto.pbkdf2Sync(key, salt, 1, 32, "md5");
-      const decipher = crypto.createDecipheriv("aes-256-cbc", derivedKey, iv);
-      decipher.setAutoPadding(false);
-
-      const encryptedBuffer = Buffer.from(base64DecryptedData.ct, "base64");
-      const decryptedBuffer = Buffer.concat([
-        decipher.update(encryptedBuffer),
-        decipher.final(),
-      ]);
-
-      const decryptedString = decryptedBuffer.toString("utf-8");
-      this.logger.debug(decryptedString);
+      const decryptedString = CryptoJSAesJson.decrypt(base64EncryptedData, key);
 
       const sources = JSON.parse(
         decryptedString.match(/sources: ([^\]]*\])/)![1],
@@ -106,7 +85,7 @@ export class MoviesApiExtractor implements IExtractor {
 
       return [
         {
-          server: "MoviesApi",
+          server: this.name,
           source: {
             url: sources[0].file,
           },

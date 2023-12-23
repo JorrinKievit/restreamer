@@ -35,6 +35,9 @@ export interface Source {
     requiresBlob?: boolean;
   };
   isVlc?: boolean;
+  labels?: {
+    hasSubtitles?: boolean;
+  };
 }
 
 export interface LiveMainPage {

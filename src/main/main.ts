@@ -9,9 +9,7 @@ import { resolveHtmlPath } from "./util";
 import { router } from "./api";
 
 log.scope("main");
-log.initialize({
-  spyRendererConsole: true,
-});
+log.initialize();
 log.transports.file.level = "info";
 
 electronDl({

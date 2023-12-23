@@ -39,7 +39,7 @@ export const extractAioTechnical = async (data: string): Promise<string> => {
     `${redirectData.blog_url}?re=${redirectData.data}`,
     {
       headers: {
-        cookie: "_wp_http=null",
+        cookie: cookies,
       },
     },
   );
