@@ -20,24 +20,6 @@ electronDl({
   openFolderWhenDone: true,
 });
 
-const PROXY_PATH =
-  process.env.NODE_ENV === "production"
-    ? path.join(
-        process.resourcesPath,
-        "node_modules/@warren-bank/hls-proxy/hls-proxy/bin/hlsd.js",
-      )
-    : path.join(
-        __dirname,
-        "../../../node_modules/@warren-bank/hls-proxy/hls-proxy/bin/hlsd.js",
-      );
-
-fork(PROXY_PATH, ["--port", "7687", "--host", "localhost", "-v 4"], {
-  detached: true,
-  env: {
-    ELECTRON_RUN_AS_NODE: "1",
-  },
-});
-
 let mainWindow: BrowserWindow | null = null;
 
 class AppUpdater {

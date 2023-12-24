@@ -33,9 +33,9 @@ export const startM3U8Proxy = (options: StartM3U8ProxyOptions) => {
       path.join(PROXY_PATH),
       [
         "--port",
-        `"7687"`,
+        `7687`,
         "--host",
-        `"localhost"`,
+        `localhost`,
         `--referer "${options.referer}"`,
         "-v 4",
         `--origin "${options.origin}"`,
