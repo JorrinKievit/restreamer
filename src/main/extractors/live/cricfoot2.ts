@@ -45,48 +45,27 @@ export class CricFoot2Extractor implements ILiveExtractor {
       if (!link) throw new Error("No link found");
       const watchLinksPage = await axiosInstance.get(link);
       const watchLInksPage$ = load(watchLinksPage.data);
-      const streamLinks = watchLInksPage$("a:contains('Stream')")
-        .map((i, el) => watchLInksPage$(el).attr("href"))
-        .get();
-      this.logger.debug(`streamLinks: ${streamLinks}`);
-      const streamLinkPromises = streamLinks.map(async (streamLink) => {
-        const streamPage = await axiosInstance.get(streamLink);
-        const streamPage$ = load(streamPage.data);
-        return streamPage$("iframe").attr("src");
-      });
-      const streamPageLinks = [
-        ...new Set(
-          (await Promise.all(streamLinkPromises)).filter(
-            (l): l is string => l !== undefined,
-          ),
-        ),
-      ];
-      this.logger.debug(`streamPageLinks: ${streamPageLinks}`);
-      const streamPageLinkPromises = streamPageLinks.map(
-        async (streamPageLink) => {
-          if (streamPageLink.includes("tvpclive.com")) {
-            return this.extractTVpLiveUrl(streamPageLink);
-          }
-          if (streamPageLink.includes("crichd.vip")) {
-            return this.extractCrichdUrl(streamPageLink);
-          }
-          if (streamPageLink.includes("dlhd.sx")) {
-            return this.extractDlhd(streamPageLink);
-          }
-          if (streamPageLink.includes("daddylivehd.online")) {
-            return this.extractDaddyLiveHD(streamPageLink);
-          }
-          if (streamPageLink.includes("1stream.buzz")) {
-            return this.extract1StreamBuzz(streamPageLink);
-          }
-        },
-      );
-      const streamPageLinkResults = (
-        await Promise.all(streamPageLinkPromises)
-      ).filter((l): l is Source => l !== undefined);
-      this.logger.debug(streamPageLinkResults);
+      const streamPageLink = watchLInksPage$("iframe").attr("src");
+      if (!streamPageLink) throw new Error("No stream page link found");
+      let source: Source | undefined;
+      if (streamPageLink.includes("tvpclive.com")) {
+        source = await this.extractTVpLiveUrl(streamPageLink);
+      }
+      if (streamPageLink.includes("crichd.vip")) {
+        source = await this.extractCrichdUrl(streamPageLink);
+      }
+      if (streamPageLink.includes("dlhd.sx")) {
+        source = await this.extractDlhd(streamPageLink);
+      }
+      if (streamPageLink.includes("daddylivehd.online")) {
+        source = await this.extractDaddyLiveHD(streamPageLink);
+      }
+      if (streamPageLink.includes("1stream.buzz")) {
+        source = await this.extract1StreamBuzz(streamPageLink);
+      }
 
-      return streamPageLinkResults;
+      if (!source) throw new Error("No source found");
+      return [source];
     } catch (err) {
       if (err instanceof Error) this.logger.error(err.message);
       return [];
