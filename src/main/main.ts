@@ -7,14 +7,35 @@ import { createIPCHandler } from "electron-trpc/main";
 import installer, { REACT_DEVELOPER_TOOLS } from "electron-devtools-installer";
 import { resolveHtmlPath } from "./util";
 import { router } from "./api";
+import { fork } from "child_process";
 
 log.scope("main");
 log.initialize();
 log.transports.file.level = "info";
+log.transports.file.resolvePathFn = () =>
+  path.join(process.resourcesPath, "assets", "log.log");
 
 electronDl({
   saveAs: true,
   openFolderWhenDone: true,
+});
+
+const PROXY_PATH =
+  process.env.NODE_ENV === "production"
+    ? path.join(
+        process.resourcesPath,
+        "node_modules/@warren-bank/hls-proxy/hls-proxy/bin/hlsd.js",
+      )
+    : path.join(
+        __dirname,
+        "../../../node_modules/@warren-bank/hls-proxy/hls-proxy/bin/hlsd.js",
+      );
+
+fork(PROXY_PATH, ["--port", "7687", "--host", "localhost", "-v 4"], {
+  detached: true,
+  env: {
+    ELECTRON_RUN_AS_NODE: "1",
+  },
 });
 
 let mainWindow: BrowserWindow | null = null;

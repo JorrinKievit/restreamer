@@ -1,5 +1,5 @@
 import path from "path";
-import { ChildProcess, fork } from "child_process";
+import { ChildProcess, fork, spawn } from "child_process";
 import log from "electron-log";
 
 const logger = log.scope("M3U8 Proxy");
@@ -25,6 +25,7 @@ interface StartM3U8ProxyOptions {
 
 export const startM3U8Proxy = (options: StartM3U8ProxyOptions) => {
   try {
+    logger.info("Starting M3U8 Proxy", PROXY_PATH);
     if (proxy) {
       proxy.kill();
     }
@@ -32,13 +33,13 @@ export const startM3U8Proxy = (options: StartM3U8ProxyOptions) => {
       path.join(PROXY_PATH),
       [
         "--port",
-        "7687",
+        `"7687"`,
         "--host",
-        "localhost",
-        `--referer '${options.referer}'`,
+        `"localhost"`,
+        `--referer "${options.referer}"`,
         "-v 4",
-        `--origin '${options.origin}'`,
-        `--user-agent '${options.userAgent}'`,
+        `--origin "${options.origin}"`,
+        `--user-agent "${options.userAgent}"`,
       ],
       {
         detached: true,
@@ -47,8 +48,11 @@ export const startM3U8Proxy = (options: StartM3U8ProxyOptions) => {
         },
       },
     );
+    proxy.on("exit", (code, signal) => {
+      logger.info(`M3U8 Proxy exited with code ${code} and signal ${signal}`);
+    });
   } catch (error) {
-    logger.error(error);
+    logger.error(JSON.stringify(error));
   }
 };
 
